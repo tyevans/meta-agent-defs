@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bd prime 2>/dev/null || true"
+            "command": "echo '--- Session Diagnostics ---'; DIRTY=$(git status --porcelain 2>/dev/null); if [ -n \"$DIRTY\" ]; then echo \"WARNING: Uncommitted changes detected from previous session:\"; echo \"$DIRTY\" | head -20; echo '(Review these before starting new work)'; else echo 'Working tree: clean'; fi; UNPUSHED=$(git log @{u}.. --oneline 2>/dev/null); if [ -n \"$UNPUSHED\" ]; then echo \"WARNING: Unpushed commits:\"; echo \"$UNPUSHED\"; echo '(Consider pushing before starting new work)'; fi; echo '--- Beads ---'; bd prime 2>/dev/null || true"
           }
         ]
       }
@@ -32,6 +32,15 @@
           {
             "type": "command",
             "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\"git push' 2>/dev/null; then if [ -d .beads ]; then STATUS=$(bd sync --status 2>/dev/null); if echo \"$STATUS\" | grep -qiE 'uncommitted|dirty|pending'; then echo 'BEADS WARNING: Uncommitted beads changes detected. Run bd sync before pushing.' >&2; fi; fi; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=\"$CLAUDE_TOOL_INPUT\"; if echo \"$INPUT\" | grep -qE '\"git reset --hard' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git reset --hard will discard all uncommitted changes. This is irreversible.' >&2; elif echo \"$INPUT\" | grep -qE '\"git checkout \\.' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git checkout . will discard all unstaged changes. This is irreversible.' >&2; elif echo \"$INPUT\" | grep -qE '\"git clean -f' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git clean -f will permanently delete untracked files.' >&2; elif echo \"$INPUT\" | grep -qE '\"rm -rf [^\"]*[^/.]' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: rm -rf detected on a non-trivial path. Verify the target before proceeding.' >&2; elif echo \"$INPUT\" | grep -qE '\\.beads/' 2>/dev/null && echo \"$INPUT\" | grep -qvE '\"bd ' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: Direct .beads/ file operation detected. Use bd commands instead of modifying .beads/ internals directly.' >&2; fi"
           }
         ]
       }
