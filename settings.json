@@ -1,6 +1,11 @@
 {
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317"
   },
   "hooks": {
     "SessionStart": [
@@ -51,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'REVIEW GATE: Agent completed. Before proceeding: (1) Does the deliverable connect to downstream layers? (2) Any gaps needing new beads? (3) Should you run smoke tests?'"
+            "command": "echo 'REVIEW GATE: Agent completed. Verify deliverable quality before proceeding:' >&2; echo '  [ ] Spike sections present: Firm Tasks Found | Areas Needing Deeper Spikes | Clean Areas | Summary' >&2; echo '  [ ] Findings tagged with confidence: CONFIRMED | LIKELY | POSSIBLE' >&2; echo '  [ ] Evidence includes file paths and line numbers' >&2; echo '  [ ] Gaps captured as new beads | Downstream connections identified' >&2"
           }
         ]
       }
