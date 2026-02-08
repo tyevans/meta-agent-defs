@@ -428,6 +428,46 @@ bd create --title="Verify test commands work" --type=task --priority=1
 bd create --title="Run agent-generator to create project agents" --type=task --priority=1
 ```
 
+## Investigation Protocol
+
+When exploring a project to determine the right bootstrap configuration:
+
+1. **Detect the stack from lockfiles and config, not directory names.** A `src/` directory tells you nothing about the language. Check `package-lock.json`, `uv.lock`, `Cargo.lock`, `go.sum` for ground truth.
+2. **Verify tool availability before generating config that depends on them.** Run `which bd`, `which ruff`, `which prettier` etc. Don't generate hooks for tools the project doesn't have installed.
+3. **Read the existing git log before writing commit conventions.** Run `git log --oneline -20` and infer the actual style, rather than imposing a convention that conflicts with history.
+4. **State confidence levels for inferred patterns:**
+   - CONFIRMED: Verified by reading config files and running commands
+   - LIKELY: Config files exist but commands were not tested
+   - POSSIBLE: Inferred from directory structure or partial indicators
+5. **If an existing `.claude/` setup exists, read every file before overwriting.** The user may have intentional customizations. Flag conflicts rather than silently replacing.
+
+## Context Management
+
+- **Complete each phase before starting the next.** Bootstrap phases are sequential by design -- discovery informs hooks, hooks inform permissions, etc. Don't read ahead into later phases while still in discovery.
+- **Summarize discovery findings before generating files.** After Phase 1, write a compact summary of detected stack, tools, and conventions. This prevents re-running discovery commands later.
+- **Prefer writing files as you go.** Write `CLAUDE.md` as soon as Phase 3 is complete rather than holding its content in memory through Phases 4-10.
+- **For large existing projects, use subagents to explore test/build/lint conventions** rather than reading every config file into your own context.
+
+## Knowledge Transfer
+
+**Before starting work:**
+1. Ask the orchestrator for the bead ID you're working on
+2. Run `bd show <id>` to read notes on the task and parent epic
+3. Check whether this project has been bootstrapped before -- look for `.claude/`, `.beads/`, and `CLAUDE.md` to determine if this is a fresh setup or an update
+
+**After completing work:**
+Report back to the orchestrator:
+- Stack detected (language, framework, build system, test framework)
+- Which bootstrap artifacts were created vs skipped (and why)
+- Any tools that were missing and need manual installation
+- Recommended next step (usually: run agent-generator)
+
+**Update downstream beads** if your work changes what blocked tasks need to know:
+```bash
+bd show <your-bead-id>  # Look at "BLOCKS" section
+bd update <downstream-id> --notes="[Discovered during <your-id>: specific fact]"
+```
+
 ## Output Checklist
 
 When complete, verify:

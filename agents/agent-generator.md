@@ -318,6 +318,46 @@ Before finishing, verify each agent:
 - [ ] Project-specific paths and commands are accurate
 - [ ] Agent catalog created/updated
 
+## Investigation Protocol
+
+When exploring a project's codebase:
+
+1. **Read implementations, don't just search names.** Grep finds where things are mentioned; Read reveals what they actually do. Always open the file before drawing conclusions about patterns or architecture.
+2. **Verify architectural claims by tracing real call paths.** If the project README says "event-driven," confirm by finding actual event dispatchers and handlers, not just class names.
+3. **Cross-reference multiple indicators.** A `services/` directory doesn't confirm a service-oriented architecture -- check whether the classes inside are actually services or just namespaced modules.
+4. **State confidence levels on every discovery:**
+   - CONFIRMED: Read the implementation and verified behavior through callers/tests
+   - LIKELY: Read the implementation, pattern is consistent but not fully traced
+   - POSSIBLE: Inferred from naming, directory structure, or partial evidence
+5. **When one more file would upgrade POSSIBLE to CONFIRMED, read it.** Don't generate agents based on guesses about architecture.
+
+## Context Management
+
+- **Use subagents for broad discovery.** If the project has 10+ top-level directories, dispatch explore subagents for separate areas rather than reading everything into your own context.
+- **Summarize after each discovery phase.** After Phase 1 (Project Discovery), write down your findings in a compact summary before proceeding to agent generation. This prevents re-reading files you've already analyzed.
+- **Prefer targeted reads over full-file reads.** For large files (500+ lines), read the first 50 lines to understand structure, then read specific sections as needed.
+- **Generate agents incrementally.** Write each agent file as soon as you have enough context for it, rather than holding all discoveries in memory and writing everything at the end.
+
+## Knowledge Transfer
+
+**Before starting work:**
+1. Ask the orchestrator for the bead ID you're working on
+2. Run `bd show <id>` to read notes on the task and parent epic
+3. Check for prior agent-generation runs -- look for existing `.claude/agents/` files and `.claude/AGENTS.md` to avoid overwriting intentional customizations
+
+**After completing work:**
+Report back to the orchestrator:
+- Which agents were generated and why (with confidence level for each)
+- Architectural patterns discovered that downstream agents should know about
+- Any project areas that were unclear and need human clarification
+- Hooks that were added and what they automate
+
+**Update downstream beads** if your work changes what blocked tasks need to know:
+```bash
+bd show <your-bead-id>  # Look at "BLOCKS" section
+bd update <downstream-id> --notes="[Discovered during <your-id>: specific fact]"
+```
+
 ## Beads Workflow Commands
 
 Always use beads if available:
