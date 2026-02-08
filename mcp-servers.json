@@ -11,7 +11,7 @@
   },
   "context7": {
     "command": "npx",
-    "args": ["-y", "@upstash/context7-mcp@latest"],
+    "args": ["-y", "@upstash/context7-mcp@2.1.1"],
     "description": "Up-to-date library documentation lookup"
   },
   "memory": {

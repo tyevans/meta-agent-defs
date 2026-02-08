@@ -52,12 +52,15 @@ meta-agent-defs/
 │   ├── consolidate/SKILL.md     # Backlog review (context: fork)
 │   ├── session-health/SKILL.md  # Session diagnostic (inline, auto-discoverable)
 │   ├── handoff/SKILL.md         # Session transition (inline)
-│   └── review/SKILL.md          # Code review (context: fork)
+│   ├── review/SKILL.md          # Code review (context: fork)
+│   └── retro/SKILL.md           # Session retrospective (inline)
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
 ├── mcp-servers.json            # MCP server definitions (installed globally)
 ├── install.sh                  # Symlink installer (idempotent)
 ├── .claude/                    # Project-local Claude Code config (NOT symlinked globally)
 │   ├── settings.json           # Project-specific hooks + permissions
+│   ├── AGENTS.md               # Agent catalog for project-local agents
+│   ├── agents/                 # 8 project-local agents (authoring, research, maintenance)
 │   ├── rules/                  # Architectural guardrails
 │   └── commands/               # Project-local slash commands
 └── .beads/                     # Task management state
@@ -73,8 +76,9 @@ meta-agent-defs/
 
 ## Key Patterns
 
-- All artifact files are Markdown with YAML frontmatter (agents) or plain Markdown (commands)
+- All artifact files are Markdown with YAML frontmatter (agents, skills) or plain Markdown (commands)
 - Agent frontmatter fields: `name`, `description`, `tools`, `model`, `permissionMode`
+- Skill frontmatter fields: `name`, `description`, `allowed-tools`, `context`, `disable-model-invocation`
 - Hooks fail gracefully with `|| true` for optional tools (like `bd`)
 - Epic depends on children: `bd dep add <epic> <child>`, never the reverse
 - Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE

@@ -21,7 +21,8 @@ These agents write definitions. They are informed by research — they don't jus
 | Agent | Purpose | Model | Invoke When |
 |-------|---------|-------|-------------|
 | agent-author | Write agent definitions as prompt engineering, not template filling | opus | Creating a new agent or substantively revising an existing one |
-| command-author | Write command definitions with focus on workflow resilience | sonnet | Creating a new command or revising an underperforming workflow |
+| skill-author | Write skill definitions (the modern replacement for commands) | sonnet | Creating a new skill, migrating a command to a skill, or revising an existing skill |
+| command-author | Write command definitions with focus on workflow resilience | sonnet | Maintaining existing commands (prefer skill-author for new workflows) |
 
 ## Maintenance Agents
 
@@ -41,6 +42,7 @@ Mechanical tasks that don't need research orientation — just correctness.
 | definition-tester | Y | N | N | N | Y |
 | effectiveness-auditor | Y | N | N | git log, git diff | Y |
 | agent-author | Y | Y | Y | N | Y |
+| skill-author | Y | Y | N | N | Y |
 | command-author | Y | Y | N | N | Y |
 | sync-auditor | Y | N | N | ls | Y |
 | settings-editor | Y | Y | N | N | Y |
@@ -55,11 +57,16 @@ Mechanical tasks that don't need research orientation — just correctness.
 4. **effectiveness-auditor** — Evaluate whether the definition produces good outcomes (can run after the agent has been used a few times)
 5. **sync-auditor** — Verify docs are updated
 
-### New Command Definition
+### New Skill Definition
 1. **pattern-researcher** — If this is a novel workflow type, research effective patterns
-2. **command-author** — Write the command
+2. **skill-author** — Write the skill definition
 3. **definition-tester** — Stress-test the workflow against scenarios
 4. **sync-auditor** — Verify docs are updated
+
+### Maintaining Legacy Commands
+1. **command-author** — Update the existing command
+2. **definition-tester** — Test revised workflow
+3. **sync-auditor** — Verify docs are updated
 
 ### Periodic Quality Audit
 1. **effectiveness-auditor** — Evaluate all definitions for actual effectiveness (not just compliance)

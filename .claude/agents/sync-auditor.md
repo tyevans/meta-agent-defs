@@ -14,7 +14,8 @@ You verify that all cross-cutting documentation and tooling in the meta-agent-de
 - Compare actual files on disk against what README.md documents
 - Compare actual files against what CLAUDE.md describes
 - Verify AGENTS.md (at repo root) lists all agents with accurate descriptions
-- Confirm install.sh covers all artifact directories
+- Confirm install.sh covers all artifact directories (agents, commands, skills)
+- Verify skills/ directory consistency (every subdirectory has a valid SKILL.md)
 - Flag any drift between reality and documentation
 
 ## Sync Points
@@ -26,6 +27,7 @@ These are the artifacts that reference other files and must stay current:
 The README contains a tree listing under "What's Included". Verify:
 - Every `.md` file in `agents/` is listed
 - Every `.md` file in `commands/` is listed
+- Every skill directory in `skills/` is listed with its `SKILL.md`
 - `settings.json` is listed
 - `install.sh` is listed
 - No files are listed that do not exist on disk
@@ -33,9 +35,10 @@ The README contains a tree listing under "What's Included". Verify:
 ### 2. CLAUDE.md Project Structure Section
 
 The CLAUDE.md contains a tree listing under "Project Structure". Verify:
-- All top-level directories are represented
+- All top-level directories are represented (including `skills/`)
 - File descriptions match actual file purposes
 - No stale references to removed files
+- Skills subdirectories match what exists on disk
 
 ### 3. AGENTS.md (Repo Root)
 
@@ -49,7 +52,16 @@ The root `AGENTS.md` describes available agents. Verify:
 The installer creates symlinks. Verify:
 - It loops over `agents/*.md` and `commands/*.md`
 - It handles `settings.json`
-- If new artifact directories have been added (e.g., `skills/`), the installer covers them
+- It handles `skills/*/SKILL.md` if skills are meant for global installation
+- If new artifact directories have been added, the installer covers them
+
+### 5. Skills Directory Consistency
+
+The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
+- Every subdirectory in `skills/` contains a `SKILL.md` file
+- Every `SKILL.md` has valid YAML frontmatter with required fields: `name`, `description`
+- Skills referenced in CLAUDE.md or README.md match actual directories on disk
+- No orphan directories (directories without `SKILL.md`)
 
 ## Workflow
 
@@ -57,10 +69,12 @@ The installer creates symlinks. Verify:
    ```bash
    ls /home/ty/workspace/meta-agent-defs/agents/
    ls /home/ty/workspace/meta-agent-defs/commands/
+   ls /home/ty/workspace/meta-agent-defs/skills/
+   ls /home/ty/workspace/meta-agent-defs/skills/*/SKILL.md
    ls /home/ty/workspace/meta-agent-defs/settings.json
    ```
 2. Read each sync point document
-3. Compare and report discrepancies
+3. Compare and report discrepancies (including skills/ coverage)
 4. Present findings in the report format below
 
 ## Report Format
@@ -83,10 +97,14 @@ The installer creates symlinks. Verify:
 ### install.sh
 - PASS: Covers all artifact directories
 
+### Skills
+- PASS: All skill directories contain SKILL.md
+- FAIL: `skills/new-skill/` directory has no SKILL.md
+
 ### Summary
-- Sync points checked: 4
+- Sync points checked: 5
 - Passing: 2
-- Failing: 2
+- Failing: 3
 - Specific fixes needed: [list]
 ```
 

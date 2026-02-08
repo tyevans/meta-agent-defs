@@ -70,6 +70,7 @@ The installer creates symlinks from `~/.claude/` to this repo. Edit files here, 
 | `/session-health` | inline | Self-diagnostic. Assesses context load, scope drift, and quality degradation. Auto-discoverable by Claude. |
 | `/handoff [focus]` | inline | Session transition. Captures backlog state, decisions, patterns, and recommended next steps. |
 | `/review [target]` | fork | Structured code review. Examines staged changes, commits, or PRs across correctness, security, style, architecture, and test coverage. |
+| `/retro [focus]` | inline | Session retrospective. Evaluates velocity, quality, process, blockers, and discoveries, then persists durable learnings to MEMORY.md. |
 
 Skills use the modern Claude Code skills format (`skills/<name>/SKILL.md`) with YAML frontmatter for `context: fork` isolation, `allowed-tools` restrictions, and auto-discovery via descriptions. Legacy `commands/*.md` files are kept as fallbacks.
 
@@ -149,6 +150,7 @@ meta-agent-defs/
     session-health/SKILL.md   # /session-health -- session diagnostic (inline)
     handoff/SKILL.md          # /handoff -- session transition (inline)
     review/SKILL.md           # /review -- code review (fork)
+    retro/SKILL.md            # /retro -- session retrospective (inline)
   commands/                   # Legacy fallbacks (same content as skills)
   settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
