@@ -11,7 +11,7 @@ Seed epic
   -> spawn discovery spikes (expand)
     -> each spike produces firm tasks + deeper spikes
       -> repeat until all areas explored
-        -> consolidate (merge, dedup, verify slices)
+        -> consolidate via /consolidate
           -> verify (DAG check, priorities, criteria)
             -> report final backlog
 ```
@@ -162,41 +162,21 @@ If new spikes were created, loop back and execute them. Continue until no new sp
 
 ## Phase 3: Consolidate
 
-After all spikes are complete and all firm tasks created, consolidate before wiring dependencies.
+After all spikes are complete and all firm tasks created, run the consolidation workflow to clean up the backlog before wiring dependencies.
 
-### 3a. Dedup Scan
+### 3a. Run /consolidate
 
-List all firm task titles. Look for:
-- Tasks with overlapping scope (touching same files/modules)
-- Tasks that are really two sides of the same change
-- Merge overlapping tasks into one, updating the description to cover both aspects
+Instruct the user to run:
 
-### 3b. Vertical Slice Audit
+```
+/consolidate [epic title or area]
+```
 
-For every domain-layer task, verify companion tasks exist for the full vertical slice:
+This handles dedup, vertical slice audit, stale detection, and dependency cleanup — see `commands/consolidate.md` for details. Do not duplicate that logic here.
 
-| If you have... | Verify these exist too |
-|----------------|----------------------|
-| New aggregate/events | Repository ABC, repo implementation, app service, interface, event subscriptions |
-| New repository | Bootstrap wiring, app service that uses it |
-| New app service | At least one interface (CLI/API) that calls it |
-| New events | Apply methods, at least one consumer (projection/subscription) |
-| New CLI/API | Underlying service exists |
+### 3b. Agent Assignment Hints
 
-If companion tasks are missing, create them now and wire to the epic.
-
-### 3c. Orphan Detection
-
-Tasks with no dependency relationships to other tasks may indicate:
-- Standalone work (fine -- just verify it's correctly scoped)
-- Incomplete analysis (the spike missed related work)
-- Misscoped task (too broad or too narrow)
-
-Flag orphans and decide: wire them, split them, or confirm they're truly standalone.
-
-### 3d. Agent Assignment Hints
-
-Tag each firm task with the recommended agent type:
+After consolidation, tag each firm task with the recommended agent type:
 
 ```bash
 bd update <task-id> --notes="Recommended agent: domain-architect | infrastructure-implementer | api-developer | cli-developer | test-generator | refactorer | general-purpose"
@@ -216,10 +196,10 @@ bd dep add <task-B-id> <task-A-id>
 ```
 
 Look for:
-- Domain changes that must precede infrastructure changes
+- Core/model changes that must precede integration or infrastructure changes
 - Interface definitions that must precede implementations
-- Repository ABCs before repository implementations
-- App services before CLI/API commands
+- Data access layers before the services that consume them
+- Backend logic before the UI or API surfaces that expose it
 - Tasks that modify the same files (sequence them)
 
 ### Priority Review
@@ -273,9 +253,7 @@ Present the final blossom report to the user:
 - **Clean areas:** [areas confirmed as needing no work]
 
 ### Consolidation Results
-- **Tasks merged:** N (from M original)
-- **Vertical slice gaps filled:** N new tasks added
-- **Orphans resolved:** N
+*(Include results from `/consolidate` run — see its report for dedup, gap-fill, and stale task counts)*
 
 ### Backlog
 
@@ -334,7 +312,7 @@ git commit -m "chore: blossom backlog for [goal description]"
 
 1. **Explore, don't implement.** Spikes discover work; they never do it.
 2. **Verify, don't speculate.** Read the actual code. CONFIRMED findings over hedged guesses.
-3. **Consolidate before reporting.** Dedup, fill slice gaps, resolve orphans.
+3. **Consolidate before reporting.** Run `/consolidate` to dedup, fill slice gaps, and resolve orphans.
 4. **Epic depends on children.** Always `bd dep add <epic> <child>`, never the reverse.
 5. **Batched dispatching.** Up to 4 concurrent spike agents. Process results as they arrive.
 6. **Structured reports.** Spike agents must follow the exact report format for consistent processing.

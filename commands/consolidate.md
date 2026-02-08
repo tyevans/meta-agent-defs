@@ -88,19 +88,32 @@ Track: how many tasks closed, how many merged, how many clusters remain.
 
 ## Phase 3: Vertical Slice Audit
 
-### 3a. Check Each Domain Task
+### 3a. Discover the Project's Architecture
 
-For every task that touches the domain layer, verify companion tasks exist for:
+Before auditing slices, identify the project's actual architectural layers. Read the project structure, CLAUDE.md, and top-level directories to determine the pattern in use. Common patterns:
 
-| Layer | Example Task |
-|-------|-------------|
-| Domain | "Add aggregate method X" |
-| Infrastructure | "Implement repository for X" / "Add projection for X" |
-| Application | "Wire X into application service" |
-| Interface | "Add CLI command for X" / "Add API endpoint for X" |
-| Test | "Test X at unit/integration level" |
+| Architecture | Typical Layers |
+|-------------|---------------|
+| DDD / Hexagonal | Domain, Infrastructure, Application, Interface |
+| MVC | Model, View, Controller, Service |
+| Component-based | Feature modules (auth, billing, etc.) with internal structure |
+| Flat / scripts | Modules, utilities, entry points |
+| Frontend | Components, State/Store, API layer, Routing |
 
-### 3b. Fill Gaps
+Record the discovered layers before proceeding. If the architecture is unclear, list the top-level directories and use those as the layer categories.
+
+### 3b. Check Each Task for Slice Completeness
+
+For every task that touches a core/inner layer, verify companion tasks exist across the relevant architectural boundaries. The specific companions depend on the architecture discovered in 3a:
+
+- **New core logic** → Does a data access / persistence task exist?
+- **New data access** → Does a wiring / bootstrapping task exist?
+- **New service / use case** → Does at least one exposure point (CLI, API, UI) exist?
+- **New events / messages** → Does at least one consumer task exist?
+- **New exposure point** → Does the underlying logic task exist?
+- **Any new feature** → Does a test task exist?
+
+### 3c. Fill Gaps
 
 For each missing companion:
 
@@ -109,17 +122,18 @@ bd create --title="[layer]: [companion task description]" --type=task --priority
 bd dep add <epic-or-parent> <new-task-id>
 ```
 
-### 3c. Wire Dependencies
+### 3d. Wire Dependencies
 
-Ensure the natural flow:
-- Domain tasks block infrastructure tasks
-- Infrastructure tasks block application tasks
-- Application tasks block interface tasks
+Ensure the natural flow follows the project's dependency direction (inner layers before outer layers). General pattern:
+
+- Core/model tasks block data-access/infrastructure tasks
+- Data-access tasks block service/application tasks
+- Service tasks block interface/exposure tasks
 - Test tasks can run in parallel with their layer
 
 ```bash
-# Example: infra depends on domain
-bd dep add <infra-task> <domain-task>
+# Example: outer layer depends on inner layer
+bd dep add <outer-task> <inner-task>
 ```
 
 ---
