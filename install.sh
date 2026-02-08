@@ -72,6 +72,34 @@ echo ""
 mkdir -p "$CLAUDE_DIR/agents"
 mkdir -p "$CLAUDE_DIR/commands"
 
+# --- Stale symlink cleanup ---
+info "Checking for stale symlinks..."
+STALE_COUNT=0
+for dir in "$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands"; do
+    [ -d "$dir" ] || continue
+    for link in "$dir"/*; do
+        [ -L "$link" ] || continue
+        target="$(readlink "$link")"
+        # Only consider symlinks pointing into this repo
+        case "$target" in
+            "$SCRIPT_DIR"/*) ;;
+            *) continue ;;
+        esac
+        if [ ! -e "$target" ]; then
+            rm "$link"
+            warn "Removed stale symlink: $link -> $target"
+            STALE_COUNT=$((STALE_COUNT + 1))
+        fi
+    done
+done
+if [ "$STALE_COUNT" -gt 0 ]; then
+    log "Cleaned up $STALE_COUNT stale symlink(s)"
+else
+    log "No stale symlinks found"
+fi
+
+echo ""
+
 # --- Agents ---
 info "Installing agents..."
 for agent in "$SCRIPT_DIR"/agents/*.md; do
