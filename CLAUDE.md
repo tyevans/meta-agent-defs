@@ -1,0 +1,83 @@
+# CLAUDE.md
+
+Portable Claude Code workflow definitions (agents, commands, hooks, settings) maintained in a single git repo and installed to `~/.claude/` via symlinks.
+
+## Operating Mode: Orchestrator
+
+**The primary Claude Code session operates as an orchestrator only.** Do not directly implement tasks -- dispatch work to specialized subagents and manage the beads backlog.
+
+### Orchestrator Responsibilities
+
+1. **Backlog Management**: Use `bd` commands to triage, prioritize, and track issues
+2. **Task Dispatch**: Delegate implementation work to appropriate subagents via the Task tool
+3. **Coordination**: Manage dependencies between tasks, unblock work, review agent outputs
+4. **Session Management**: Run `bd sync --flush-only` before completing sessions
+
+### Dispatching Strategy
+
+**Default: serialize.** Dispatch one task at a time, review output, then dispatch next. This avoids API throttling and lets each task benefit from the last one's findings.
+
+**When teams are enabled: parallelize.** Use agent teams for independent tasks (e.g., blossom spikes, parallel audits). Teams run in separate contexts so throttling and context bloat don't apply.
+
+---
+
+## Quick Reference
+
+```bash
+# Install symlinks to ~/.claude/
+./install.sh
+
+# Uninstall (run from this repo directory)
+find ~/.claude -type l -lname "$(pwd)/*" -delete
+
+# Beads
+bd stats                        # Backlog overview
+bd ready                        # Available work
+bd create --title="..." --type=task
+bd sync --flush-only            # Save state before session end
+```
+
+## Project Structure
+
+```
+meta-agent-defs/
+├── agents/
+│   ├── agent-generator.md      # Generates project-specific agents
+│   ├── project-bootstrapper.md # Bootstraps projects with full Claude Code setup
+│   └── code-reviewer.md        # Read-only code review agent
+├── commands/
+│   ├── blossom.md              # /blossom - spike-driven exploration
+│   ├── consolidate.md          # /consolidate - backlog review
+│   ├── session-health.md       # /session-health - session diagnostic
+│   ├── handoff.md              # /handoff - structured session transition
+│   └── review.md               # /review - structured code review
+├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
+├── mcp-servers.json            # MCP server definitions (installed globally)
+├── install.sh                  # Symlink installer (idempotent)
+├── .claude/                    # Project-local Claude Code config (NOT symlinked globally)
+│   ├── settings.json           # Project-specific hooks + permissions
+│   ├── rules/                  # Architectural guardrails
+│   └── commands/               # Project-local slash commands
+└── .beads/                     # Task management state
+```
+
+## Architecture
+
+- **No source code, no build system, no tests.** This is a content-only repo of Markdown definitions and JSON config.
+- `settings.json` at repo root is the **global** settings file symlinked to `~/.claude/settings.json`. It contains hooks (SessionStart, PreCompact, PreToolUse, PostToolUse) and env vars that apply to ALL projects.
+- `.claude/settings.json` is the **project-local** settings file for working on this repo itself.
+- `install.sh` is idempotent. It backs up existing regular files before symlinking.
+- `mcp-servers.json` defines MCP servers installed globally via `claude mcp add --scope user`. Config lives in `~/.claude.json` (not symlinked).
+
+## Key Patterns
+
+- All artifact files are Markdown with YAML frontmatter (agents) or plain Markdown (commands)
+- Agent frontmatter fields: `name`, `description`, `tools`, `model`, `permissionMode`
+- Hooks fail gracefully with `|| true` for optional tools (like `bd`)
+- Epic depends on children: `bd dep add <epic> <child>`, never the reverse
+- Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE
+
+## Do Not Modify
+
+- `.beads/` internals (use `bd` commands only)
+- Symlink targets while symlinks are active (edit source files in this repo instead)
