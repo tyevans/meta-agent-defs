@@ -1,0 +1,22 @@
+{
+  "playwright": {
+    "command": "npx",
+    "args": ["-y", "@executeautomation/playwright-mcp-server"],
+    "description": "Browser automation for testing and scraping"
+  },
+  "sequential-thinking": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+    "description": "Structured multi-step reasoning for complex problems"
+  },
+  "context7": {
+    "command": "npx",
+    "args": ["-y", "@upstash/context7-mcp@latest"],
+    "description": "Up-to-date library documentation lookup"
+  },
+  "memory": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-memory"],
+    "description": "Persistent knowledge graph across sessions"
+  }
+}
