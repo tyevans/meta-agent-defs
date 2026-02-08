@@ -136,7 +136,58 @@ done
 echo ""
 
 # =============================================================================
-# 4. MCP config validation
+# 4. Skills validation
+# =============================================================================
+info "Checking skills..."
+
+for skill_dir in "$SCRIPT_DIR"/skills/*/; do
+    [ -d "$skill_dir" ] || continue
+    name="$(basename "$skill_dir")"
+    skill_file="$skill_dir/SKILL.md"
+
+    if [ ! -f "$skill_file" ]; then
+        check_fail "skills/$name: missing SKILL.md"
+        continue
+    fi
+
+    # Check non-empty
+    if [ ! -s "$skill_file" ]; then
+        check_fail "skills/$name: SKILL.md is empty"
+        continue
+    fi
+
+    # Check YAML frontmatter exists
+    if ! head -1 "$skill_file" | grep -q '^---$'; then
+        check_fail "skills/$name: missing YAML frontmatter"
+        continue
+    fi
+
+    # Extract frontmatter
+    FRONTMATTER=$(sed -n '2,/^---$/p' "$skill_file" | sed '$d')
+
+    if [ -z "$FRONTMATTER" ]; then
+        check_fail "skills/$name: empty YAML frontmatter"
+        continue
+    fi
+
+    # Check required frontmatter fields for skills
+    SK_OK=true
+    for field in name description; do
+        if ! echo "$FRONTMATTER" | grep -qE "^${field}:"; then
+            check_fail "skills/$name: frontmatter missing required field '$field'"
+            SK_OK=false
+        fi
+    done
+
+    if [ "$SK_OK" = true ]; then
+        check_pass "skills/$name: valid skill with frontmatter"
+    fi
+done
+
+echo ""
+
+# =============================================================================
+# 5. MCP config validation
 # =============================================================================
 info "Checking mcp-servers.json..."
 

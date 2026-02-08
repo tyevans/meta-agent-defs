@@ -71,11 +71,12 @@ echo ""
 # Ensure ~/.claude/ exists
 mkdir -p "$CLAUDE_DIR/agents"
 mkdir -p "$CLAUDE_DIR/commands"
+mkdir -p "$CLAUDE_DIR/skills"
 
 # --- Stale symlink cleanup ---
 info "Checking for stale symlinks..."
 STALE_COUNT=0
-for dir in "$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands"; do
+for dir in "$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands" "$CLAUDE_DIR/skills"; do
     [ -d "$dir" ] || continue
     for link in "$dir"/*; do
         [ -L "$link" ] || continue
@@ -114,6 +115,14 @@ for cmd in "$SCRIPT_DIR"/commands/*.md; do
     [ -f "$cmd" ] || continue
     name="$(basename "$cmd")"
     link_file "$cmd" "$CLAUDE_DIR/commands/$name"
+done
+
+# --- Skills ---
+info "Installing skills..."
+for skill_dir in "$SCRIPT_DIR"/skills/*/; do
+    [ -d "$skill_dir" ] || continue
+    name="$(basename "$skill_dir")"
+    link_file "$skill_dir" "$CLAUDE_DIR/skills/$name"
 done
 
 # --- Settings ---
@@ -157,6 +166,7 @@ echo ""
 info "What was installed:"
 echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
 echo "  Commands: $(ls -1 "$SCRIPT_DIR"/commands/*.md 2>/dev/null | wc -l) slash commands"
+echo "  Skills:   $(ls -d "$SCRIPT_DIR"/skills/*/ 2>/dev/null | wc -l) skills"
 echo "  Settings: settings.json (hooks + env)"
 if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
     echo "  MCP:      $(python3 -c "import json; print(len(json.load(open('$MCP_CONFIG'))))" 2>/dev/null || echo '?') server(s)"
@@ -165,6 +175,7 @@ echo ""
 info "To verify:"
 echo "  ls -la ~/.claude/agents/"
 echo "  ls -la ~/.claude/commands/"
+echo "  ls -la ~/.claude/skills/"
 echo "  ls -la ~/.claude/settings.json"
 echo ""
 info "To uninstall, remove the symlinks:"
