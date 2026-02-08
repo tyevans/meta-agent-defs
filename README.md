@@ -61,15 +61,17 @@ claude mcp remove memory --scope user
 
 The installer creates symlinks from `~/.claude/` to this repo. Edit files here, and changes are live immediately.
 
-### Slash Commands
+### Skills (Slash Commands)
 
-| Command | What It Does |
-|---------|-------------|
-| `/blossom <goal>` | Spike-driven exploration. Takes a vague goal and recursively investigates the codebase, producing a prioritized backlog of verified tasks with confidence levels, dependency wiring, and execution order. |
-| `/consolidate [area]` | Backlog hygiene. Deduplicates, fills vertical-slice gaps, detects stale tasks, cleans up dependencies, and reports before/after health. |
-| `/session-health` | Self-diagnostic. Assesses context load, scope drift, and quality degradation, then recommends whether to continue, compact, or start fresh. |
-| `/handoff [focus]` | Session transition. Captures backlog state, decisions, patterns, loose ends, and recommended next steps so a future session can pick up without lost context. |
-| `/review [target]` | Structured code review. Examines staged changes, commits, or PRs across correctness, security, style, architecture, and test coverage. Produces severity-rated findings. |
+| Skill | Mode | What It Does |
+|-------|------|-------------|
+| `/blossom <goal>` | fork | Spike-driven exploration. Takes a vague goal and recursively investigates the codebase, producing a prioritized backlog of verified tasks. |
+| `/consolidate [area]` | fork | Backlog hygiene. Deduplicates, fills vertical-slice gaps, detects stale tasks, cleans up dependencies. |
+| `/session-health` | inline | Self-diagnostic. Assesses context load, scope drift, and quality degradation. Auto-discoverable by Claude. |
+| `/handoff [focus]` | inline | Session transition. Captures backlog state, decisions, patterns, and recommended next steps. |
+| `/review [target]` | fork | Structured code review. Examines staged changes, commits, or PRs across correctness, security, style, architecture, and test coverage. |
+
+Skills use the modern Claude Code skills format (`skills/<name>/SKILL.md`) with YAML frontmatter for `context: fork` isolation, `allowed-tools` restrictions, and auto-discovery via descriptions. Legacy `commands/*.md` files are kept as fallbacks.
 
 ### Agents
 
@@ -124,12 +126,13 @@ meta-agent-defs/
     agent-generator.md        # Generates project-specific agents from codebase analysis
     project-bootstrapper.md   # 10-phase project setup for Claude Code + Beads
     code-reviewer.md          # Read-only code review across 4 quality dimensions
-  commands/
-    blossom.md                # /blossom -- recursive spike-driven exploration
-    consolidate.md            # /consolidate -- backlog review and tightening
-    session-health.md         # /session-health -- session quality diagnostic
-    handoff.md                # /handoff -- structured session transition
-    review.md                 # /review -- structured code review workflow
+  skills/
+    blossom/SKILL.md          # /blossom -- spike-driven exploration (fork)
+    consolidate/SKILL.md      # /consolidate -- backlog review (fork)
+    session-health/SKILL.md   # /session-health -- session diagnostic (inline)
+    handoff/SKILL.md          # /handoff -- session transition (inline)
+    review/SKILL.md           # /review -- code review (fork)
+  commands/                   # Legacy fallbacks (same content as skills)
   settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
   install.sh                  # Symlink installer (idempotent, non-destructive)

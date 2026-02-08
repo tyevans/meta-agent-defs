@@ -45,12 +45,14 @@ meta-agent-defs/
 │   ├── agent-generator.md      # Generates project-specific agents
 │   ├── project-bootstrapper.md # Bootstraps projects with full Claude Code setup
 │   └── code-reviewer.md        # Read-only code review agent
-├── commands/
-│   ├── blossom.md              # /blossom - spike-driven exploration
-│   ├── consolidate.md          # /consolidate - backlog review
-│   ├── session-health.md       # /session-health - session diagnostic
-│   ├── handoff.md              # /handoff - structured session transition
-│   └── review.md               # /review - structured code review
+├── commands/                    # Legacy command format (kept as fallbacks)
+│   ├── blossom.md, consolidate.md, session-health.md, handoff.md, review.md
+├── skills/                      # Modern skill format (preferred, symlinked to ~/.claude/skills/)
+│   ├── blossom/SKILL.md         # Spike-driven exploration (context: fork)
+│   ├── consolidate/SKILL.md     # Backlog review (context: fork)
+│   ├── session-health/SKILL.md  # Session diagnostic (inline, auto-discoverable)
+│   ├── handoff/SKILL.md         # Session transition (inline)
+│   └── review/SKILL.md          # Code review (context: fork)
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
 ├── mcp-servers.json            # MCP server definitions (installed globally)
 ├── install.sh                  # Symlink installer (idempotent)
