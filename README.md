@@ -93,8 +93,9 @@ The global `settings.json` wires up hooks that run across all projects:
 | **PreToolUse** (Bash) | Before `git push` | Warns if beads changes are uncommitted |
 | **PreToolUse** (Bash) | Before destructive commands | Warns on `git reset --hard`, `git checkout .`, `git clean -f`, `rm -rf`, direct `.beads/` edits |
 | **PostToolUse** (Task) | After any subagent completes | Review gate reminder: verify the deliverable before moving on |
+| **SessionEnd** | Session closes | Auto-syncs beads state (`bd sync --flush-only`) so nothing is lost |
 
-Also enables `alwaysThinkingEnabled`, the experimental agent teams feature, and OpenTelemetry env vars (disabled by default -- see [OpenTelemetry](#opentelemetry) below).
+Also enables the experimental agent teams feature, MCP tool search (`auto:5` defers tool loading until referenced), and OpenTelemetry telemetry (see [OpenTelemetry](#opentelemetry) below).
 
 ### MCP Servers
 
@@ -111,13 +112,14 @@ MCP servers are defined in `mcp-servers.json`. Add or remove entries there and r
 
 ### OpenTelemetry
 
-Claude Code exports metrics (token usage, cost, session counts, lines changed) and events (tool calls, API requests, prompts) via OpenTelemetry. The global `settings.json` includes OTel env vars pre-configured for a local OTLP collector, but **disabled by default**.
+Claude Code exports metrics (token usage, cost, session counts, lines changed) and events (tool calls, API requests, prompts) via OpenTelemetry. Telemetry is **enabled by default** in `settings.json` and sends to a local OTLP collector on `localhost:4317`.
 
-To enable tracing:
+To set up a collector:
 
-1. Set `CLAUDE_CODE_ENABLE_TELEMETRY=1` in your environment or flip it in `settings.json`
-2. Run a local OTel collector on `localhost:4317` (the pre-configured endpoint)
-3. For a turnkey stack with Grafana dashboards, see [claude-code-otel](https://github.com/ColeMurray/claude-code-otel) (`docker compose up`)
+1. Run any OTLP-compatible collector on `localhost:4317` (the pre-configured endpoint)
+2. For a turnkey stack with Grafana dashboards, see [claude-code-otel](https://github.com/ColeMurray/claude-code-otel) (`docker compose up`)
+
+To disable telemetry, set `CLAUDE_CODE_ENABLE_TELEMETRY=0` in `settings.json`.
 
 Optional privacy controls (set in your environment, not in settings.json):
 

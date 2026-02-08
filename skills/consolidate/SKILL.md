@@ -7,6 +7,8 @@ allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 context: fork
 ---
 
+!`bd list --status=open 2>/dev/null`
+
 # Consolidate: Backlog Review and Tightening
 
 You are running the **Consolidate** workflow — a structured pass over the current beads backlog to eliminate sprawl, fill gaps, and sharpen priorities. Target area (optional): **$ARGUMENTS**

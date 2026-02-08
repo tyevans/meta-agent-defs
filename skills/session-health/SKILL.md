@@ -6,6 +6,9 @@ user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 ---
 
+!`bd stats 2>/dev/null`
+!`git log --oneline -5`
+
 # Session Health Check
 
 You are running a **session health check** — a quick diagnostic of the current conversation to determine if you should continue, compact, or start fresh. Context: **$ARGUMENTS**

@@ -7,6 +7,9 @@ user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 ---
 
+!`bd list --status=in_progress 2>/dev/null`
+!`git log --oneline -10`
+
 # Handoff: Structured Session Transition
 
 You are running a **session handoff** -- capturing the orchestrator's mental model so a future session can pick up where this one left off. Focus area (optional): **$ARGUMENTS**
