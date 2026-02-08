@@ -10,7 +10,9 @@ meta-agent-defs/
 │   ├── agent-generator.md      # Generates project-specific agents from codebase analysis
 │   └── project-bootstrapper.md # Bootstraps new projects with full Claude Code setup
 ├── commands/
-│   └── blossom.md              # Spike-driven exploration workflow (/blossom)
+│   ├── blossom.md              # Spike-driven exploration workflow (/blossom)
+│   ├── consolidate.md          # Backlog review and tightening (/consolidate)
+│   └── session-health.md       # Session quality diagnostic (/session-health)
 ├── settings.json               # Global hooks + env (SessionStart, PreCompact, guards)
 ├── install.sh                  # Symlink installer
 └── README.md
@@ -42,6 +44,8 @@ The installer creates symlinks from `~/.claude/` into this repo:
 ~/.claude/agents/agent-generator.md      -> meta-agent-defs/agents/agent-generator.md
 ~/.claude/agents/project-bootstrapper.md -> meta-agent-defs/agents/project-bootstrapper.md
 ~/.claude/commands/blossom.md            -> meta-agent-defs/commands/blossom.md
+~/.claude/commands/consolidate.md        -> meta-agent-defs/commands/consolidate.md
+~/.claude/commands/session-health.md     -> meta-agent-defs/commands/session-health.md
 ~/.claude/settings.json                  -> meta-agent-defs/settings.json
 ```
 
@@ -56,7 +60,9 @@ Edit files in this repo, and changes are live immediately via the symlinks.
 
 ### Commands
 
-- **Blossom V2**: 6-phase spike-driven exploration (Seed -> Spikes -> Consolidate -> Prioritize -> Verify -> Report). Confidence levels (CONFIRMED/LIKELY/POSSIBLE), vertical slice audits, critical path identification.
+- **Blossom V2** (`/blossom`): 6-phase spike-driven exploration (Seed -> Spikes -> Consolidate -> Prioritize -> Verify -> Report). Confidence levels (CONFIRMED/LIKELY/POSSIBLE), vertical slice audits, critical path identification.
+- **Consolidate** (`/consolidate`): 6-phase backlog review — survey, dedup, vertical slice audit, stale detection, dependency cleanup, report. Use after blossom runs or when the backlog feels unwieldy.
+- **Session Health** (`/session-health`): Self-diagnostic for context load, scope drift, and quality degradation. Recommends: continue, compact, checkpoint, fresh session, or subagent breakout.
 
 ### Hooks (via settings.json)
 
