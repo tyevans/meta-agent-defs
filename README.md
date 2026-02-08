@@ -93,7 +93,7 @@ The global `settings.json` wires up hooks that run across all projects:
 | **PreToolUse** (Bash) | Before destructive commands | Warns on `git reset --hard`, `git checkout .`, `git clean -f`, `rm -rf`, direct `.beads/` edits |
 | **PostToolUse** (Task) | After any subagent completes | Review gate reminder: verify the deliverable before moving on |
 
-Also enables `alwaysThinkingEnabled` and the experimental agent teams feature.
+Also enables `alwaysThinkingEnabled`, the experimental agent teams feature, and OpenTelemetry env vars (disabled by default -- see [OpenTelemetry](#opentelemetry) below).
 
 ### MCP Servers
 
@@ -107,6 +107,23 @@ The installer registers these Model Context Protocol servers globally (requires 
 | `memory` | Persistent knowledge graph across sessions |
 
 MCP servers are defined in `mcp-servers.json`. Add or remove entries there and rerun `./install.sh`.
+
+### OpenTelemetry
+
+Claude Code exports metrics (token usage, cost, session counts, lines changed) and events (tool calls, API requests, prompts) via OpenTelemetry. The global `settings.json` includes OTel env vars pre-configured for a local OTLP collector, but **disabled by default**.
+
+To enable tracing:
+
+1. Set `CLAUDE_CODE_ENABLE_TELEMETRY=1` in your environment or flip it in `settings.json`
+2. Run a local OTel collector on `localhost:4317` (the pre-configured endpoint)
+3. For a turnkey stack with Grafana dashboards, see [claude-code-otel](https://github.com/ColeMurray/claude-code-otel) (`docker compose up`)
+
+Optional privacy controls (set in your environment, not in settings.json):
+
+- `OTEL_LOG_USER_PROMPTS=1` -- include prompt content in events (redacted by default)
+- `OTEL_LOG_TOOL_DETAILS=1` -- include MCP server/tool and skill names in events
+
+For cloud backends (Honeycomb, Datadog, Grafana Cloud), override `OTEL_EXPORTER_OTLP_ENDPOINT` and add `OTEL_EXPORTER_OTLP_HEADERS` with your auth token.
 
 ## The Design Thinking
 
