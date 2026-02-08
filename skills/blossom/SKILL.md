@@ -3,7 +3,7 @@ name: blossom
 description: "Run spike-driven exploration to discover and plan work for an unknown or loosely-defined goal. Use when you need to explore a codebase area, create an epic with prioritized tasks, or convert a vague objective into a structured backlog. Keywords: explore, discover, spike, plan, epic, backlog, investigate."
 argument-hint: "<goal or area to explore>"
 disable-model-invocation: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage
 context: fork
 ---
 
@@ -13,16 +13,15 @@ You are running the **Blossom** workflow -- a recursive spike-driven exploration
 
 ## Overview
 
-Blossom works in 6 phases:
+Blossom works in 6 phases. Spike dispatch uses agent teams for large explorations (6+ spikes) or background Task agents for small ones (5 or fewer).
 
 ```
-Seed epic
-  -> spawn discovery spikes (expand)
-    -> each spike produces firm tasks + deeper spikes
-      -> repeat until all areas explored
-        -> consolidate via /consolidate
-          -> verify (DAG check, priorities, criteria)
-            -> report final backlog
+Seed epic (identify spike areas, count determines dispatch mode)
+  -> [SMALL: background agents] or [LARGE: spawn team blossom-<id>]
+    -> spike teammates investigate areas, report via SendMessage
+      -> orchestrator reviews reports, creates beads, reuses idle teammates
+        -> consolidator teammate runs /consolidate logic
+          -> shutdown team, verify DAG, report final backlog
 ```
 
 ---
@@ -50,6 +49,10 @@ Based on the goal, identify 3-6 areas that need investigation. Each spike should
 - "Inventory sandbox execution pipeline gaps"
 - "Survey frontend components for accessibility issues"
 
+**Count the spike areas.** This determines the dispatch mode:
+- **5 or fewer** initial spikes: use background Task agents (simpler, lower overhead)
+- **6 or more** initial spikes: use agent teams (parallel coordination, teammate reuse)
+
 ### 1d. Create Spike Beads
 
 For each spike area:
@@ -69,18 +72,98 @@ bd dep add <epic-id> <spike-id>
 
 ---
 
+## Team Lifecycle
+
+This section applies only when the team dispatch mode is selected (6+ spikes). For background agent dispatch (5 or fewer spikes), skip to Phase 2.
+
+### Setup
+
+After Phase 1 completes, create the team. Use the short epic ID for uniqueness:
+
+```
+Team name: blossom-<short-epic-id>
+```
+
+Spawn spike teammates using the Task tool:
+
+```
+Task({
+  team_name: "blossom-<short-epic-id>",
+  name: "spike-1",
+  subagent_type: "Explore",
+  run_in_background: true,
+  prompt: "<spike instructions -- see Phase 2>"
+})
+```
+
+Spawn up to 4 spike teammates initially. Number them sequentially: `spike-1`, `spike-2`, `spike-3`, `spike-4`. Do not use area names as teammate names (they may contain special characters).
+
+### Teammate Reuse
+
+When a spike teammate finishes its investigation and sends its report, the teammate goes idle. Instead of spawning a new teammate for the next spike, **reuse the idle one** by sending it a new investigation prompt via SendMessage:
+
+```
+SendMessage({
+  type: "message",
+  recipient: "spike-1",
+  content: "<new spike instructions>",
+  summary: "New spike assignment: [area]"
+})
+```
+
+Only spawn a new teammate if all existing teammates are busy AND more spikes need dispatch AND total teammate count is under 6.
+
+### Fallback
+
+If team creation fails (teams not enabled, API error, or other failure), fall back to the background Task agent dispatch mode described in Phase 2. Log the failure reason but do not block the workflow.
+
+### Shutdown and Cleanup
+
+After the consolidation teammate completes (Phase 3), shut down all teammates:
+
+1. Send `shutdown_request` to each teammate:
+
+```
+SendMessage({
+  type: "shutdown_request",
+  recipient: "spike-1",
+  content: "All spikes complete, shutting down"
+})
+```
+
+2. Repeat for each active teammate (spike-N and consolidator).
+
+3. If a teammate does not respond to the shutdown request, send it again once. Teammates sometimes go idle before processing the request.
+
+4. Proceed with Phases 4-6 without the team.
+
+---
+
 ## Phase 2: Execute Spikes
 
-### Dispatch Rules
+### Dispatch Mode A: Background Task Agents (5 or fewer spikes)
 
-- Launch spike agents **up to 4 concurrently** using the Task tool with `run_in_background=true`
-- Use the Task tool with `subagent_type="Explore"` for each spike
-- As each spike completes, process its results immediately (create firm tasks + new spikes)
-- When new spikes are created during processing, dispatch them in the next batch
+Launch spike agents using the Task tool with `run_in_background=true` and `subagent_type="Explore"`. Launch up to 4 concurrently. As each completes, process its results immediately (create firm tasks + new spikes). If new spikes are created, dispatch them in the next batch.
 
-### Spike Agent Instructions
+### Dispatch Mode B: Agent Teams (6+ spikes)
 
-Each spike agent receives these instructions:
+After the team is created (see Team Lifecycle), spike teammates are already running. Communication flows through SendMessage:
+
+1. **Initial dispatch**: The first batch of spike teammates (up to 4) receive their instructions at spawn time via the Task tool prompt.
+
+2. **Receiving reports**: Spike teammates send their reports back via SendMessage. Monitor for incoming messages from spike-N teammates.
+
+3. **Processing reports**: When a report arrives, process it immediately (see "After Each Spike Completes" below).
+
+4. **Dispatching more spikes**: After processing a report, check for pending spikes. If spikes remain:
+   - **Prefer reuse**: Send the next spike's instructions to the now-idle teammate via SendMessage.
+   - **Spawn new**: Only if all teammates are busy and total teammate count is under 6.
+
+5. **Tracking**: Maintain a count of total spikes dispatched (including reused teammates). This count tracks against the 20-spike safety limit.
+
+### Spike Instructions
+
+Each spike agent (whether background Task or team teammate) receives these instructions:
 
 > You are executing a discovery spike for the Blossom workflow.
 >
@@ -131,6 +214,10 @@ Each spike agent receives these instructions:
 > - Clean areas: K
 > ```
 
+**For team teammates, add this prefix to the instructions:**
+
+> When your investigation is complete, send your full report via SendMessage to the orchestrator (team lead). Do not create beads or tasks directly -- the orchestrator handles that.
+
 ### After Each Spike Completes
 
 1. **Review the spike report** for quality:
@@ -163,7 +250,7 @@ bd update <spike-id> --notes="Completed. Found N firm tasks (X confirmed, Y like
 
 ### Recursion
 
-If new spikes were created, loop back and execute them. Continue until no new spikes are generated.
+If new spikes were created, dispatch them (via idle teammate reuse or new background agent). Continue until no new spikes are generated.
 
 **Safety limit:** If total spikes executed exceeds 20, stop and report to the user. The goal may be too broad.
 
@@ -171,9 +258,9 @@ If new spikes were created, loop back and execute them. Continue until no new sp
 
 ## Phase 3: Consolidate
 
-After all spikes are complete and all firm tasks created, run the consolidation workflow to clean up the backlog before wiring dependencies.
+After all spikes are complete and all firm tasks created, run consolidation to clean up the backlog before wiring dependencies.
 
-### 3a. Run /consolidate
+### Dispatch Mode A: Background Agents (no team active)
 
 Instruct the user to run:
 
@@ -181,7 +268,48 @@ Instruct the user to run:
 /consolidate [epic title or area]
 ```
 
-This handles dedup, vertical slice audit, stale detection, and dependency cleanup — see `commands/consolidate.md` for details. Do not duplicate that logic here.
+Then proceed to Phase 3b.
+
+### Dispatch Mode B: Agent Teams (team active)
+
+Spawn a consolidator teammate in the existing team:
+
+```
+Task({
+  team_name: "blossom-<short-epic-id>",
+  name: "consolidator",
+  subagent_type: "general-purpose",
+  run_in_background: true,
+  prompt: "<consolidation instructions below>"
+})
+```
+
+**Consolidation instructions for the teammate:**
+
+> You are the consolidation agent for the Blossom workflow. Your job is to review the backlog under epic [epic-id] and tighten it before final dependency wiring.
+>
+> Run these steps in order:
+>
+> **1. Survey:**
+> ```bash
+> bd stats
+> bd list --status=open
+> bd blocked
+> ```
+>
+> **2. Dedup:** Within each cluster of tasks, find exact duplicates, subset tasks, and convergent tasks. Close duplicates with `bd close <id> --reason="Duplicate of <other-id>"`. Merge subsets into their parent with `bd update <parent> --notes="Absorbed <subset>: [details]"`.
+>
+> **3. Vertical slice audit:** Read the project structure to discover its architectural layers. For each task touching an inner layer, verify companion tasks exist across layer boundaries (persistence, wiring, exposure, tests). Create missing companions with `bd create`.
+>
+> **4. Stale detection:** Check for tasks created more than 2 weeks ago with no progress, tasks whose target code has been refactored, or tasks describing work already done (check git log). Close stale tasks with `bd close <id> --reason="Stale: [explanation]"`.
+>
+> **5. Dependency cleanup:** Remove redundant transitive dependencies. Check for cycles. Validate epic structure (epic depends on children, not the reverse).
+>
+> **6. Report:** Send your consolidation report via SendMessage to the orchestrator with these counts: tasks closed (dedup), tasks closed (stale), tasks created (gap fill), dependencies modified.
+>
+> Be conservative with closures -- when in doubt, keep a task open and add a note. Always check the code before declaring something stale.
+
+When the consolidator's report arrives, review it and proceed to Phase 3b.
 
 ### 3b. Agent Assignment Hints
 
@@ -190,6 +318,10 @@ After consolidation, tag each firm task with the recommended agent type:
 ```bash
 bd update <task-id> --notes="Recommended agent: domain-architect | infrastructure-implementer | api-developer | cli-developer | test-generator | refactorer | general-purpose"
 ```
+
+### 3c. Team Shutdown (if team active)
+
+After consolidation completes and agent hints are assigned, shut down all teammates (see Team Lifecycle > Shutdown and Cleanup). The orchestrator proceeds solo for Phases 4-6.
 
 ---
 
@@ -255,14 +387,17 @@ Present the final blossom report to the user:
 - **Title:** [epic title]
 
 ### Exploration Summary
+- **Dispatch mode:** [background agents | team blossom-<id>]
 - **Total spikes executed:** N
 - **Spike depth:** M levels (how many rounds of recursion)
 - **Spike quality:** [brief assessment -- did agents confirm or hedge?]
 - **Areas explored:** [list of top-level spike areas]
 - **Clean areas:** [areas confirmed as needing no work]
+- **Teammates used:** [N spike teammates, 1 consolidator] (team mode only)
+- **Teammates reused:** [N times teammates were reassigned] (team mode only)
 
 ### Consolidation Results
-*(Include results from `/consolidate` run — see its report for dedup, gap-fill, and stale task counts)*
+*(Include results from consolidation -- dedup, gap-fill, stale task, and dependency counts)*
 
 ### Backlog
 
@@ -321,9 +456,12 @@ git commit -m "chore: blossom backlog for [goal description]"
 
 1. **Explore, don't implement.** Spikes discover work; they never do it.
 2. **Verify, don't speculate.** Read the actual code. CONFIRMED findings over hedged guesses.
-3. **Consolidate before reporting.** Run `/consolidate` to dedup, fill slice gaps, and resolve orphans.
-4. **Epic depends on children.** Always `bd dep add <epic> <child>`, never the reverse.
-5. **Batched dispatching.** Up to 4 concurrent spike agents. Process results as they arrive.
-6. **Structured reports.** Spike agents must follow the exact report format for consistent processing.
-7. **Depth limit.** Stop at 20 spikes and reassess with the user if the goal is too broad.
-8. **Confidence levels.** Every finding is CONFIRMED, LIKELY, or POSSIBLE. Possible → deeper spike.
+3. **Hybrid dispatch.** Use teams for large explorations (6+ spikes), background agents for small ones (5 or fewer). Fall back to background agents if team creation fails.
+4. **Reuse over respawn.** When a spike teammate finishes, send it a new spike via SendMessage instead of spawning a fresh teammate. This avoids spawn overhead and reuses warm context.
+5. **Consolidate before reporting.** Run consolidation (via teammate or /consolidate) to dedup, fill slice gaps, and resolve orphans before wiring final dependencies.
+6. **Epic depends on children.** Always `bd dep add <epic> <child>`, never the reverse.
+7. **Quality gate.** The orchestrator reviews every spike report before creating beads. Spike agents never create beads directly.
+8. **Structured reports.** Spike agents must follow the exact report format for consistent processing.
+9. **Depth limit.** Stop at 20 total spikes (including reused teammates) and reassess with the user if the goal is too broad.
+10. **Confidence levels.** Every finding is CONFIRMED, LIKELY, or POSSIBLE. Possible triggers a deeper spike.
+11. **Clean shutdown.** After consolidation, shut down all teammates before proceeding to final phases. The orchestrator works solo for prioritization, verification, and reporting.
