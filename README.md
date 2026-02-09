@@ -63,13 +63,24 @@ The installer creates symlinks from `~/.claude/` to this repo. Edit files here, 
 
 ### Skills (Slash Commands)
 
+**Workflow skills** -- composable workflows for different phases of AI-assisted development:
+
 | Skill | Mode | What It Does |
 |-------|------|-------------|
 | `/blossom <goal>` | fork | Spike-driven exploration. Takes a vague goal and recursively investigates the codebase, producing a prioritized backlog of verified tasks. |
+| `/consensus <decision>` | fork | Multi-perspective design synthesis. Three independent agents propose solutions optimized for simplicity, performance, and maintainability, then surfaces agreements and tensions. |
+| `/spec <feature>` | fork | Structured specification. Produces a complete design document through progressive elaboration -- populate, validate, refine, architecture review. |
+| `/premortem <feature>` | fork | Risk-first analysis. Three agents examine a feature through security, reliability, and user/business lenses, then designs concrete mitigations. |
+| `/tracer <feature>` | fork | Iterative end-to-end implementation. Builds the thinnest working path first, then widens pass by pass (error handling, edge cases, tests). |
+
+**Utility skills** -- session lifecycle and maintenance:
+
+| Skill | Mode | What It Does |
+|-------|------|-------------|
 | `/consolidate [area]` | fork | Backlog hygiene. Deduplicates, fills vertical-slice gaps, detects stale tasks, cleans up dependencies. |
+| `/review [target]` | fork | Structured code review. Examines staged changes, commits, or PRs across correctness, security, style, architecture, and test coverage. |
 | `/session-health` | inline | Self-diagnostic. Assesses context load, scope drift, and quality degradation. Auto-discoverable by Claude. |
 | `/handoff [focus]` | inline | Session transition. Captures backlog state, decisions, patterns, and recommended next steps. |
-| `/review [target]` | fork | Structured code review. Examines staged changes, commits, or PRs across correctness, security, style, architecture, and test coverage. |
 | `/retro [focus]` | inline | Session retrospective. Evaluates velocity, quality, process, blockers, and discoveries, then persists durable learnings to MEMORY.md. |
 
 Skills use the modern Claude Code skills format (`skills/<name>/SKILL.md`) with YAML frontmatter for `context: fork` isolation, `allowed-tools` restrictions, and auto-discovery via descriptions. Legacy `commands/*.md` files are kept as fallbacks.
@@ -128,6 +139,44 @@ Optional privacy controls (set in your environment, not in settings.json):
 
 For cloud backends (Honeycomb, Datadog, Grafana Cloud), override `OTEL_EXPORTER_OTLP_ENDPOINT` and add `OTEL_EXPORTER_OTLP_HEADERS` with your auth token.
 
+## Workflow Skill Library
+
+The five workflow skills form a composable library for different phases and situations in AI-assisted development. Each skill is self-contained, but they chain naturally.
+
+### Quick Reference
+
+| Skill | One-Line Description | When to Use | Produces |
+|-------|---------------------|-------------|----------|
+| `/blossom` | Recursive spike-driven exploration | You don't know what to build yet | Prioritized backlog with verified tasks |
+| `/consensus` | Multi-perspective design synthesis | Multiple valid approaches, unclear trade-offs | Decision record with agreements and tensions |
+| `/spec` | Structured specification through progressive elaboration | You know what to build but need a complete design | Spec document (`.specs/*.md`) reviewed by architecture guardian |
+| `/premortem` | Risk-first failure analysis | High-stakes feature, security-sensitive change | Ranked failure scenarios with concrete mitigations |
+| `/tracer` | Iterative end-to-end implementation | Integration risk is high, feature crosses boundaries | Working code in committable increments |
+
+### How They Compose
+
+The skills connect into natural workflows depending on where you are in a project:
+
+```
+ /blossom ─────────────> backlog ──────> pick a task ──> /tracer
+   (explore)                                               (build)
+
+ /consensus ──> /spec ──────────────────────────────────> /tracer
+  (decide)     (design)                                    (build)
+
+ /premortem ──> mitigations ──> /spec or /tracer
+  (stress-test)                  (design or build with mitigations baked in)
+```
+
+**Common flows:**
+
+- **Greenfield feature**: `/consensus` (pick an approach) -> `/spec` (detailed design) -> `/tracer` (incremental implementation)
+- **Exploration-first**: `/blossom` (discover scope) -> pick highest-priority task -> `/tracer` (implement it)
+- **High-stakes change**: `/premortem` (surface risks) -> feed mitigations into `/spec` or `/tracer`
+- **Just build it**: `/tracer` alone when the path is clear and you want always-working increments
+
+Each skill produces artifacts (backlogs, specs, decision records, mitigation plans) that persist across sessions and feed into downstream skills.
+
 ## The Design Thinking
 
 Three principles shaped these workflows:
@@ -148,6 +197,10 @@ meta-agent-defs/
     code-reviewer.md          # Read-only code review across 4 quality dimensions
   skills/
     blossom/SKILL.md          # /blossom -- spike-driven exploration (fork)
+    consensus/SKILL.md        # /consensus -- multi-perspective design synthesis (fork)
+    spec/SKILL.md             # /spec -- structured specification (fork)
+    premortem/SKILL.md        # /premortem -- risk-first failure analysis (fork)
+    tracer/SKILL.md           # /tracer -- iterative end-to-end implementation (fork)
     consolidate/SKILL.md      # /consolidate -- backlog review (fork)
     session-health/SKILL.md   # /session-health -- session diagnostic (inline)
     handoff/SKILL.md          # /handoff -- session transition (inline)
