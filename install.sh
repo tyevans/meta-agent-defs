@@ -70,13 +70,12 @@ echo ""
 
 # Ensure ~/.claude/ exists
 mkdir -p "$CLAUDE_DIR/agents"
-mkdir -p "$CLAUDE_DIR/commands"
 mkdir -p "$CLAUDE_DIR/skills"
 
 # --- Stale symlink cleanup ---
 info "Checking for stale symlinks..."
 STALE_COUNT=0
-for dir in "$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands" "$CLAUDE_DIR/skills"; do
+for dir in "$CLAUDE_DIR/agents" "$CLAUDE_DIR/skills"; do
     [ -d "$dir" ] || continue
     for link in "$dir"/*; do
         [ -L "$link" ] || continue
@@ -107,14 +106,6 @@ for agent in "$SCRIPT_DIR"/agents/*.md; do
     [ -f "$agent" ] || continue
     name="$(basename "$agent")"
     link_file "$agent" "$CLAUDE_DIR/agents/$name"
-done
-
-# --- Commands ---
-info "Installing commands..."
-for cmd in "$SCRIPT_DIR"/commands/*.md; do
-    [ -f "$cmd" ] || continue
-    name="$(basename "$cmd")"
-    link_file "$cmd" "$CLAUDE_DIR/commands/$name"
 done
 
 # --- Skills ---
@@ -165,7 +156,6 @@ log "Installation complete!"
 echo ""
 info "What was installed:"
 echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
-echo "  Commands: $(ls -1 "$SCRIPT_DIR"/commands/*.md 2>/dev/null | wc -l) slash commands"
 echo "  Skills:   $(ls -d "$SCRIPT_DIR"/skills/*/ 2>/dev/null | wc -l) skills"
 echo "  Settings: settings.json (hooks + env)"
 if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
@@ -174,7 +164,6 @@ fi
 echo ""
 info "To verify:"
 echo "  ls -la ~/.claude/agents/"
-echo "  ls -la ~/.claude/commands/"
 echo "  ls -la ~/.claude/skills/"
 echo "  ls -la ~/.claude/settings.json"
 echo ""

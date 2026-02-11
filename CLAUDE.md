@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Portable Claude Code workflow definitions (agents, commands, hooks, settings) maintained in a single git repo and installed to `~/.claude/` via symlinks.
+Portable Claude Code workflow definitions (agents, skills, hooks, settings) maintained in a single git repo and installed to `~/.claude/` via symlinks.
 
 ## Operating Mode: Orchestrator
 
@@ -45,9 +45,7 @@ meta-agent-defs/
 │   ├── agent-generator.md      # Generates project-specific agents
 │   ├── project-bootstrapper.md # Bootstraps projects with full Claude Code setup
 │   └── code-reviewer.md        # Read-only code review agent
-├── commands/                    # Legacy command format (kept as fallbacks)
-│   ├── blossom.md, consolidate.md, session-health.md, handoff.md, review.md
-├── skills/                      # Modern skill format (preferred, symlinked to ~/.claude/skills/)
+├── skills/                      # Skill definitions (symlinked to ~/.claude/skills/)
 │   ├── blossom/SKILL.md         # Spike-driven exploration (context: fork)
 │   ├── consolidate/SKILL.md     # Backlog review (context: fork)
 │   ├── session-health/SKILL.md  # Session diagnostic (inline, auto-discoverable)
@@ -76,7 +74,7 @@ meta-agent-defs/
 
 ## Key Patterns
 
-- All artifact files are Markdown with YAML frontmatter (agents, skills) or plain Markdown (commands)
+- All artifact files are Markdown with YAML frontmatter (agents, skills)
 - Agent frontmatter fields: `name`, `description`, `tools`, `model`, `permissionMode`
 - Skill frontmatter fields: `name`, `description`, `allowed-tools`, `context`, `disable-model-invocation`
 - Hooks fail gracefully with `|| true` for optional tools (like `bd`)

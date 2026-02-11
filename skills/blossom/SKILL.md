@@ -4,7 +4,7 @@ description: "Run spike-driven exploration to discover and plan work for an unkn
 argument-hint: "<goal or area to explore>"
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage
-context: fork
+#context: fork
 ---
 
 # Blossom: Emergent Spike-Driven Epic Workflow

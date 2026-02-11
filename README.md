@@ -4,7 +4,7 @@
 
 Every time you start a new project with Claude Code, you rebuild the same scaffolding: agents for code review, commands for exploration, hooks to keep state in sync. You rediscover the same patterns. You re-encode the same discipline. This repo eliminates that repetition.
 
-`meta-agent-defs` is a single git repo of portable workflow definitions -- agents, slash commands, and hooks -- that symlink into `~/.claude/` and work everywhere. Clone it once, run the installer, and every Claude Code session on every project gets your full toolkit.
+`meta-agent-defs` is a single git repo of portable workflow definitions -- agents, skills, and hooks -- that symlink into `~/.claude/` and work everywhere. Clone it once, run the installer, and every Claude Code session on every project gets your full toolkit.
 
 ## What It Feels Like
 
@@ -83,7 +83,7 @@ The installer creates symlinks from `~/.claude/` to this repo. Edit files here, 
 | `/handoff [focus]` | inline | Session transition. Captures backlog state, decisions, patterns, and recommended next steps. |
 | `/retro [focus]` | inline | Session retrospective. Evaluates velocity, quality, process, blockers, and discoveries, then persists durable learnings to MEMORY.md. |
 
-Skills use the modern Claude Code skills format (`skills/<name>/SKILL.md`) with YAML frontmatter for `context: fork` isolation, `allowed-tools` restrictions, and auto-discovery via descriptions. Legacy `commands/*.md` files are kept as fallbacks.
+Skills use the Claude Code skills format (`skills/<name>/SKILL.md`) with YAML frontmatter for `context: fork` isolation, `allowed-tools` restrictions, and auto-discovery via descriptions.
 
 ### Agents
 
@@ -206,7 +206,6 @@ meta-agent-defs/
     handoff/SKILL.md          # /handoff -- session transition (inline)
     review/SKILL.md           # /review -- code review (fork)
     retro/SKILL.md            # /retro -- session retrospective (inline)
-  commands/                   # Legacy fallbacks (same content as skills)
   settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
   install.sh                  # Symlink installer (idempotent, non-destructive)
@@ -240,6 +239,6 @@ Your entire Claude Code workflow travels with you.
 
 ## Extending
 
-Add new agents to `agents/`, new commands to `commands/`, new MCP servers to `mcp-servers.json`, or modify `settings.json` for new hooks. Rerun `./install.sh` to pick up new files. Commit and push to share across machines.
+Add new agents to `agents/`, new skills to `skills/`, new MCP servers to `mcp-servers.json`, or modify `settings.json` for new hooks. Rerun `./install.sh` to pick up new files. Commit and push to share across machines.
 
 The real power comes from layering: these global definitions provide the workflow skeleton, while per-project `.claude/agents/` (created by the agent generator) provide project-specific intelligence. Global workflows, local expertise.

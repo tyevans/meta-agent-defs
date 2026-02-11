@@ -12,12 +12,13 @@ What "done" means for each type of change in this repo.
 - [ ] Agent catalog (AGENTS.md in target project) updated if applicable
 - [ ] `install.sh` re-run to verify symlink creation
 
-## New Command (`commands/*.md`)
+## New Skill (`skills/<name>/SKILL.md`)
 
+- [ ] YAML frontmatter includes required fields: `name`, `description`, `allowed-tools`, `context`
 - [ ] Uses `$ARGUMENTS` for user input where applicable
 - [ ] Has clear phase structure with numbered steps
-- [ ] Includes session close reminder (bd sync, git status)
 - [ ] Tested by running the slash command in a live session
+- [ ] `install.sh` re-run to verify symlink creation
 
 ## Settings Change (`settings.json`)
 
