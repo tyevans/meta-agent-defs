@@ -26,7 +26,7 @@ Start by understanding the project:
 # Check for existing setup
 ls -la .claude/agents/ 2>/dev/null || echo "No agents directory yet"
 ls -la .claude/rules/ 2>/dev/null || echo "No rules directory"
-ls -la .claude/commands/ 2>/dev/null || echo "No commands directory"
+ls -la .claude/skills/ 2>/dev/null || echo "No skills directory"
 ls -la .claude/skills/ 2>/dev/null || echo "No skills directory"
 
 # Understand project structure

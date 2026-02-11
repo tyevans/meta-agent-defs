@@ -5,7 +5,7 @@ paths:
 
 # Skill Authoring Rules
 
-Rules for writing and editing skill definition files (the modern replacement for legacy commands).
+Rules for writing and editing skill definition files.
 
 ## File Location
 
@@ -59,4 +59,4 @@ Every skill MUST include:
 - Do not include Write/Edit in allowed-tools unless the skill modifies files
 - Do not set `disable-model-invocation: false` unless the skill should be auto-discovered by Claude
 - Do not duplicate logic that exists in another skill -- factor shared patterns into agents instead
-- Do not create a skill when a legacy command already exists without also keeping the command as a fallback
+- Do not duplicate logic that exists in an agent -- if an agent already handles the workflow, don't recreate it as a skill

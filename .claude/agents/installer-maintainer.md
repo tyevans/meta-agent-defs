@@ -25,8 +25,8 @@ The installer at `/home/ty/workspace/meta-agent-defs/install.sh`:
    - Existing symlink: remove and recreate
    - Existing regular file: backup with timestamp, then create symlink
    - Nothing exists: create symlink
-3. Creates target directories (`agents/`, `commands/`)
-4. Loops over `agents/*.md`, `commands/*.md`, and `settings.json`
+3. Creates target directories (`agents/`, `skills/`)
+4. Loops over `agents/*.md`, `skills/*/`, and `settings.json`
 5. Prints summary
 
 ## When to Modify

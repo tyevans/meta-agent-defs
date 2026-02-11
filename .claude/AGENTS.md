@@ -21,8 +21,7 @@ These agents write definitions. They are informed by research — they don't jus
 | Agent | Purpose | Model | Invoke When |
 |-------|---------|-------|-------------|
 | agent-author | Write agent definitions as prompt engineering, not template filling | opus | Creating a new agent or substantively revising an existing one |
-| skill-author | Write skill definitions (the modern replacement for commands) | sonnet | Creating a new skill, migrating a command to a skill, or revising an existing skill |
-| command-author | Write command definitions with focus on workflow resilience | sonnet | Maintaining existing commands (prefer skill-author for new workflows) |
+| skill-author | Write skill definitions for workflow automation | sonnet | Creating a new skill or revising an existing skill |
 
 ## Maintenance Agents
 
@@ -43,7 +42,6 @@ Mechanical tasks that don't need research orientation — just correctness.
 | effectiveness-auditor | Y | N | N | git log, git diff | Y |
 | agent-author | Y | Y | Y | N | Y |
 | skill-author | Y | Y | N | N | Y |
-| command-author | Y | Y | N | N | Y |
 | sync-auditor | Y | N | N | ls | Y |
 | settings-editor | Y | Y | N | N | Y |
 | installer-maintainer | Y | Y | N | ls, ./install.sh | Y |
@@ -63,20 +61,15 @@ Mechanical tasks that don't need research orientation — just correctness.
 3. **definition-tester** — Stress-test the workflow against scenarios
 4. **sync-auditor** — Verify docs are updated
 
-### Maintaining Legacy Commands
-1. **command-author** — Update the existing command
-2. **definition-tester** — Test revised workflow
-3. **sync-auditor** — Verify docs are updated
-
 ### Periodic Quality Audit
 1. **effectiveness-auditor** — Evaluate all definitions for actual effectiveness (not just compliance)
 2. **pattern-researcher** — Research any findings that suggest the conventions themselves need updating
-3. **agent-author** / **command-author** — Revise definitions based on audit findings
+3. **agent-author** / **skill-author** — Revise definitions based on audit findings
 
 ### Diagnosing Underperformance
 1. **definition-tester** — Test the specific definition that's underperforming
 2. **pattern-researcher** — Research why the identified patterns might fail
-3. **agent-author** / **command-author** — Revise with new understanding
+3. **agent-author** / **skill-author** — Revise with new understanding
 
 ### Convention Review
 1. **effectiveness-auditor** (convention audit scope) — Evaluate whether authoring rules are producing better definitions

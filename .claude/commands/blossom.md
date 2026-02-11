@@ -15,7 +15,7 @@ Seed epic -> spawn spikes -> each spike produces tasks + deeper spikes -> consol
 When scoping spikes, consider these areas specific to meta-agent-defs:
 
 - **Agent definitions** (`agents/*.md`): Coverage gaps, missing required sections, stale patterns
-- **Command definitions** (`commands/*.md`): Missing workflows, unclear phases, broken bd integration
+- **Skill definitions** (`skills/*/SKILL.md`): Missing workflows, unclear phases, broken bd integration
 - **Hook configuration** (`settings.json`): Missing hooks, incorrect matchers, graceful failure
 - **Installer** (`install.sh`): Edge cases, missing file types, backup handling
 - **Cross-cutting concerns**: Consistency between agents/commands, naming conventions, documentation sync

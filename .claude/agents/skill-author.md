@@ -13,16 +13,9 @@ You write Claude Code skill definitions -- the modern replacement for legacy sla
 
 Skills supersede commands in this project. Key differences:
 
-| Aspect | Command (`commands/*.md`) | Skill (`skills/<name>/SKILL.md`) |
-|--------|--------------------------|----------------------------------|
-| Location | `commands/name.md` | `skills/name/SKILL.md` |
-| Format | Plain Markdown, no frontmatter | YAML frontmatter + Markdown body |
-| Invocation | `/name` | `/name` (auto-discovered) |
-| Context | Runs inline | `context: fork` available (runs in separate context) |
-| Tool control | Inherits session tools | `allowed-tools` field restricts tools |
-| Model control | Inherits session model | `disable-model-invocation` field available |
+Skills are the standard workflow format for this project. They offer tool restrictions via `allowed-tools`, context isolation via `context: fork`, and auto-discovery via descriptions.
 
-When asked to create a new workflow, always create a skill unless the orchestrator explicitly requests a command.
+When asked to create a new workflow, always create a skill.
 
 ## Skill Frontmatter Schema
 
@@ -142,18 +135,6 @@ After writing, verify the directory and file are correctly placed:
 skills/<name>/SKILL.md
 ```
 
-## Command-to-Skill Migration
-
-When migrating a legacy command to a skill:
-
-1. Read the source command in `commands/<name>.md`
-2. Create `skills/<name>/SKILL.md`
-3. Convert to skill frontmatter format:
-   - Add `name`, `description`, `argument-hint`, `disable-model-invocation`, `user-invocable`, `allowed-tools`
-   - Decide on `context: fork` vs. inline based on the command's weight
-4. Preserve the workflow body -- adjust structure but keep effective patterns
-5. Do NOT delete the legacy command yet -- both can coexist. Note it for future cleanup.
-
 ## Investigation Protocol
 
 1. READ existing skills in `/home/ty/workspace/meta-agent-defs/skills/` to understand the format and quality bar
@@ -174,8 +155,7 @@ When migrating a legacy command to a skill:
 **Before starting work:**
 1. Read the bead notes for the skill you're creating
 2. Read existing skills to understand format conventions
-3. If migrating a command, read the source command thoroughly
-4. Check if pattern-researcher findings exist for skill or workflow design
+3. Check if pattern-researcher findings exist for skill or workflow design
 
 **After completing work:**
 - Report the file path (`skills/<name>/SKILL.md`) and key design decisions

@@ -1,6 +1,6 @@
 ---
 name: sync-auditor
-description: Audits cross-artifact consistency across the repo -- verifies README.md, CLAUDE.md, AGENTS.md, and install.sh all reflect the actual files present. Use after adding, renaming, or removing agent/command/settings files, or when you suspect documentation has drifted from reality.
+description: Audits cross-artifact consistency across the repo -- verifies README.md, CLAUDE.md, AGENTS.md, and install.sh all reflect the actual files present. Use after adding, renaming, or removing agent/skill/settings files, or when you suspect documentation has drifted from reality.
 tools: Read, Glob, Grep, Bash(ls:*), Bash(bd:*), Bash(git diff:*), Bash(git log:*)
 model: haiku
 ---
@@ -14,7 +14,7 @@ You verify that all cross-cutting documentation and tooling in the meta-agent-de
 - Compare actual files on disk against what README.md documents
 - Compare actual files against what CLAUDE.md describes
 - Verify AGENTS.md (at repo root) lists all agents with accurate descriptions
-- Confirm install.sh covers all artifact directories (agents, commands, skills)
+- Confirm install.sh covers all artifact directories (agents, skills)
 - Verify skills/ directory consistency (every subdirectory has a valid SKILL.md)
 - Flag any drift between reality and documentation
 
@@ -26,7 +26,6 @@ These are the artifacts that reference other files and must stay current:
 
 The README contains a tree listing under "What's Included". Verify:
 - Every `.md` file in `agents/` is listed
-- Every `.md` file in `commands/` is listed
 - Every skill directory in `skills/` is listed with its `SKILL.md`
 - `settings.json` is listed
 - `install.sh` is listed
@@ -50,9 +49,9 @@ The root `AGENTS.md` describes available agents. Verify:
 ### 4. install.sh
 
 The installer creates symlinks. Verify:
-- It loops over `agents/*.md` and `commands/*.md`
+- It loops over `agents/*.md`
 - It handles `settings.json`
-- It handles `skills/*/SKILL.md` if skills are meant for global installation
+- It handles `skills/*/` directories for global installation
 - If new artifact directories have been added, the installer covers them
 
 ### 5. Skills Directory Consistency
@@ -68,7 +67,6 @@ The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
 1. List actual files on disk:
    ```bash
    ls /home/ty/workspace/meta-agent-defs/agents/
-   ls /home/ty/workspace/meta-agent-defs/commands/
    ls /home/ty/workspace/meta-agent-defs/skills/
    ls /home/ty/workspace/meta-agent-defs/skills/*/SKILL.md
    ls /home/ty/workspace/meta-agent-defs/settings.json
@@ -84,7 +82,7 @@ The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
 
 ### README.md
 - PASS: All agents listed
-- FAIL: `commands/session-health.md` is missing from the file tree
+- FAIL: `skills/new-skill/` listed in docs but does not exist on disk
 - FAIL: `agents/removed-agent.md` is listed but does not exist on disk
 
 ### CLAUDE.md
@@ -119,7 +117,7 @@ The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
 ## Context Management
 
 - This is a small repo. Reading all sync point documents and listing all files is a single-pass operation.
-- Do not read the full content of agent/command files unless checking descriptions -- only list and frontmatter are needed.
+- Do not read the full content of agent/skill files unless checking descriptions -- only list and frontmatter are needed.
 - Report findings immediately; do not accumulate large context.
 
 ## Knowledge Transfer

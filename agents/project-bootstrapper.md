@@ -17,7 +17,7 @@ You bootstrap projects for optimal Claude Code + Beads workflow. Your job is to 
 4. **Settings** — Permissions, environment, team config
 5. **Rules** — Architectural guardrails inferred from the codebase
 6. **Memory directory** — Persistent memory for the orchestrator
-7. **Blossom command** — Spike-driven exploration workflow
+7. **Blossom skill** — Spike-driven exploration workflow
 
 ## Phase 1: Project Discovery
 
@@ -396,17 +396,17 @@ Create initial `MEMORY.md`:
 - [Which agent for which task type]
 ```
 
-## Phase 8: Install Blossom Command
+## Phase 8: Install Blossom Skill
 
 If the project would benefit from exploratory workflows (most projects do):
 
 ```bash
-mkdir -p .claude/commands
+mkdir -p .claude/skills/blossom
 ```
 
-Create `.claude/commands/blossom.md` with the standard blossom workflow. This enables `/blossom <goal>` for spike-driven exploration.
+Create `.claude/skills/blossom/SKILL.md` with the standard blossom workflow. This enables `/blossom <goal>` for spike-driven exploration.
 
-The blossom command should be customized with project-specific spike areas if the architecture is known (e.g., for a DDD project, spike areas might include domain contexts, infrastructure layer, API routes, etc.)
+The blossom skill should be customized with project-specific spike areas if the architecture is known (e.g., for a DDD project, spike areas might include domain contexts, infrastructure layer, API routes, etc.)
 
 ## Phase 9: Update .gitignore
 
@@ -477,7 +477,7 @@ When complete, verify:
 - [ ] `.claude/settings.json` exists with hooks + permissions
 - [ ] `.claude/settings.local.json` template exists
 - [ ] `.claude/rules/` exists with at least `commits.md` and `definition-of-done.md`
-- [ ] `.claude/commands/blossom.md` exists
+- [ ] `.claude/skills/blossom/SKILL.md` exists
 - [ ] Memory directory created with initial MEMORY.md
 - [ ] `.gitignore` updated
 - [ ] `bd stats` shows initialized state
