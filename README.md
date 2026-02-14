@@ -45,14 +45,15 @@ That's it. The installer symlinks everything into `~/.claude/`. It's idempotent 
 ### Install Options
 
 ```bash
-./install.sh                          # Global symlinks to ~/.claude/
-./install.sh /path/to/project         # Project-local (agents + skills only)
-./install.sh --hardlink               # Hardlinks instead of symlinks
-./install.sh /path/to/project --hardlink  # Both
-./install.sh --help                   # Show usage
+./install.sh                              # Global symlinks to ~/.claude/
+./install.sh /path/to/project             # Project-local (agents + skills only)
+./install.sh --hardlink                   # Hardlinks instead of symlinks
+./install.sh --with-cli                   # Also install bin/ to ~/.local/bin/
+./install.sh /path/to/project --hardlink  # Combine options
+./install.sh --help                       # Show usage
 ```
 
-Project-local mode installs only agents and skills -- settings, MCP servers, and CLI scripts are skipped since they're global concerns.
+Project-local mode installs only agents and skills. CLI scripts (`claude-orchestrate`) are opt-in via `--with-cli`.
 
 ### Uninstall
 

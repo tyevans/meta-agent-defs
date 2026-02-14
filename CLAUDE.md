@@ -33,6 +33,9 @@ Portable Claude Code workflow definitions (agents, skills, hooks, settings) main
 # Install with hardlinks instead of symlinks
 ./install.sh --hardlink
 
+# Also install CLI scripts to ~/.local/bin/
+./install.sh --with-cli
+
 # Uninstall (uses manifest written during install)
 xargs rm -f < ~/.claude/.meta-agent-defs.manifest
 

@@ -20,14 +20,16 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 # --- Argument parsing ---
 PROJECT_DIR=""
 USE_HARDLINKS=false
+INSTALL_CLI=false
 
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--with-cli] [--help]
 
 Options:
   project_dir   Install to project_dir/.claude/ instead of ~/.claude/
   --hardlink    Use hardlinks instead of symlinks
+  --with-cli    Install CLI scripts (bin/) to ~/.local/bin/
   --help, -h    Show this help message
 EOF
     exit 0
@@ -40,6 +42,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --hardlink)
             USE_HARDLINKS=true
+            shift
+            ;;
+        --with-cli)
+            INSTALL_CLI=true
             shift
             ;;
         -*)
@@ -319,8 +325,8 @@ else
     info "Skipping MCP servers (project-local mode - global-only)"
 fi
 
-# --- CLI Scripts ---
-if [ -z "$PROJECT_DIR" ]; then
+# --- CLI Scripts (opt-in) ---
+if [ "$INSTALL_CLI" = true ] && [ -z "$PROJECT_DIR" ]; then
     info "Installing CLI scripts..."
     BIN_DIR="$HOME/.local/bin"
     mkdir -p "$BIN_DIR"
@@ -329,8 +335,10 @@ if [ -z "$PROJECT_DIR" ]; then
         name="$(basename "$script")"
         link_file "$script" "$BIN_DIR/$name"
     done
+elif [ -n "$PROJECT_DIR" ]; then
+    info "Skipping CLI scripts (project-local mode)"
 else
-    info "Skipping CLI scripts (project-local mode - PATH-based)"
+    info "Skipping CLI scripts (use --with-cli to install)"
 fi
 
 # --- Write manifest ---
@@ -357,13 +365,15 @@ echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent d
 echo "  Skills:   $(ls -d "$SCRIPT_DIR"/skills/*/ 2>/dev/null | wc -l) skills"
 if [ -z "$PROJECT_DIR" ]; then
     echo "  Settings: settings.json (hooks + env)"
-    echo "  Scripts:  $(ls -1 "$SCRIPT_DIR"/bin/* 2>/dev/null | wc -l) CLI commands -> $BIN_DIR/"
+    if [ "$INSTALL_CLI" = true ]; then
+        echo "  Scripts:  $(ls -1 "$SCRIPT_DIR"/bin/* 2>/dev/null | wc -l) CLI commands -> $BIN_DIR/"
+    fi
     MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
     if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
         echo "  MCP:      $(python3 -c "import json; print(len(json.load(open('$MCP_CONFIG'))))" 2>/dev/null || echo '?') server(s)"
     fi
 else
-    echo "  Mode:     Project-local (settings, MCP, CLI scripts skipped)"
+    echo "  Mode:     Project-local (agents + skills only)"
 fi
 echo ""
 info "To verify:"
@@ -371,14 +381,11 @@ echo "  ls -la $TARGET_DIR/agents/"
 echo "  ls -la $TARGET_DIR/skills/"
 if [ -z "$PROJECT_DIR" ]; then
     echo "  ls -la $TARGET_DIR/settings.json"
-    echo "  which claude-orchestrate"
+    if [ "$INSTALL_CLI" = true ]; then
+        echo "  which claude-orchestrate"
+    fi
 fi
 echo ""
 info "To uninstall:"
-echo "  # Remove installed files listed in manifest"
 echo "  xargs rm -f < $MANIFEST_FILE && rm $MANIFEST_FILE"
-if [ -z "$PROJECT_DIR" ]; then
-    BIN_DIR="$HOME/.local/bin"
-    echo "  find $BIN_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
-fi
 echo ""
