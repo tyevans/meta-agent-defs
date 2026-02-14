@@ -4,3 +4,6 @@
 # Claude Code local settings
 .claude/settings.local.json
 CLAUDE.local.md
+
+# Ephemeral session state (overwritten each session)
+memory/sessions/
