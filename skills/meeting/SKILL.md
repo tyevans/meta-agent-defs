@@ -25,7 +25,7 @@ You are facilitating a **Meeting** -- an interactive group discussion with a pan
 
 ### 1a. Choose Roles
 
-Based on the topic, select 3-4 roles that provide diverse, complementary perspectives. Good panels have creative tension -- roles that naturally challenge each other.
+Based on the topic, select **2 roles** that provide the most opposed perspectives. Two panelists with genuine tension produce better dialogue than 3-4 with diluted positions. The user can request additional panelists mid-meeting if needed.
 
 **Role templates** (pick or adapt):
 
@@ -65,12 +65,14 @@ Task({
 >
 > Your perspective: [1-2 sentences describing what this role cares about and how they think]
 >
-> **CRITICAL: You MUST use the SendMessage tool to communicate.** Your plain text output is NOT visible to anyone. Every response you give must be sent via `SendMessage({ type: "message", recipient: "<sender-name>", content: "...", summary: "..." })`. Reply to whoever messaged you. If you do not call SendMessage, nobody will see what you said.
+> **IMPORTANT: When you receive a message, respond IMMEDIATELY with your substantive perspective.** Do NOT say "ready", "standing by", or "waiting for the opening question." Every message you receive IS the prompt — respond to it with 2-4 paragraphs of concrete analysis from your role's perspective.
 >
-> You are in a live discussion. When the facilitator or another panelist sends you a message:
-> 1. Read the message, then respond using SendMessage targeted to the sender (or to "facilitator" if addressing the group).
+> **CRITICAL: You MUST use the SendMessage tool to communicate.** Your plain text output is NOT visible to anyone. Every response you give must be sent via `SendMessage({ type: "message", recipient: "team-lead", content: "...", summary: "..." })`. Always send to **team-lead** (the facilitator) — never send directly to other panelists. If you do not call SendMessage, nobody will see what you said.
+>
+> You are in a live discussion. When the facilitator sends you a message:
+> 1. Read the message carefully, then respond with substance using SendMessage to "team-lead".
 > 2. Respond from your role's perspective. Be direct and specific.
-> 3. If you disagree with another panelist, say so and explain why.
+> 3. If you disagree with another panelist's position (relayed by the facilitator), say so and explain why.
 > 4. If you have a question that would sharpen the discussion, ask it.
 > 5. Keep responses to 2-4 paragraphs. This is a conversation, not a monograph.
 >
@@ -78,15 +80,18 @@ Task({
 
 ### 1d. Opening Round
 
-Once all panelists are spawned, broadcast the opening question:
+Once all panelists are spawned, send the opening question as **direct messages** to each panelist (not broadcast). Direct messages reliably trigger substantive engagement; broadcasts often produce empty acknowledgments.
 
 ```
 SendMessage({
-  type: "broadcast",
-  content: "Welcome to this meeting on: [topic]. Opening question: [restate the topic as a specific question]. Please share your initial perspective.",
-  summary: "Meeting opening: [topic]"
+  type: "message",
+  recipient: "<role-name>",
+  content: "[Role], here is the topic: [topic]. [Restate as a specific question]. Share your initial perspective — 2-4 paragraphs, be concrete and specific.",
+  summary: "Opening question to [role]"
 })
 ```
+
+Send to all panelists in parallel (multiple SendMessage calls in one response).
 
 ---
 
@@ -108,13 +113,16 @@ After each round of panelist responses:
 
 ### Routing Messages
 
-- **To all panelists**: Use `broadcast` for questions the whole panel should answer
+- **Prefer direct messages over broadcast.** DMs reliably produce substantive responses; broadcasts often get empty acknowledgments.
+- **To all panelists**: Send individual `message` calls to each panelist in parallel. Only use `broadcast` for simple administrative messages (not for questions that need substantive answers).
 - **To specific panelists**: Use `message` to `<role-name>` for targeted follow-ups
+- **Relaying cross-panelist context**: When forwarding one panelist's point to another, include the substance: "[Panelist A] argued: [key point]. React from your perspective."
 - **Debates**: Send both panelists the same prompt: "Debate: [point of disagreement]. [Panelist A] argues X. [Panelist B] argues Y. Make your best case."
 
 ### Keeping It Productive
 
-- If a panelist gives a generic response, push back: "Be more specific. What exactly would you change/build/avoid?"
+- If a panelist gives a generic or empty response ("ready", "standing by"), push back with a direct message restating the question and demanding substance: "Respond NOW with your concrete analysis. Do not acknowledge — respond."
+- If a panelist gives a vague response, push back: "Be more specific. What exactly would you change/build/avoid?"
 - If the discussion goes circular, summarize what's settled and redirect to what's unresolved
 - If a panelist's perspective hasn't been heard, explicitly invite them: "Skeptic, what concerns do you have about this direction?"
 
@@ -182,5 +190,6 @@ bd create --title="[action item]" --type=task --priority=[0-4] \
 2. **Creative tension is the goal.** A panel that agrees on everything is a bad panel. Pick roles that naturally challenge each other.
 3. **Short turns.** Panelist responses should be 2-4 paragraphs, not essays. This is dialogue, not reporting.
 4. **Summarize often.** After each round, distill what was said so the user can steer.
-5. **3-4 panelists max.** More creates noise. Fewer lacks diversity.
-6. **Meetings are cheap.** If the first panel doesn't have the right perspectives, close it and start a new one with different roles.
+5. **2 panelists by default.** Pick the two most opposed perspectives for the topic. The user can request more mid-meeting — the facilitator spawns additional agents as needed. More than 4 creates noise.
+6. **DMs over broadcasts.** Direct messages reliably produce substantive engagement. Broadcasts often produce empty acknowledgments. Use DMs for all questions that need real answers.
+7. **Meetings are cheap.** If the first panel doesn't have the right perspectives, close it and start a new one with different roles.
