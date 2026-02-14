@@ -151,6 +151,16 @@ if [ -f "$MCP_CONFIG" ]; then
     fi
 fi
 
+# --- CLI Scripts ---
+info "Installing CLI scripts..."
+BIN_DIR="$HOME/.local/bin"
+mkdir -p "$BIN_DIR"
+for script in "$SCRIPT_DIR"/bin/*; do
+    [ -f "$script" ] || continue
+    name="$(basename "$script")"
+    link_file "$script" "$BIN_DIR/$name"
+done
+
 echo ""
 log "Installation complete!"
 echo ""
@@ -158,6 +168,7 @@ info "What was installed:"
 echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
 echo "  Skills:   $(ls -d "$SCRIPT_DIR"/skills/*/ 2>/dev/null | wc -l) skills"
 echo "  Settings: settings.json (hooks + env)"
+echo "  Scripts:  $(ls -1 "$SCRIPT_DIR"/bin/* 2>/dev/null | wc -l) CLI commands -> $BIN_DIR/"
 if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
     echo "  MCP:      $(python3 -c "import json; print(len(json.load(open('$MCP_CONFIG'))))" 2>/dev/null || echo '?') server(s)"
 fi
@@ -166,7 +177,9 @@ info "To verify:"
 echo "  ls -la ~/.claude/agents/"
 echo "  ls -la ~/.claude/skills/"
 echo "  ls -la ~/.claude/settings.json"
+echo "  which claude-orchestrate"
 echo ""
 info "To uninstall, remove the symlinks:"
 echo "  find ~/.claude -type l -lname '$SCRIPT_DIR/*' -delete"
+echo "  find $BIN_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
 echo ""
