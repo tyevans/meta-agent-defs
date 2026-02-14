@@ -1,10 +1,10 @@
-# meta-agent-defs
+# Workbench
 
-**Your Claude Code sessions are ephemeral. Your workflows shouldn't be.**
+**Your portable Claude Code toolkit. Clone once, use everywhere.**
 
 Every time you start a new project with Claude Code, you rebuild the same scaffolding: agents for code review, commands for exploration, hooks to keep state in sync. You rediscover the same patterns. You re-encode the same discipline. This repo eliminates that repetition.
 
-`meta-agent-defs` is a single git repo of portable workflow definitions -- agents, skills, and hooks -- that symlink into `~/.claude/` and work everywhere. Clone it once, run the installer, and every Claude Code session on every project gets your full toolkit.
+Workbench is a single git repo of portable workflow definitions -- skills, agents, hooks, settings, and MCP server configs -- that symlink into `~/.claude/` and work across all projects. Clone it once, run the installer, and every Claude Code session gets your full toolkit.
 
 ## What It Feels Like
 
@@ -35,14 +35,14 @@ You get an honest self-diagnostic: context load, scope drift, quality indicators
 ## Install in 30 Seconds
 
 ```bash
-git clone https://github.com/your-user/meta-agent-defs
-cd meta-agent-defs
+git clone https://github.com/your-user/workbench
+cd workbench
 ./install.sh
 ```
 
 That's it. The installer symlinks everything into `~/.claude/`. It's idempotent -- rerun it after pulling updates, and existing symlinks are refreshed. Existing files are backed up with timestamps so nothing is lost.
 
-To uninstall symlinks (run from the repo directory):
+To uninstall (run from the repo directory):
 
 ```bash
 find ~/.claude -type l -lname "$(pwd)/*" -delete
@@ -57,77 +57,80 @@ claude mcp remove context7 --scope user
 claude mcp remove memory --scope user
 ```
 
-## What Gets Installed
+## Skills
 
-The installer creates symlinks from `~/.claude/` to this repo. Edit files here, and changes are live immediately.
+Skills are the primary feature. Type a slash command, get a structured workflow. They divide into two categories based on how they run.
 
-### Skills (Slash Commands)
+### Workflow Skills
 
-**Workflow skills** -- composable workflows for different phases of AI-assisted development:
+Heavy, isolated workflows that fork into their own context. Use these for deep exploration, design, and implementation.
 
-| Skill | Mode | What It Does |
-|-------|------|-------------|
-| `/blossom <goal>` | fork | Spike-driven exploration. Takes a vague goal and recursively investigates the codebase, producing a prioritized backlog of verified tasks. |
-| `/fractal <goal>` | inline | Goal-directed recursive exploration. Evaluates every finding against the goal and prunes paths that don't serve it. Produces focused synthesis, not exhaustive backlogs. |
-| `/consensus <decision>` | fork | Multi-perspective design synthesis. Three independent agents propose solutions optimized for simplicity, performance, and maintainability, then surfaces agreements and tensions. |
-| `/spec <feature>` | fork | Structured specification. Produces a complete design document through progressive elaboration -- populate, validate, refine, architecture review. |
-| `/premortem <feature>` | fork | Risk-first analysis. Three agents examine a feature through security, reliability, and user/business lenses, then designs concrete mitigations. |
-| `/tracer <feature>` | fork | Iterative end-to-end implementation. Builds the thinnest working path first, then widens pass by pass (error handling, edge cases, tests). |
+| Skill | What It Does |
+|-------|-------------|
+| `/blossom <goal>` | Spike-driven exploration. Recursively investigates codebase, produces prioritized backlog of verified tasks. |
+| `/fractal <goal>` | Goal-directed recursive exploration. Prunes paths that don't serve the goal. Produces focused synthesis. |
+| `/consensus <decision>` | Multi-perspective design synthesis. Three agents propose solutions optimized for simplicity, performance, maintainability. |
+| `/spec <feature>` | Structured specification through progressive elaboration -- populate, validate, refine, architecture review. |
+| `/premortem <feature>` | Risk-first failure analysis. Three agents examine through security, reliability, and business lenses. |
+| `/tracer <feature>` | Iterative end-to-end implementation. Thinnest working path first, then widens pass by pass. |
+| `/consolidate [area]` | Backlog hygiene. Deduplicates, fills gaps, detects stale tasks, cleans dependencies. |
+| `/review [target]` | Structured code review across correctness, security, style, architecture, testing. |
 
-**Utility skills** -- session lifecycle and maintenance:
+### Utility Skills
 
-| Skill | Mode | What It Does |
-|-------|------|-------------|
-| `/meeting <topic>` | inline | Interactive multi-agent dialogue. Forms a panel of 3-4 agents with different perspectives and facilitates a live group discussion. |
-| `/assemble <project>` | inline | Persistent team creation. Defines roles, initializes per-agent memory via Memory MCP, and sets up a shared backlog. |
-| `/standup [team]` | inline | Team status sync. Each agent checks their memory and assigned beads, reports progress, blockers, and planned next actions. |
-| `/consolidate [area]` | fork | Backlog hygiene. Deduplicates, fills vertical-slice gaps, detects stale tasks, cleans up dependencies. |
-| `/review [target]` | fork | Structured code review. Examines staged changes, commits, or PRs across correctness, security, style, architecture, and test coverage. |
-| `/session-health` | inline | Self-diagnostic. Assesses context load, scope drift, and quality degradation. Auto-discoverable by Claude. |
-| `/handoff [focus]` | inline | Session transition. Captures backlog state, decisions, patterns, and recommended next steps. |
-| `/retro [focus]` | inline | Session retrospective. Evaluates velocity, quality, process, blockers, and discoveries, then persists durable learnings to MEMORY.md. |
+Lightweight, inline skills that run in your current context. Use these for coordination, diagnostics, and session management.
 
-Skills use the Claude Code skills format (`skills/<name>/SKILL.md`) with YAML frontmatter for `context: fork` isolation, `allowed-tools` restrictions, and auto-discovery via descriptions.
+| Skill | What It Does |
+|-------|-------------|
+| `/meeting <topic>` | Interactive multi-agent dialogue. Panel of 3-4 agents with different perspectives. |
+| `/assemble <project>` | Persistent team creation with role-based ownership and cross-session learnings. |
+| `/standup [team]` | Team status sync. Each agent reports progress, blockers, planned next actions. |
+| `/sprint [focus]` | Sprint planning + dispatch with learning loop. Assigns tasks, dispatches agents, persists improvements. |
+| `/session-health` | Self-diagnostic. Assesses context load, scope drift, quality degradation. Auto-discoverable. |
+| `/handoff [focus]` | Session transition. Captures backlog state, decisions, patterns, recommended next steps. |
+| `/retro [focus]` | Session retrospective. Evaluates velocity, quality, process, then persists learnings to MEMORY.md. |
 
-### Agents
+## Agents
+
+Three portable agents that work on any project.
 
 | Agent | What It Does |
 |-------|-------------|
-| `agent-generator` | Analyzes a project's architecture and generates a tailored suite of project-specific agents in `.claude/agents/`, complete with investigation protocols, context management strategies, and an agent catalog. |
-| `project-bootstrapper` | Full 10-phase project setup: beads task management, CLAUDE.md, hooks, permissions, architectural rules, memory directory, and initial tasks. Takes a bare repo to fully-configured Claude Code workspace. |
-| `code-reviewer` | Reviews code changes for correctness, security, style, and architectural coherence. Read-only -- identifies and reports issues but does not modify code. |
+| `agent-generator` | Analyzes a project's architecture and generates tailored project-specific agents in `.claude/agents/`. |
+| `project-bootstrapper` | Full project setup: beads task management, CLAUDE.md, hooks, permissions, rules, memory directory. |
+| `code-reviewer` | Reviews code changes for correctness, security, style, and architectural coherence. Read-only. |
 
-### Settings & Hooks
+## Hooks and Safety
 
-The global `settings.json` wires up hooks that run across all projects:
+The global `settings.json` wires up hooks that run automatically across all projects.
 
-| Hook | When It Fires | What It Does |
-|------|--------------|-------------|
-| **SessionStart** | Every new session | Pre-session diagnostics (dirty tree, unpushed commits) + loads beads context |
-| **PreCompact** | Before context compaction | Flushes beads state so nothing is lost |
-| **PreToolUse** (Bash) | Before `git push` | Warns if beads changes are uncommitted |
-| **PreToolUse** (Bash) | Before destructive commands | Warns on `git reset --hard`, `git checkout .`, `git clean -f`, `rm -rf`, direct `.beads/` edits |
-| **PostToolUse** (Task) | After any subagent completes | Review gate reminder: verify the deliverable before moving on |
-| **SessionEnd** | Session closes | Auto-syncs beads state (`bd sync --flush-only`) so nothing is lost |
+| Hook | When | What |
+|------|------|------|
+| SessionStart | Every new session | Pre-session diagnostics (dirty tree, unpushed commits) + loads beads context |
+| PreCompact | Before context compaction | Flushes beads state so nothing is lost |
+| PreToolUse (Bash) | Before `git push` | Warns if beads changes are uncommitted |
+| PreToolUse (Bash) | Before destructive commands | Warns on `git reset --hard`, `git checkout .`, `git clean -f`, `rm -rf` |
+| PostToolUse (Task) | After any subagent completes | Review gate reminder: verify deliverable before moving on |
+| SessionEnd | Session closes | Auto-syncs beads state |
 
-Also enables the experimental agent teams feature, MCP tool search (`auto:5` defers tool loading until referenced), and OpenTelemetry telemetry (see [OpenTelemetry](#opentelemetry) below).
+All hooks fail gracefully with `|| true` for optional tools, so projects without beads installed still work fine.
 
-### MCP Servers
+## MCP Servers
 
-The installer registers these Model Context Protocol servers globally (requires `claude` CLI):
+Four Model Context Protocol servers installed globally via `claude mcp add`.
 
-| Server | What It Does |
-|--------|-------------|
-| `playwright` | Browser automation for testing and scraping via Playwright |
-| `sequential-thinking` | Structured multi-step reasoning for complex problems |
+| Server | What |
+|--------|------|
+| `playwright` | Browser automation for testing and scraping |
+| `sequential-thinking` | Structured multi-step reasoning |
 | `context7` | Up-to-date library documentation lookup |
 | `memory` | Persistent knowledge graph across sessions |
 
 MCP servers are defined in `mcp-servers.json`. Add or remove entries there and rerun `./install.sh`.
 
-### OpenTelemetry
+## OpenTelemetry
 
-Claude Code exports metrics (token usage, cost, session counts, lines changed) and events (tool calls, API requests, prompts) via OpenTelemetry. Telemetry is **enabled by default** in `settings.json` and sends to a local OTLP collector on `localhost:4317`.
+Claude Code exports metrics (token usage, cost, session counts, lines changed) and events (tool calls, API requests) via OpenTelemetry. Telemetry is enabled by default and sends to a local OTLP collector on `localhost:4317`.
 
 To set up a collector:
 
@@ -143,23 +146,7 @@ Optional privacy controls (set in your environment, not in settings.json):
 
 For cloud backends (Honeycomb, Datadog, Grafana Cloud), override `OTEL_EXPORTER_OTLP_ENDPOINT` and add `OTEL_EXPORTER_OTLP_HEADERS` with your auth token.
 
-## Workflow Skill Library
-
-The workflow skills form a composable library for different phases and situations in AI-assisted development. Each skill is self-contained, but they chain naturally.
-
-### Quick Reference
-
-| Skill | One-Line Description | When to Use | Produces |
-|-------|---------------------|-------------|----------|
-| `/blossom` | Recursive spike-driven exploration | You don't know what to build yet | Prioritized backlog with verified tasks |
-| `/fractal` | Goal-directed recursive exploration | You need focused understanding, not a full backlog | Synthesis of goal-relevant findings |
-| `/meeting` | Interactive multi-agent dialogue | You want to brainstorm or flesh out requirements | Meeting summary with consensus, tensions, and action items |
-| `/consensus` | Multi-perspective design synthesis | Multiple valid approaches, unclear trade-offs | Decision record with agreements and tensions |
-| `/spec` | Structured specification through progressive elaboration | You know what to build but need a complete design | Spec document (`.specs/*.md`) reviewed by architecture guardian |
-| `/premortem` | Risk-first failure analysis | High-stakes feature, security-sensitive change | Ranked failure scenarios with concrete mitigations |
-| `/tracer` | Iterative end-to-end implementation | Integration risk is high, feature crosses boundaries | Working code in committable increments |
-
-### How They Compose
+## How Skills Compose
 
 The skills connect into natural workflows depending on where you are in a project:
 
@@ -176,13 +163,13 @@ The skills connect into natural workflows depending on where you are in a projec
  /premortem ──> mitigations ──> /spec or /tracer
   (stress-test)                  (design or build with mitigations baked in)
 
- /assemble ──> /standup ──> dispatch work ──> /standup ──> ...
-  (form team)  (sync)       (any skill)       (sync again)
+ /assemble ──> /standup ──> /sprint ──> dispatch work ──> /standup ──> ...
+  (form team)  (sync)       (plan)      (any skill)       (sync again)
 ```
 
 **Common flows:**
 
-- **Team-based project**: `/assemble` (form team) -> `/standup` (sync) -> dispatch work -> `/standup` (repeat)
+- **Team-based project**: `/assemble` -> `/standup` -> `/sprint` -> dispatch work -> `/standup` (repeat)
 - **Requirements unclear**: `/meeting` (brainstorm with panel) -> `/fractal` (deep-dive findings) -> `/spec` (design)
 - **Greenfield feature**: `/consensus` (pick an approach) -> `/spec` (detailed design) -> `/tracer` (incremental implementation)
 - **Exploration-first**: `/blossom` (discover scope) -> pick highest-priority task -> `/tracer` (implement it)
@@ -192,11 +179,11 @@ The skills connect into natural workflows depending on where you are in a projec
 
 Each skill produces artifacts (backlogs, specs, decision records, mitigation plans) that persist across sessions and feed into downstream skills.
 
-## The Design Thinking
+## Design Philosophy
 
 Three principles shaped these workflows:
 
-**1. Hooks are for guarantees, instructions are for guidance.** Hooks fire 100% of the time -- use them for things that must never be forgotten (syncing state, review gates). CLAUDE.md instructions are for things that should usually happen but require judgment. Slash commands are for on-demand workflows you invoke when you need them.
+**1. Hooks are for guarantees, instructions are for guidance.** Hooks fire 100% of the time -- use them for things that must never be forgotten (syncing state, review gates). CLAUDE.md instructions are for things that should usually happen but require judgment. Skills are for on-demand workflows you invoke when you need them.
 
 **2. Verify, don't speculate.** Every spike agent in `/blossom` is instructed to read the actual implementation, trace call chains, check callers and tests, and state a confidence level. CONFIRMED means the agent read the code and verified the issue. LIKELY means strong evidence but incomplete trace. POSSIBLE means it needs a deeper spike. This distinction matters -- it's the difference between a backlog of real work and a backlog of guesses.
 
@@ -205,10 +192,10 @@ Three principles shaped these workflows:
 ## Project Structure
 
 ```
-meta-agent-defs/
+workbench/
   agents/
     agent-generator.md        # Generates project-specific agents from codebase analysis
-    project-bootstrapper.md   # 10-phase project setup for Claude Code + Beads
+    project-bootstrapper.md   # Full project setup for Claude Code + Beads
     code-reviewer.md          # Read-only code review across 4 quality dimensions
   skills/
     blossom/SKILL.md          # /blossom -- spike-driven exploration (fork)
@@ -216,14 +203,15 @@ meta-agent-defs/
     meeting/SKILL.md          # /meeting -- interactive multi-agent dialogue (inline)
     assemble/SKILL.md         # /assemble -- persistent team creation (inline)
     standup/SKILL.md          # /standup -- team status sync (inline)
+    sprint/SKILL.md           # /sprint -- sprint planning + dispatch (inline)
     consensus/SKILL.md        # /consensus -- multi-perspective design synthesis (fork)
     spec/SKILL.md             # /spec -- structured specification (fork)
     premortem/SKILL.md        # /premortem -- risk-first failure analysis (fork)
     tracer/SKILL.md           # /tracer -- iterative end-to-end implementation (fork)
     consolidate/SKILL.md      # /consolidate -- backlog review (fork)
+    review/SKILL.md           # /review -- code review (fork)
     session-health/SKILL.md   # /session-health -- session diagnostic (inline)
     handoff/SKILL.md          # /handoff -- session transition (inline)
-    review/SKILL.md           # /review -- code review (fork)
     retro/SKILL.md            # /retro -- session retrospective (inline)
   settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
@@ -233,7 +221,7 @@ meta-agent-defs/
 
 ## Getting Started
 
-After installing, here's how to go from zero to productive:
+After installing, here's how to go from zero to productive.
 
 **On a new project:**
 
@@ -247,17 +235,23 @@ After installing, here's how to go from zero to productive:
 2. Use `/consolidate` whenever the backlog feels noisy
 3. Use `/session-health` when you've been working a while and want a gut check
 
-**Adding to a new machine:**
+**On a new machine:**
 
 ```bash
-git clone <this-repo>
-cd meta-agent-defs && ./install.sh
+git clone https://github.com/your-user/workbench
+cd workbench && ./install.sh
 ```
 
 Your entire Claude Code workflow travels with you.
 
 ## Extending
 
-Add new agents to `agents/`, new skills to `skills/`, new MCP servers to `mcp-servers.json`, or modify `settings.json` for new hooks. Rerun `./install.sh` to pick up new files. Commit and push to share across machines.
+**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`, `allowed-tools`, `context`). Set `context: fork` for heavy workflows, omit it for inline. Rerun `./install.sh`.
+
+**Add an agent:** Create `agents/<name>.md` with YAML frontmatter (`name`, `description`, `tools`, `model`). Rerun `./install.sh`.
+
+**Add an MCP server:** Add an entry to `mcp-servers.json` with `command` and `args`. Rerun `./install.sh`.
+
+**Add a hook:** Edit `settings.json` and add to the appropriate hook array (`SessionStart`, `PreCompact`, `PreToolUse`, `PostToolUse`, `SessionEnd`). Use `|| true` for any tool that might not be installed.
 
 The real power comes from layering: these global definitions provide the workflow skeleton, while per-project `.claude/agents/` (created by the agent generator) provide project-specific intelligence. Global workflows, local expertise.

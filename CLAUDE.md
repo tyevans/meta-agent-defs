@@ -57,9 +57,13 @@ meta-agent-defs/
 │   ├── handoff/SKILL.md         # Session transition (inline)
 │   ├── review/SKILL.md          # Code review (context: fork)
 │   └── retro/SKILL.md           # Session retrospective (inline)
+├── bin/
+│   └── claude-orchestrate      # CLI launcher: bypass perms + claude-in-claude dispatch
+├── prompts/
+│   └── orchestrate-system.md   # System prompt for orchestrator mode
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
 ├── mcp-servers.json            # MCP server definitions (installed globally)
-├── install.sh                  # Symlink installer (idempotent)
+├── install.sh                  # Symlink installer (idempotent, includes bin/ -> ~/.local/bin/)
 ├── .claude/                    # Project-local Claude Code config (NOT symlinked globally)
 │   ├── settings.json           # Project-specific hooks + permissions
 │   ├── AGENTS.md               # Agent catalog for project-local agents
