@@ -12,9 +12,7 @@
 ## Gotchas
 - Skills cannot be invoked by subagents (Skill tool not available to them)
 - `allowed-tools` uses `Bash(prefix:*)` syntax to restrict shell commands, not full command strings
-- `user-invocable: true` is required but missing from blossom and consolidate (added: 2026-02-13)
-- "When to Use" is required per skill-authoring.md but missing from 5 skills: assemble, fractal, meeting, sprint, standup (added: 2026-02-13)
-- meeting skill incorrectly tells agents to use Memory MCP; should use file-based learnings first per team-protocol.md (added: 2026-02-13)
+- RESOLVED: user-invocable and "When to Use" gaps were fixed in commit 1fcc5d3 (2026-02-13)
 
 ## Preferences
 - (none yet)

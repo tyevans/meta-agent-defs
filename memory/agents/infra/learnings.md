@@ -1,7 +1,7 @@
 # Learnings: infra
 
 ## Codebase Patterns
-- install.sh is idempotent, backs up existing regular files before symlinking to ~/.claude/
+- install.sh is idempotent, supports symlinks (default) and hardlinks (--hardlink), global (~/.claude/) and project-local (./install.sh <dir>)
 - settings.json at repo root is the global settings file, symlinked to ~/.claude/settings.json
 - .claude/settings.json is project-local (not symlinked globally)
 - Hooks in settings.json: SessionStart, PreCompact, PreToolUse, PostToolUse
@@ -16,6 +16,9 @@
 - Global SessionStart hook already detects .claude/team.yaml and displays team context prompt (added: 2026-02-13)
 - memory/ directory is project-local, NOT handled by install.sh -- correct by design (added: 2026-02-13)
 - .claude/team.yaml and memory/ are both committed to git, not ignored (added: 2026-02-13)
+- install.sh writes .meta-agent-defs.manifest for reliable uninstall (both symlink and hardlink modes) (added: 2026-02-13)
+- CLI scripts (bin/) are opt-in via --with-cli flag, not installed by default (added: 2026-02-13)
+- `env -u CLAUDECODE claude -p ...` bypasses nested session detection for claude-in-claude dispatch (added: 2026-02-13)
 
 ## Preferences
 - (none yet)
