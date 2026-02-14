@@ -25,7 +25,7 @@ You are facilitating a **Meeting** -- an interactive group discussion with a pan
 
 ### 1a. Choose Roles
 
-Based on the topic, select 3-4 roles that provide diverse, complementary perspectives. Good panels have creative tension -- roles that naturally challenge each other.
+Based on the topic, select **2 roles** that provide the most opposed perspectives. Two panelists with genuine tension produce better dialogue than 3-4 with diluted positions. The user can request additional panelists mid-meeting if needed.
 
 **Role templates** (pick or adapt):
 
@@ -38,6 +38,8 @@ Based on the topic, select 3-4 roles that provide diverse, complementary perspec
 | Pragmatist | What's achievable, incremental path | Scoping and prioritization |
 | Historian | Precedent, what's been tried before | Avoiding past mistakes |
 | Innovator | Novel approaches, challenge assumptions | Breaking out of ruts |
+
+Select the two roles whose perspectives would produce the most productive disagreement on this specific topic. Never select two roles that optimize for the same underlying value.
 
 ### 1b. Create the Team
 
@@ -63,60 +65,55 @@ Task({
 
 > You are the **[Role]** in a meeting about: [topic]
 >
-> Your perspective: [1-2 sentences describing what this role cares about and how they think]
+> Your perspective: [2-3 sentences describing what this role cares about and how they think — be rich and specific with genuine characterization]
 >
-> **CRITICAL: You MUST use the SendMessage tool to communicate.** Your plain text output is NOT visible to anyone. Every response you give must be sent via `SendMessage({ type: "message", recipient: "<sender-name>", content: "...", summary: "..." })`. Reply to whoever messaged you. If you do not call SendMessage, nobody will see what you said.
+> **CRITICAL: You MUST use the SendMessage tool to communicate.** Your plain text output is NOT visible to anyone. Every response you give must be sent via `SendMessage({ type: "message", recipient: "team-lead", content: "...", summary: "..." })`. Always send to **team-lead** (the facilitator) — never send directly to other panelists. If you do not call SendMessage, nobody will see what you said.
 >
-> You are in a live discussion. When the facilitator or another panelist sends you a message:
-> 1. Read the message, then respond using SendMessage targeted to the sender (or to "facilitator" if addressing the group).
-> 2. Respond from your role's perspective. Be direct and specific.
-> 3. If you disagree with another panelist, say so and explain why.
-> 4. If you have a question that would sharpen the discussion, ask it.
-> 5. Keep responses to 2-4 paragraphs. This is a conversation, not a monograph.
->
-> Before starting, check for prior learnings: if a file-based learnings file exists at `memory/agents/<role-name>/learnings.md`, read it for accumulated context.
+> Always respond from your role's specific perspective, never as a generic assistant. When the facilitator sends you a message, respond with 2-4 paragraphs of concrete, specific analysis. If you disagree with another panelist's position, say so and explain why.
 
 ### 1d. Opening Round
 
-Once all panelists are spawned, broadcast the opening question:
+Once all panelists are spawned, send the opening question as **direct messages** to each panelist (not broadcast). Direct messages reliably trigger substantive engagement; broadcasts often produce empty acknowledgments.
 
 ```
 SendMessage({
-  type: "broadcast",
-  content: "Welcome to this meeting on: [topic]. Opening question: [restate the topic as a specific question]. Please share your initial perspective.",
-  summary: "Meeting opening: [topic]"
+  type: "message",
+  recipient: "<role-name>",
+  content: "[Role], here is the topic: [topic]. [Restate as a specific question]. Share your initial perspective — 2-4 paragraphs, be concrete and specific.",
+  summary: "Opening question to [role]"
 })
 ```
 
+Send to all panelists in parallel (multiple SendMessage calls in one response).
+
 ---
 
-## Phase 2: Facilitate
+## Phase 2: Facilitation Cycle
 
-This is the interactive core. The user drives the conversation.
+After Phase 1 opening responses arrive, run this cycle for every panelist response. Maintain an **exchange counter** (starts at 0, resets at each checkpoint). The depth limit defaults to 3.
 
-### Facilitation Protocol
+**Step 1. Read and extract.** What is this panelist's key claim? Does it introduce tension — a disagreement, counterargument, or novel angle — that another panelist has not yet addressed?
 
-After each round of panelist responses:
+**Step 2. Relay or skip.**
+- **Tension exists →** Summarize the tension in 1-2 sentences. When relaying to a panelist, address them by role name to re-anchor their perspective (e.g., "Skeptic, the Pragmatist argues X..."). When relaying a panelist's position, preserve their core argument faithfully before posing the next question. If a panelist makes a specific factual claim central to the disagreement, briefly verify it using available tools before relaying. Send it via direct message to the panelist(s) whose position is most directly challenged by the tension, tagged `[Exchange N of LIMIT]`. Increment exchange counter. When their responses arrive, return to Step 1.
+- **No tension →** Proceed to Step 3.
 
-1. **Summarize** the key points and tensions to the user (2-3 sentences)
-2. **Ask the user** what to explore next. Offer options:
-   - Follow up on a specific point
-   - Ask the panel a new question
-   - Have two panelists debate a point of disagreement
-   - Move to a different aspect of the topic
-   - Wrap up and synthesize
+If the exchange counter has reached the depth limit, skip relay regardless and proceed to Step 3.
 
-### Routing Messages
+**Step 3. Checkpoint with user.** Synthesize the thread in 2-3 sentences: what was discussed, where panelists agreed, what tension remains. Then ask:
 
-- **To all panelists**: Use `broadcast` for questions the whole panel should answer
-- **To specific panelists**: Use `message` to `<role-name>` for targeted follow-ups
-- **Debates**: Send both panelists the same prompt: "Debate: [point of disagreement]. [Panelist A] argues X. [Panelist B] argues Y. Make your best case."
+> **Continue** this thread, **pivot** to a new question, or **conclude** the meeting?
+
+- *Continue* → Reset exchange counter. Formulate a follow-up question informed by the discussion so far. Send to each panelist via direct message (not broadcast). When responses arrive, return to Step 1.
+- *Pivot* → Reset exchange counter. Ask the user for the new topic (or propose one from unresolved tensions). Send to each panelist via direct message (not broadcast). When responses arrive, return to Step 1.
+- *Conclude* → Proceed to Phase 3.
+- *Freeform direction* → If the user gives a specific direction that doesn't match these options (e.g., "Ask the Architect about X"), treat it as a targeted follow-up. Send the user's question to the relevant panelist(s) via direct message, then return to Step 1.
 
 ### Keeping It Productive
 
-- If a panelist gives a generic response, push back: "Be more specific. What exactly would you change/build/avoid?"
+- If a panelist gives a generic or empty response ("ready", "standing by"), push back with a direct message restating the question and demanding substance: "Respond NOW with your concrete analysis. Do not acknowledge — respond."
+- If a panelist gives a vague response, push back: "Be more specific. What exactly would you change/build/avoid?"
 - If the discussion goes circular, summarize what's settled and redirect to what's unresolved
-- If a panelist's perspective hasn't been heard, explicitly invite them: "Skeptic, what concerns do you have about this direction?"
 
 ---
 
@@ -182,5 +179,6 @@ bd create --title="[action item]" --type=task --priority=[0-4] \
 2. **Creative tension is the goal.** A panel that agrees on everything is a bad panel. Pick roles that naturally challenge each other.
 3. **Short turns.** Panelist responses should be 2-4 paragraphs, not essays. This is dialogue, not reporting.
 4. **Summarize often.** After each round, distill what was said so the user can steer.
-5. **3-4 panelists max.** More creates noise. Fewer lacks diversity.
-6. **Meetings are cheap.** If the first panel doesn't have the right perspectives, close it and start a new one with different roles.
+5. **2 panelists by default.** Pick the two most opposed perspectives for the topic. The user can request more mid-meeting — the facilitator spawns additional agents as needed. More than 4 creates noise.
+6. **DMs over broadcasts.** Direct messages reliably produce substantive engagement. Broadcasts often produce empty acknowledgments. Use DMs for all questions that need real answers.
+7. **Meetings are cheap.** If the first panel doesn't have the right perspectives, close it and start a new one with different roles.
