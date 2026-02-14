@@ -96,7 +96,7 @@ Lightweight, inline skills that run in your current context. Use these for coord
 
 | Skill | What It Does |
 |-------|-------------|
-| `/meeting <topic>` | Interactive multi-agent dialogue. Panel of 3-4 agents with different perspectives. |
+| `/meeting <topic>` | Interactive multi-agent dialogue. 2 panelists with opposed perspectives, facilitator-mediated. |
 | `/assemble <project>` | Persistent team creation with role-based ownership and cross-session learnings. |
 | `/standup [team]` | Team status sync. Each agent reports progress, blockers, planned next actions. |
 | `/sprint [focus]` | Sprint planning + dispatch with learning loop. Assigns tasks, dispatches agents, persists improvements. |
