@@ -2,25 +2,18 @@
 
 ## Codebase Patterns
 - Skills live in skills/<name>/SKILL.md with YAML frontmatter (name, description, allowed-tools, context)
-- 28 skills: 15 workflow + 12 composable primitives + /status (gather, distill, rank, diff-ideas, sketch, verify, decompose, filter, assess, critique, plan, merge)
-- Skills with `context: fork` run in isolation (blossom, consolidate, review); others run inline
-- All skills use `disable-model-invocation: false` — the `true` setting blocks the Skill tool entirely
+- 30 skills: 18 workflow + 12 composable primitives. `context: fork` for isolation (blossom, consolidate, review); all use `disable-model-invocation: false`
 - `$ARGUMENTS` is how skills receive user input from the slash command
-- 6 fully compliant reference templates: consensus, premortem, retro, review, spec, tracer (added: 2026-02-13)
-- Skills that dispatch agents (blossom, consensus, premortem, spec) correctly follow fan-out-protocol.md (added: 2026-02-13)
-- Fan-out-protocol.md has Agent Preamble section — skills reference it instead of repeating investigation boilerplate (added: 2026-02-14)
-- Characterization-over-procedure pattern: 2-3 sentence "You think like..." characterization outperforms procedural step lists for agent prompts (added: 2026-02-14)
-- Consensus uses adaptive 8-lens palette with selection logic; parameterized agent template instead of hardcoded 3 agents (added: 2026-02-14)
-- Consensus has optional debate round (Phase 2.5): anonymized cross-proposal challenge via background agents, not teams (added: 2026-02-14)
-- Anonymization in cross-proposal patterns: remove lens-identifying language, use neutral labels (A/B/C), let agents respond to ideas not biases (added: 2026-02-14)
-- Blossom has pushback protocol in quality gate — re-prompts teammates (team mode) or flags for re-dispatch (background mode) (added: 2026-02-14)
+- Skills that dispatch agents (blossom, consensus, premortem, spec) follow fan-out-protocol.md with Agent Preamble (added: 2026-02-14)
+- Characterization-over-procedure: "You think like..." (2-3 sentences) outperforms procedural step lists for agent prompts (added: 2026-02-14)
+- Consensus: adaptive 8-lens palette, optional debate round (Phase 2.5) with anonymized cross-proposal challenge (added: 2026-02-14)
+- Anonymization in cross-proposal patterns: neutral labels (A/B/C), remove lens-identifying language (added: 2026-02-14)
+- Blossom has pushback protocol in quality gate — re-prompts or flags for re-dispatch (added: 2026-02-14)
 
 ## Gotchas
 - Skills cannot be invoked by subagents (Skill tool not available to them)
 - `allowed-tools` uses `Bash(prefix:*)` syntax to restrict shell commands, not full command strings
-- RESOLVED: user-invocable and "When to Use" gaps were fixed in commit 1fcc5d3 (2026-02-13)
-- Skills can reference allowed-tools that might not be available at runtime; conditional logic in the body handles optional deps, not frontmatter (added: 2026-02-13)
-- Optional dependency pattern: `**If .beads/ exists**, [action]. **If not**, [fallback].` — preserves structure while enabling graceful degradation (added: 2026-02-13)
+- Optional deps handled in skill body, not frontmatter: `**If .beads/ exists**, [action]. **If not**, [fallback].` (added: 2026-02-13)
 
 ## Pipeline Provenance
 - All primitives use two-touch pattern: detect upstream Pipeline field during input, emit extended Pipeline during output (added: 2026-02-14)
@@ -41,6 +34,17 @@
 - Interactive mode pattern: check if $ARGUMENTS is empty in Phase 0, fork to conversational flow that gathers info then rejoins main workflow at a later phase (added: 2026-02-13)
 - Checkpoints in recursive skills: specify trigger precisely (depth transitions vs every iteration), default to non-blocking (safety net, not gate) (added: 2026-02-14)
 - When borrowing patterns across skills, adapt semantics to target skill's constraints (e.g., fractal's immutable goal means "pivot" can't change the goal, only the exploration path) (added: 2026-02-14)
+
+## Tool Permission Patterns
+- Shell scripts in bin/ need explicit path permissions: `Bash(bin/git-pulse.sh:*)` — prefix matching like `Bash(git:*)` only works for actual shell commands (added: 2026-02-14)
+- Same external tool serves different observability needs via time window: `--since="8 hours ago"` for session-scoped /retro, `--since="7 days ago"` for weekly /status (added: 2026-02-14)
+- git-intel binary permission: `Bash(tools/git-intel/target/debug/git-intel:*)` — skills that use git-intel need this in allowed-tools (added: 2026-02-14)
+
+## git-intel Integration
+- Extending existing skills with git-intel: add conditional sections that check for binary, use JSON output, graceful fallback to raw git (added: 2026-02-14)
+- /evolution and /drift are read-only analysis skills — no Write/Edit in allowed-tools (added: 2026-02-14)
+- /drift outputs pipe format for composability (/rank, /assess downstream); /evolution outputs standalone report (added: 2026-02-14)
+- Retro now has 3 git-intel enrichment points: Phase 2f (mistake patterns), Phase 4b (survival-scored pruning), Phase 4f (lifecycle analysis) (added: 2026-02-14)
 
 ## Cross-Agent Notes
 - Team templates in templates/teams/ follow exact .claude/team.yaml schema; use realistic ownership globs per project type (triaged: 2026-02-14)
