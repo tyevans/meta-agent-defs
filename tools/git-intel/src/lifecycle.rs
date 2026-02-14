@@ -95,7 +95,17 @@ pub fn run(repo: &Repository, since: Option<i64>, files: &[String]) -> Result<Li
 
             let lines = count_blob_lines(repo, &tree, file_path);
             let time = commit.time().seconds();
-            let dt = chrono::DateTime::from_timestamp(time, 0).unwrap_or_default();
+            let dt = match chrono::DateTime::from_timestamp(time, 0) {
+                Some(dt) => dt,
+                None => {
+                    eprintln!(
+                        "warning: commit {} has invalid timestamp {}, falling back to epoch 0",
+                        commit.id(),
+                        time
+                    );
+                    chrono::DateTime::default()
+                }
+            };
 
             let in_parent = parent_tree
                 .as_ref()
@@ -116,7 +126,7 @@ pub fn run(repo: &Repository, since: Option<i64>, files: &[String]) -> Result<Li
             };
 
             history.push(FileSnapshot {
-                commit: commit.id().to_string()[..8].to_string(),
+                commit: common::short_hash(&commit.id()),
                 date: dt.format("%Y-%m-%d").to_string(),
                 message: commit
                     .message()

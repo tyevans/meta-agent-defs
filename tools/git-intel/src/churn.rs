@@ -21,12 +21,16 @@ pub struct FileChurn {
     pub commit_count: usize,
 }
 
+struct FileChurnAccumulator {
+    additions: usize,
+    deletions: usize,
+    commit_count: usize,
+}
+
 pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Result<ChurnOutput> {
     let commits = common::walk_commits(repo, since)?;
 
-    let mut file_adds: HashMap<String, usize> = HashMap::new();
-    let mut file_dels: HashMap<String, usize> = HashMap::new();
-    let mut file_commits: HashMap<String, usize> = HashMap::new();
+    let mut accum: HashMap<String, FileChurnAccumulator> = HashMap::new();
     let total_commits = commits.len();
 
     for commit in &commits {
@@ -35,21 +39,43 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
 
         let diff = repo.diff_tree_to_tree(parent_tree.as_ref(), Some(&tree), None)?;
 
+        // Pass 1: count which files are touched in this commit
         diff.foreach(
             &mut |delta, _progress| {
                 if let Some(path) = delta.new_file().path().and_then(|p| p.to_str()) {
-                    *file_commits.entry(path.to_string()).or_insert(0) += 1;
+                    accum
+                        .entry(path.to_string())
+                        .or_insert_with(|| FileChurnAccumulator {
+                            additions: 0,
+                            deletions: 0,
+                            commit_count: 0,
+                        })
+                        .commit_count += 1;
                 }
                 true
             },
             None,
             None,
+            None,
+        )?;
+
+        // Pass 2: count line-level additions and deletions
+        diff.foreach(
+            &mut |_delta, _progress| true,
+            None,
+            None,
             Some(&mut |delta, _hunk, line| {
                 if let Some(path) = delta.new_file().path().and_then(|p| p.to_str()) {
-                    let key = path.to_string();
+                    let entry = accum
+                        .entry(path.to_string())
+                        .or_insert_with(|| FileChurnAccumulator {
+                            additions: 0,
+                            deletions: 0,
+                            commit_count: 0,
+                        });
                     match line.origin() {
-                        '+' => *file_adds.entry(key).or_insert(0) += 1,
-                        '-' => *file_dels.entry(key).or_insert(0) += 1,
+                        '+' => entry.additions += 1,
+                        '-' => entry.deletions += 1,
                         _ => {}
                     }
                 }
@@ -58,24 +84,14 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
         )?;
     }
 
-    let all_files: std::collections::HashSet<&String> = file_adds
-        .keys()
-        .chain(file_dels.keys())
-        .chain(file_commits.keys())
-        .collect();
-
-    let mut files: Vec<FileChurn> = all_files
+    let mut files: Vec<FileChurn> = accum
         .into_iter()
-        .map(|path| {
-            let additions = *file_adds.get(path).unwrap_or(&0);
-            let deletions = *file_dels.get(path).unwrap_or(&0);
-            FileChurn {
-                path: path.clone(),
-                additions,
-                deletions,
-                total_churn: additions + deletions,
-                commit_count: *file_commits.get(path).unwrap_or(&0),
-            }
+        .map(|(path, acc)| FileChurn {
+            path,
+            additions: acc.additions,
+            deletions: acc.deletions,
+            total_churn: acc.additions + acc.deletions,
+            commit_count: acc.commit_count,
         })
         .collect();
 

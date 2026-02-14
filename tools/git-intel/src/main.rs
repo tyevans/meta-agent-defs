@@ -1,12 +1,8 @@
-mod churn;
-mod common;
-mod lifecycle;
-mod metrics;
-mod patterns;
-
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+
+use git_intel::{churn, lifecycle, metrics, parse_since, patterns};
 
 #[derive(Parser)]
 #[command(name = "git-intel", about = "Git history analyzer — JSON output for hooks and skills")]
@@ -41,20 +37,6 @@ enum Commands {
     },
     /// Detect fix-after-feat sequences, multi-edit chains, convergence
     Patterns,
-}
-
-fn parse_since(since: &Option<String>) -> Result<Option<i64>> {
-    match since {
-        Some(s) => {
-            let naive = chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
-                .map_err(|e| anyhow::anyhow!("Invalid --since date '{}': {}", s, e))?;
-            let dt = naive
-                .and_hms_opt(0, 0, 0)
-                .ok_or_else(|| anyhow::anyhow!("Invalid time"))?;
-            Ok(Some(dt.and_utc().timestamp()))
-        }
-        None => Ok(None),
-    }
 }
 
 fn main() -> Result<()> {

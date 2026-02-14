@@ -42,10 +42,10 @@ pub struct ChainCommit {
 pub struct ConvergencePair {
     pub file_a: String,
     pub file_b: String,
-    pub size_a: usize,
-    pub size_b: usize,
-    pub size_diff: usize,
-    pub size_ratio: f64,
+    pub bytes_a: usize,
+    pub bytes_b: usize,
+    pub bytes_diff: usize,
+    pub bytes_ratio: f64,
 }
 
 struct CommitInfo {
@@ -65,7 +65,17 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
         let message = commit.message().unwrap_or("").to_string();
         let first_line = message.lines().next().unwrap_or("").to_string();
         let time = commit.time().seconds();
-        let dt = chrono::DateTime::from_timestamp(time, 0).unwrap_or_default();
+        let dt = match chrono::DateTime::from_timestamp(time, 0) {
+            Some(dt) => dt,
+            None => {
+                eprintln!(
+                    "warning: commit {} has invalid timestamp {}, falling back to epoch 0",
+                    commit.id(),
+                    time
+                );
+                chrono::DateTime::default()
+            }
+        };
 
         let tree = commit.tree()?;
         let parent_tree = commit.parent(0).ok().and_then(|p| p.tree().ok());
@@ -85,7 +95,7 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
         )?;
 
         commits_info.push(CommitInfo {
-            oid: commit.id().to_string()[..8].to_string(),
+            oid: common::short_hash(&commit.id()),
             date: dt.format("%Y-%m-%d").to_string(),
             message: first_line,
             commit_type: common::classify_commit(&message),
@@ -197,14 +207,14 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
             convergence.push(ConvergencePair {
                 file_a: pa.clone(),
                 file_b: pb.clone(),
-                size_a: sa,
-                size_b: sb,
-                size_diff: diff,
-                size_ratio: ratio,
+                bytes_a: sa,
+                bytes_b: sb,
+                bytes_diff: diff,
+                bytes_ratio: ratio,
             });
         }
     }
-    convergence.sort_by(|a, b| b.size_ratio.partial_cmp(&a.size_ratio).unwrap());
+    convergence.sort_by(|a, b| b.bytes_ratio.partial_cmp(&a.bytes_ratio).unwrap());
 
     if let Some(limit) = limit {
         convergence.truncate(limit);

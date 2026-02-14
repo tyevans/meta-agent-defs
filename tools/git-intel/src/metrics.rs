@@ -70,7 +70,17 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
         *type_counts.entry(ctype.to_string()).or_insert(0) += 1;
 
         let time = commit.time().seconds();
-        let dt = chrono::DateTime::from_timestamp(time, 0).unwrap_or_default();
+        let dt = match chrono::DateTime::from_timestamp(time, 0) {
+            Some(dt) => dt,
+            None => {
+                eprintln!(
+                    "warning: commit {} has invalid timestamp {}, falling back to epoch 0",
+                    commit.id(),
+                    time
+                );
+                chrono::DateTime::default()
+            }
+        };
         let date_str = dt.format("%Y-%m-%d").to_string();
         *daily_counts.entry(date_str).or_insert(0) += 1;
 
@@ -92,6 +102,10 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
         })
         .collect();
     commit_types.sort_by(|a, b| b.count.cmp(&a.count));
+
+    if let Some(limit) = limit {
+        commit_types.truncate(limit);
+    }
 
     // Build activity bursts sorted by date descending
     let mut activity: Vec<ActivityBurst> = daily_counts

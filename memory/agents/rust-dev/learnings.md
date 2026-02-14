@@ -5,10 +5,13 @@
 - Uses git2-rs crate for git repository access (chosen for maturity/stability over shelling out)
 - Subcommands: metrics, churn, lifecycle, patterns — each outputs JSON to stdout
 - Parent project is a content-only repo of Markdown definitions; this is the only compiled artifact
+- lib.rs + main.rs split: library crate re-exports all modules for testability, main.rs is thin CLI wrapper (added: 2026-02-14)
 
 ## Gotchas
 - clap needs `global = true` on args so flags work after subcommand name (e.g., `git-intel metrics --repo .`) (added: 2026-02-14)
 - git2's `diff.foreach` callback API requires careful lifetime management with multiple closures — line counting callback needs file paths from delta callback (added: 2026-02-14)
+- classify_commit uses strict matching (type: type( type! type+space) not starts_with — prevents "fixing"→"fix" false positives (added: 2026-02-14)
+- churn.rs: single-pass diff.foreach with shared HashMap hits borrow issues — use two-pass (file-level then line-level) or Oid-based lookup (added: 2026-02-14)
 
 ## Preferences
 - git2 + clap + serde stack compiles in ~12s release, no async needed (added: 2026-02-14)
@@ -21,6 +24,11 @@
 ## Refactoring
 - walk_commits needs explicit lifetime `<'repo>` on return type since Commit borrows from Repository (added: 2026-02-14)
 - Return `&'static str` from classify functions instead of String when all returns are literals — zero-allocation, callers .to_string() if needed (added: 2026-02-14)
+
+## Testing
+- git2 test fixtures: work with `Oid` values between commits, never hold `Commit<'repo>` across commit boundaries — avoids borrow conflicts (added: 2026-02-14)
+- Fixture builder pattern: `stage_files` + `do_commit` closures create reproducible repos with controlled dates and content (added: 2026-02-14)
+- 31 tests: 14 unit (classify_commit, parse_since) + 17 integration (fixture repo per subcommand) (added: 2026-02-14)
 
 ## Cross-Agent Notes
 - (none yet)

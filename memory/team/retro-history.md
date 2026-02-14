@@ -69,6 +69,14 @@
 - Key insight: Clean 3/3 first-attempt sprint. All P4 speculative beads now closed, unblocking the cross-pollination epic (meta-agent-defs-jim). git-pulse.sh shipped as shared utility for skills to consume.
 - Backlog state: 157 total, 15 open (4 ready, 11 blocked). git-intel Rust CLI (P1) is the big remaining blocker.
 
+## Retro: 2026-02-14 (session 11 — git-intel test + hardening sprint)
+- Tasks completed: 2 (test suite + hardening pass)
+- Workflow: /sprint with serial dispatch (rust-dev x2)
+- Commits: 0 (uncommitted — session end will commit)
+- New learnings: 5 for rust-dev (lib.rs split, Oid fixture pattern, test coverage, strict classify, churn borrow)
+- Key insight: Test-first then hardening is a natural serial pair — the test suite gave confidence for all 6 hardening refactors. lib.rs extraction was an unexpected but strictly positive architectural change forced by Rust's integration test requirements. 2/2 first-attempt dispatch successes continues the streak.
+- Backlog state: 172/179 closed, 7 open (5 ready, 2 blocked)
+
 ## Retro: 2026-02-14 (session 10 — git-intel MVP sprint)
 - Tasks completed: 10 (MVP + 2 bug fixes + Cargo.lock + common.rs refactor + 3 skill enrichments + 2 new skills)
 - Workflow: /assemble (add rust-dev) → /sprint → /review → /meeting (Architect vs Pragmatist) → create 6 beads → /sprint (10 dispatches)
