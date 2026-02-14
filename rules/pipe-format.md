@@ -62,3 +62,9 @@ User: /rank by security risk
 ```
 
 No file passing, no explicit piping syntax. Context IS the pipe.
+
+## Known Limitations
+
+1. **Compression boundary.** Pipe chains must complete within a single uncompressed context window. Context compression is not pipe-format-aware — it may summarize structured output into prose, silently breaking detection and losing items. For chains that may span compression events, write intermediate results to a file and pass the file path as $ARGUMENTS to the next primitive.
+2. **Silent failure modes.** The format has no schema validation or checksums. If detection fails, the downstream primitive falls back to $ARGUMENTS without error. The item count in `### Items (N)` and the upstream intake statement (Rule 9) are the primary observability mechanisms — but they are self-reported, not enforced.
+3. **Metadata drift.** The Pipeline provenance line and per-item source/confidence metadata are more drift-prone than the core numbered list structure. Missing metadata degrades provenance tracking but does not break composition. The numbered list is the only hard structural requirement.
