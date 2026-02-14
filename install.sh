@@ -71,6 +71,21 @@ else
     TARGET_DIR="$HOME/.claude"
 fi
 
+# --- Cross-filesystem check for hardlinks ---
+if [ "$USE_HARDLINKS" = true ]; then
+    # Get parent directory of TARGET_DIR (since TARGET_DIR may not exist yet)
+    TARGET_PARENT="$(dirname "$TARGET_DIR")"
+
+    # Get device IDs using stat
+    SRC_DEV=$(stat -c %d "$SCRIPT_DIR" 2>/dev/null)
+    DST_DEV=$(stat -c %d "$TARGET_PARENT" 2>/dev/null)
+
+    if [ "$SRC_DEV" != "$DST_DEV" ]; then
+        echo "Error: Cannot use hardlinks across filesystems. Source ($SCRIPT_DIR) and target ($TARGET_DIR) are on different devices."
+        exit 1
+    fi
+fi
+
 link_file() {
     local src="$1"
     local dst="$2"
@@ -78,22 +93,73 @@ link_file() {
     # Create parent directory if needed
     mkdir -p "$(dirname "$dst")"
 
-    if [ -L "$dst" ]; then
-        # Already a symlink — update it
-        rm "$dst"
-        ln -s "$src" "$dst"
-        log "Updated: $dst -> $src"
-    elif [ -e "$dst" ]; then
-        # Regular file exists — back it up
-        local backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
-        mv "$dst" "$backup"
-        warn "Backed up existing file: $dst -> $backup"
-        ln -s "$src" "$dst"
-        log "Linked: $dst -> $src"
+    if [ "$USE_HARDLINKS" = true ]; then
+        # Hardlink mode
+        if [ -e "$dst" ]; then
+            # Check if already hardlinked (same inode)
+            SRC_INODE=$(stat -c %i "$src" 2>/dev/null)
+            DST_INODE=$(stat -c %i "$dst" 2>/dev/null)
+
+            if [ "$SRC_INODE" = "$DST_INODE" ]; then
+                log "Already linked: $dst"
+                return
+            else
+                # Different inode — back up and hardlink
+                local backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
+                mv "$dst" "$backup"
+                warn "Backed up existing file: $dst -> $backup"
+                ln "$src" "$dst"
+                log "Hardlinked: $dst -> $src"
+            fi
+        else
+            # Nothing exists — create fresh hardlink
+            ln "$src" "$dst"
+            log "Hardlinked: $dst -> $src"
+        fi
     else
-        # Nothing exists — create fresh
-        ln -s "$src" "$dst"
-        log "Linked: $dst -> $src"
+        # Symlink mode (original behavior)
+        if [ -L "$dst" ]; then
+            # Already a symlink — update it
+            rm "$dst"
+            ln -s "$src" "$dst"
+            log "Updated: $dst -> $src"
+        elif [ -e "$dst" ]; then
+            # Regular file exists — back it up
+            local backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
+            mv "$dst" "$backup"
+            warn "Backed up existing file: $dst -> $backup"
+            ln -s "$src" "$dst"
+            log "Linked: $dst -> $src"
+        else
+            # Nothing exists — create fresh
+            ln -s "$src" "$dst"
+            log "Linked: $dst -> $src"
+        fi
+    fi
+}
+
+link_dir() {
+    local src="$1"
+    local dst="$2"
+
+    if [ "$USE_HARDLINKS" = true ]; then
+        # Hardlink mode: create target dir and hardlink each file
+        mkdir -p "$dst"
+
+        local file_count=0
+        for file in "$src"/*; do
+            [ -f "$file" ] || continue
+            local name="$(basename "$file")"
+            link_file "$file" "$dst/$name"
+            file_count=$((file_count + 1))
+        done
+
+        if [ "$file_count" -gt 0 ]; then
+            log "Hardlinked directory: $dst ($file_count files)"
+        fi
+    else
+        # Symlink mode: symlink the whole directory
+        link_file "$src" "$dst"
     fi
 }
 
@@ -170,7 +236,7 @@ info "Installing skills..."
 for skill_dir in "$SCRIPT_DIR"/skills/*/; do
     [ -d "$skill_dir" ] || continue
     name="$(basename "$skill_dir")"
-    link_file "$skill_dir" "$TARGET_DIR/skills/$name"
+    link_dir "$skill_dir" "$TARGET_DIR/skills/$name"
 done
 
 # --- Settings ---
