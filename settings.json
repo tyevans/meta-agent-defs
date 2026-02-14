@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '--- Session Diagnostics ---'; DIRTY=$(git status --porcelain 2>/dev/null); if [ -n \"$DIRTY\" ]; then echo \"WARNING: Uncommitted changes detected from previous session:\"; echo \"$DIRTY\" | head -20; echo '(Review these before starting new work)'; else echo 'Working tree: clean'; fi; UNPUSHED=$(git log @{u}.. --oneline 2>/dev/null); if [ -n \"$UNPUSHED\" ]; then echo \"WARNING: Unpushed commits:\"; echo \"$UNPUSHED\"; echo '(Consider pushing before starting new work)'; fi; echo '--- Beads ---'; bd prime 2>/dev/null || true"
+            "command": "echo '--- Session Diagnostics ---'; DIRTY=$(git status --porcelain 2>/dev/null); if [ -n \"$DIRTY\" ]; then echo \"WARNING: Uncommitted changes detected from previous session:\"; echo \"$DIRTY\" | head -20; echo '(Review these before starting new work)'; else echo 'Working tree: clean'; fi; UNPUSHED=$(git log @{u}.. --oneline 2>/dev/null); if [ -n \"$UNPUSHED\" ]; then echo \"WARNING: Unpushed commits:\"; echo \"$UNPUSHED\"; echo '(Consider pushing before starting new work)'; fi; if [ -f .claude/team.yaml ]; then TEAM_NAME=$(grep '^team:' .claude/team.yaml 2>/dev/null | head -1 | sed 's/^team: *//'); MEMBER_COUNT=$(grep '^ *- name:' .claude/team.yaml 2>/dev/null | wc -l); echo \"--- Team: ${TEAM_NAME:-unknown} ($MEMBER_COUNT members) ---\"; echo 'Use /standup for status, /sprint to dispatch work, /retro to reflect.'; fi; echo '--- Beads ---'; bd prime 2>/dev/null || true"
           }
         ]
       }

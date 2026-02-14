@@ -78,10 +78,38 @@ mcp__memory__create_relations(relations: [{
 
 This builds a knowledge graph where agents can discover each other's relevant learnings.
 
+## File-Based Learnings (Primary)
+
+When a project has a team manifest (`.claude/team.yaml`), file-based learnings are the primary persistence mechanism. See `team-protocol.md` for the full spec.
+
+- **Location**: `memory/agents/<name>/learnings.md`
+- **Format**: Categorized markdown (Codebase Patterns, Gotchas, Preferences, Cross-Agent Notes)
+- **Injection**: Contents are embedded in `--append-system-prompt` at spawn time
+- **Lifecycle**: Seed → Inject → Reflect → Prune (see team-protocol.md)
+
+### Advantages over MCP
+
+- Version-controlled (git history shows learning evolution)
+- Injectable into CLI prompts (works with `claude -p`)
+- Human-readable and editable
+- Reviewable in PRs
+
+### When to Use File-Based vs MCP
+
+| Scenario | Use |
+|----------|-----|
+| Team member learnings (within a project) | File-based |
+| Cross-project knowledge queries | MCP |
+| Agent identity when file context unavailable | MCP |
+| Relation-based discovery between agents | MCP |
+
 ## For Skill Authors
 
-Skills that dispatch agents with memory should include this in the agent's prompt:
+Skills that dispatch agents with memory should:
+
+1. **Check for team manifest first** (`.claude/team.yaml`). If present, use file-based learnings from `memory/agents/<name>/learnings.md`.
+2. **Fall back to MCP** if no team manifest exists. Include this in the agent's prompt:
 
 > Before starting, check for prior learnings: read your memory node `agent:<name>` via the Memory MCP. Before finishing, write any new learnings worth preserving.
 
-Skills should include `mcp__memory__open_nodes`, `mcp__memory__add_observations`, and `mcp__memory__create_entities` in the agent's available tools (these are available to all agents by default via the MCP server).
+Skills using MCP should include `mcp__memory__open_nodes`, `mcp__memory__add_observations`, and `mcp__memory__create_entities` in the agent's available tools (these are available to all agents by default via the MCP server).

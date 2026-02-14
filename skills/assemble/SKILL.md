@@ -1,17 +1,27 @@
 ---
 name: assemble
-description: "Create a persistent agent team for a project with roles, memory namespaces, and a shared backlog. Use when starting a new project, forming a team for long-horizon work, or setting up agents that learn and improve across sessions. Keywords: team, project, setup, roles, persistent, agents, staff."
+description: "Create a persistent learning team for a project with roles, ownership, and file-based learnings that improve agent behavior across sessions. Use when starting a new project, forming a team for long-horizon work, or upgrading from ad-hoc agent dispatch to structured team coordination. Keywords: team, project, setup, roles, persistent, agents, staff, learning."
 argument-hint: "<project description>"
 disable-model-invocation: true
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(mkdir:*), Write, Edit, Task
 ---
 
-# Assemble: Persistent Team Creation
+# Assemble: Persistent Learning Team Creation
 
-You are running **Assemble** -- a workflow to create a persistent agent team for a project. Unlike ad-hoc teams spawned by other skills (meeting, blossom), an assembled team persists across sessions. Each member has a role, a memory namespace, and accumulated learnings.
+You are running **Assemble** -- a workflow to create a persistent agent team that learns and improves across sessions. Each member has a role, file ownership, and a learnings file that gets injected into every spawn.
 
 **Project:** $ARGUMENTS
+
+## How It Works
+
+```
+Explore project → Propose roles + ownership → User confirms
+  → Write team.yaml manifest
+    → Create learnings.md per member (seeded with role context)
+      → Create shared team memory (decisions.md)
+        → Initialize backlog → Report
+```
 
 ## Phase 1: Understand the Project
 
@@ -19,128 +29,139 @@ You are running **Assemble** -- a workflow to create a persistent agent team for
 
 Read the project's key files to understand its domain:
 - README, CLAUDE.md, package.json/Cargo.toml/pyproject.toml (or equivalent)
-- Directory structure (`ls` top level)
+- Directory structure (`ls` top level, key subdirectories)
 - Existing `.claude/` config if present
+- Existing `.claude/team.yaml` if present (this may be a team update, not creation)
 
-### 1b. Identify Roles
+### 1b. Identify Roles and Ownership
 
-Based on the project, select 3-6 roles. Each role should have a clear responsibility boundary.
+Based on the project, select 3-6 roles. Each role needs a clear responsibility boundary AND file ownership (glob patterns for the files they are responsible for).
 
 **Role templates** (pick, adapt, or create new):
 
-| Role | Responsibility | When to include |
-|------|---------------|-----------------|
-| Architect | System design, API contracts, patterns | Always -- every project needs design oversight |
-| Backend | Server logic, data models, business rules | Projects with server-side code |
-| Frontend | UI components, state management, UX | Projects with a user interface |
-| Tester | Test strategy, coverage, edge cases | Projects with any test suite |
-| DevOps | CI/CD, deployment, infrastructure | Projects with deployment pipelines |
-| Security | Auth, input validation, threat modeling | Projects handling user data |
-| Domain Expert | Domain-specific knowledge and rules | Domain-heavy projects (finance, health, etc.) |
-| Tech Writer | Docs, API references, guides | Projects with external users |
+| Role | Responsibility | Typical Ownership | When to include |
+|------|---------------|-------------------|-----------------|
+| architect | System design, API contracts, patterns | `src/core/**`, `*.md`, `docs/**` | Always |
+| backend | Server logic, data models, business rules | `src/domain/**`, `src/infra/**` | Projects with server-side code |
+| frontend | UI components, state management, UX | `src/ui/**`, `src/components/**` | Projects with a user interface |
+| tester | Test strategy, coverage, edge cases | `tests/**`, `*.test.*` | Projects with a test suite |
+| devops | CI/CD, deployment, infrastructure | `.github/**`, `Dockerfile`, `*.yml` | Projects with deployment pipelines |
+| security | Auth, input validation, threat modeling | `src/auth/**`, `src/middleware/**` | Projects handling user data |
 
 ### 1c. Confirm with User
 
-Present the proposed team to the user:
+Present the proposed team:
 
 ```markdown
 ## Proposed Team for: [project name]
 
-| Role | Responsibility | Why |
-|------|---------------|-----|
-| [role] | [1-sentence responsibility] | [why this project needs it] |
-| ... | ... | ... |
+| Role | Responsibility | Owns | Model | Budget |
+|------|---------------|------|-------|--------|
+| [role] | [1-sentence] | [glob patterns] | [model] | $[budget] |
+| ... | ... | ... | ... | ... |
+
+**Defaults**: model=sonnet, budget=$0.50, permission-mode=dontAsk
 ```
 
-Ask the user to approve, modify roles, or suggest additions.
+Ask the user to approve, modify roles, adjust ownership, or suggest additions.
 
 ---
 
 ## Phase 2: Create the Team
 
-### 2a. Team Directory
-
-Create the team configuration:
+### 2a. Directory Structure
 
 ```bash
-mkdir -p .claude/teams
+mkdir -p .claude
+mkdir -p memory/agents
+mkdir -p memory/team
 ```
 
-Write `.claude/teams/<project-slug>.md`:
+### 2b. Write Team Manifest
+
+Write `.claude/team.yaml` following the format defined in the team-protocol rule:
+
+```yaml
+team: <project-slug>
+description: "<project description>"
+
+defaults:
+  model: sonnet
+  budget: 0.50
+  permission-mode: dontAsk
+
+members:
+  - name: <role>
+    role: "<responsibility>"
+    model: <model if non-default>
+    budget: <budget if non-default>
+    tools: [<tool list>]
+    owns: [<glob patterns>]
+```
+
+### 2c. Create Learnings Files
+
+For each member, create `memory/agents/<name>/learnings.md`:
 
 ```markdown
-# Team: [project name]
+# Learnings: <name>
 
-## Members
+## Codebase Patterns
+- (none yet)
 
-### [Role Name]
-- **Responsibility**: [what they own]
-- **Memory node**: agent:[project-slug]-[role]
-- **Perspective**: [how they think, what they prioritize]
-- **Tools**: [tools they typically need]
+## Gotchas
+- (none yet)
 
-### [Next Role]
-...
+## Preferences
+- (none yet)
 
-## Working Agreements
-- All members follow the agent memory protocol (read-on-spawn, write-on-complete)
-- Disagreements are surfaced in /meeting, not suppressed
-- Each member owns their area but reviews are cross-functional
-
-## Project Context
-- **Repo**: [path]
-- **Stack**: [languages, frameworks]
-- **Key files**: [most important files for context]
+## Cross-Agent Notes
+- (none yet)
 ```
 
-### 2b. Initialize Memory Nodes
+Seed each file with 2-3 initial observations based on Phase 1 exploration. For example, an architect might get "Project uses Express.js with TypeScript strict mode" under Codebase Patterns.
 
-For each team member, create their memory entity via the Memory MCP:
+### 2d. Create Shared Memory
 
-```
-mcp__memory__create_entities(entities: [{
-  name: "agent:[project-slug]-[role]",
-  entityType: "agent-memory",
-  observations: [
-    "Role: [role name] for [project name]",
-    "Responsibility: [what they own]",
-    "Project stack: [languages, frameworks]",
-    "Key files: [files relevant to this role]"
-  ]
-}])
-```
+Write `memory/team/decisions.md`:
 
-### 2c. Wire Relations
+```markdown
+# Team Decisions
 
-Create relations between team members who need to collaborate:
+## Architecture
+- (none yet)
 
-```
-mcp__memory__create_relations(relations: [
-  { from: "agent:[slug]-backend", relationType: "collaborates-with", to: "agent:[slug]-frontend" },
-  { from: "agent:[slug]-tester", relationType: "reviews-work-of", to: "agent:[slug]-backend" }
-])
+## Conventions
+- (none yet)
 ```
 
-### 2d. Initialize Backlog
+Write `memory/team/retro-history.md`:
 
-If the project doesn't already have beads:
+```markdown
+# Retrospective History
+
+(No retrospectives yet. Run /retro to add entries.)
+```
+
+### 2e. Initialize Backlog (optional)
+
+If the project doesn't already have beads and the user wants backlog tracking:
 
 ```bash
-bd create --title="EPIC: [project name] team setup" --type=feature --priority=2 \
-  --description="Tracking epic for initial team assembly and onboarding."
+bd create --title="EPIC: [project name] team setup" --type=feature --priority=2
 ```
 
 ---
 
-## Phase 3: Verify
+## Phase 3: Verify and Report
 
-### 3a. Check Memory
+### 3a. Verify Files
 
-Verify all memory nodes were created:
-
-```
-mcp__memory__search_nodes(query: "[project-slug]")
-```
+Check all expected files were created:
+- `.claude/team.yaml`
+- `memory/agents/<name>/learnings.md` for each member
+- `memory/team/decisions.md`
+- `memory/team/retro-history.md`
 
 ### 3b. Report
 
@@ -148,30 +169,38 @@ mcp__memory__search_nodes(query: "[project-slug]")
 ## Team Assembled: [project name]
 
 ### Members
-| Role | Memory Node | Status |
-|------|------------|--------|
-| [role] | agent:[slug]-[role] | Ready |
-| ... | ... | ... |
+| Role | Owns | Model | Learnings |
+|------|------|-------|-----------|
+| [role] | [patterns] | [model] | memory/agents/[name]/learnings.md |
+| ... | ... | ... | ... |
+
+### Files Created
+- `.claude/team.yaml` — Team manifest
+- `memory/agents/*/learnings.md` — Per-member learnings ([count] files)
+- `memory/team/decisions.md` — Shared decisions log
+- `memory/team/retro-history.md` — Retro history
 
 ### How to Use This Team
-- `/meeting [topic]` -- Discuss with team members (use role names as panelists)
-- `/standup` -- Get status from each member (when implemented)
-- `/fractal [goal]` -- Deep exploration dispatched to relevant members
-- Dispatch work directly: `Task({ name: "[role]", prompt: "..." })`
+- `/sprint` — Plan and dispatch work to team members (the learning loop)
+- `/standup` — Status sync from each member's perspective
+- `/meeting [topic]` — Multi-agent discussion using team roles
+- `/retro` — Reflect on session and prune/promote learnings
 
-### Memory Nodes Created
-[count] entities, [count] relations
-
-### Next Steps
-[Suggested first actions for the team]
+### The Learning Loop
+Each time you dispatch work via /sprint:
+1. Agent receives its accumulated learnings in the system prompt
+2. Agent works and returns structured reflection
+3. Orchestrator extracts learnings and appends to the agent's file
+4. Next spawn: agent behaves differently because its learnings changed
 ```
 
 ---
 
 ## Guidelines
 
-1. **Roles, not people.** A role is a perspective and responsibility boundary. One human can fill multiple roles.
+1. **Ownership is key.** Every source file should be owned by exactly one member. Use `owns` patterns to make this clear. Overlap is acceptable for shared files (e.g., README).
 2. **Start small.** 3-4 roles for most projects. Add roles when the team feels a gap, not preemptively.
-3. **Memory is the persistence layer.** Team config is a file; agent knowledge lives in the Memory MCP graph.
-4. **Confirm before creating.** Always show the proposed team to the user before creating memory nodes.
-5. **Teams evolve.** Roles can be added, removed, or redefined. Memory nodes accumulate -- they don't reset.
+3. **Files are the persistence layer.** Team config is YAML; learnings are Markdown. Both are version-controlled and human-editable.
+4. **Confirm before creating.** Always show the proposed team to the user before writing files.
+5. **Seed learnings.** Don't leave learnings files empty -- add 2-3 observations from your Phase 1 exploration so agents start with useful context.
+6. **Teams evolve.** Roles can be added, removed, or redefined. Learnings accumulate. Run `/retro` to prune.

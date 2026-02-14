@@ -4,7 +4,7 @@ description: "Run an automated session retrospective to evaluate velocity, quali
 argument-hint: "[focus area or session topic]"
 disable-model-invocation: true
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(wc:*), Write, Edit
 ---
 
 # Retro: Automated Session Retrospective
@@ -20,14 +20,15 @@ You are running a **session retrospective** -- a structured reflection on the cu
 
 ## Overview
 
-Retro works in 5 phases:
+Retro works in 6 phases:
 
 ```
 Gather session data (git + backlog + conversation context)
   -> Analyze across 5 dimensions
     -> Extract keep/stop/try learnings
-      -> Update MEMORY.md with durable insights
-        -> Present structured report
+      -> Team learning health (if team exists)
+        -> Update MEMORY.md with durable insights
+          -> Present structured report
 ```
 
 ---
@@ -113,7 +114,63 @@ Be specific and actionable. "Communication was good" is not useful. "Sending spi
 
 ---
 
-## Phase 4: Update MEMORY.md
+## Phase 4: Team Learning Health (conditional)
+
+**Only run this phase if `.claude/team.yaml` exists.** Skip entirely for non-team sessions.
+
+### 4a. Read Team Learnings
+
+Read all `memory/agents/*/learnings.md` files. For each member, assess:
+- **Total entries**: Count of non-empty bullet points
+- **Recent additions**: Entries with dates in the last 7 days
+- **Staleness**: Days since the last entry was added
+- **Size**: Line count vs. the 150-line cap
+- **Cross-agent notes**: Any pending notes from other members
+
+### 4b. Prune Bloated Files
+
+If any learnings file exceeds 120 lines:
+1. **Merge similar entries** — Combine entries that say the same thing differently
+2. **Archive stale entries** — Move entries older than 30 days (with no recent references) to `memory/agents/<name>/archive.md`
+3. **Promote high-value entries** — If an entry has been confirmed across 3+ sessions, consider promoting it to `.claude/rules/` or CLAUDE.md where all agents benefit
+
+### 4c. Assess Learning Velocity
+
+For each member:
+- **Growing**: 3+ new learnings in last 7 days → agent is actively learning
+- **Steady**: 1-2 new learnings in last 7 days → normal pace
+- **Stale**: No new learnings in 7+ days → agent may need richer tasks or the role may be inactive
+- **Cold**: No learnings at all → role hasn't been dispatched yet
+
+### 4d. Report Team Learning Health
+
+```markdown
+### Team Learning Health
+| Member | Entries | Recent | Status | Action Needed |
+|--------|---------|--------|--------|--------------|
+| [name] | [total] | [recent] | [status] | [prune/archive/promote/none] |
+| ... | ... | ... | ... | ... |
+
+**Cross-agent notes delivered this session**: [count]
+**Entries pruned/archived**: [count]
+**Entries promoted to rules**: [count]
+```
+
+### 4e. Append to Retro History
+
+Append a summary to `memory/team/retro-history.md`:
+
+```markdown
+## Retro: [date]
+- Tasks completed: [count]
+- New learnings: [count] across [members] members
+- Pruned/archived: [count] entries
+- Key insight: [most significant learning from this session]
+```
+
+---
+
+## Phase 5: Update MEMORY.md
 
 ### 4a. Read Current State
 
@@ -153,7 +210,7 @@ Read MEMORY.md after edits to confirm it is well-structured and under the line l
 
 ---
 
-## Phase 5: Report
+## Phase 6: Report
 
 Present a structured retrospective report:
 

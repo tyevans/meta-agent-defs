@@ -1,7 +1,7 @@
 ---
 name: standup
-description: "Run a team standup to sync status, surface blockers, and plan next actions. Each team member reports from their memory and assigned beads. Use at the start of a session, after a break, or when you need to reorient. Keywords: status, sync, blockers, progress, team, check-in."
-argument-hint: "[team-config-path]"
+description: "Run a team standup to sync status, surface blockers, and plan next actions. Reads the team manifest and each member's learnings for a file-based status report. Use at the start of a session, after a break, or when you need to reorient. Keywords: status, sync, blockers, progress, team, check-in."
+argument-hint: "[focus area]"
 disable-model-invocation: true
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task
@@ -9,15 +9,26 @@ allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task
 
 # Standup: Team Status Sync
 
-You are running a **Standup** -- a quick status sync with a persistent agent team. Each member checks their memory, reviews their assigned beads, and reports progress, blockers, and planned next actions.
+You are running a **Standup** -- a quick status sync with a persistent learning team. Each member's status is derived from their learnings file, git activity on owned files, and the beads backlog.
 
-**Team config:** $ARGUMENTS (path to team config, e.g., `.claude/teams/myproject.md`). If not provided, look for the first `.claude/teams/*.md` file.
+**Focus area (optional):** $ARGUMENTS
+
+## How It Works
+
+```
+Read team.yaml → Check backlog + git → Per-member activity report
+  → Learning health check → Synthesize board → Suggest actions
+```
+
+---
 
 ## Phase 1: Load Context
 
-### 1a. Read Team Config
+### 1a. Read Team Manifest
 
-Read the team config file to discover members, their roles, and memory nodes.
+Read `.claude/team.yaml` to discover members, their roles, and ownership patterns.
+
+If no `.claude/team.yaml` exists, check for legacy `.claude/teams/*.md` files. If neither exists, tell the user to run `/assemble` first and stop.
 
 ### 1b. Check Backlog
 
@@ -31,74 +42,72 @@ bd blocked
 ### 1c. Check Git
 
 ```bash
-git log --oneline -5
+git log --oneline -10
 git status
 ```
 
 ---
 
-## Phase 2: Collect Reports
+## Phase 2: Per-Member Activity
 
-For each team member, dispatch a lightweight agent to generate their standup report:
+For each team member, gather their status **without dispatching agents** (standup should be fast and read-only):
 
+### 2a. Git Activity by Ownership
+
+For each member, check recent commits touching their owned files:
+
+```bash
+git log --oneline -5 -- <owns patterns>
 ```
-Task({
-  subagent_type: "general-purpose",
-  run_in_background: true,
-  model: "haiku",
-  prompt: "<standup agent prompt -- see below>"
-})
+
+For example, if backend owns `src/domain/**` and `src/infra/**`:
+```bash
+git log --oneline -5 -- "src/domain/" "src/infra/"
 ```
 
-Launch all standup agents concurrently (they're fast and independent).
+### 2b. Learning Health
 
-**Standup agent prompt:**
+Read each member's `memory/agents/<name>/learnings.md` and note:
+- **Total entries**: Number of non-empty bullet points
+- **Recent additions**: Entries with dates in the last 7 days
+- **Staleness**: Time since last entry was added
+- **Cross-agent notes**: Pending notes from other members
+- **Size**: Whether approaching the 150-line cap
 
-> You are **[Role]** for [project name], generating your standup report.
->
-> **Step 1**: Read your memory node:
-> ```
-> mcp__memory__open_nodes(names: ["agent:[memory-node-name]"])
-> ```
->
-> **Step 2**: Check beads assigned to you (if any):
-> ```bash
-> bd list --status=in_progress
-> bd list --status=open
-> ```
->
-> **Step 3**: Report in this format:
->
-> ## [Role] Standup
-> **Done**: [What you completed or know from memory. "Nothing yet" if first standup.]
-> **Doing**: [Current in-progress beads or active focus area]
-> **Blocked**: [Anything preventing progress. "None" if clear.]
-> **Next**: [What you'd work on next given the backlog]
-> **Learning**: [One thing from your memory that's relevant right now. "None" if nothing applies.]
->
-> Keep it to 5-10 lines total. This is a standup, not a report.
+### 2c. Relevant Beads
+
+Check if any in-progress or ready beads match this member's ownership patterns (by scanning bead titles/descriptions against the member's role keywords).
 
 ---
 
 ## Phase 3: Synthesize
 
-After all standup agents complete:
-
 ### 3a. Present the Board
 
 ```markdown
-## Standup: [project name]
+## Standup: [team name]
 
-| Role | Done | Doing | Blocked | Next |
-|------|------|-------|---------|------|
-| [role] | [summary] | [summary] | [summary] | [summary] |
-| ... | ... | ... | ... | ... |
+### Team Activity
+| Member | Recent Commits | Learnings | Health |
+|--------|---------------|-----------|--------|
+| [name] | [count] in owned files | [total] entries ([recent] new) | [status emoji] |
+| ... | ... | ... | ... |
+
+Health: healthy (active commits + growing learnings), stale (no recent activity), bloated (learnings >120 lines), cold (no learnings yet)
+
+### Backlog Snapshot
+- **Ready**: [count] tasks available
+- **In Progress**: [count] tasks active
+- **Blocked**: [count] tasks blocked
 
 ### Blockers
-[List any blockers that need resolution. If none, say "No blockers."]
+[List any blocked beads or issues. "No blockers" if clear.]
 
-### Learnings
-[Notable learnings from team memory that are relevant to current work]
+### Learning Highlights
+[Notable recent learnings across the team. 2-3 most relevant items.]
+
+### Cross-Agent Notes Pending
+[Any cross-agent notes that haven't been acknowledged. "None pending" if clear.]
 
 ### Suggested Actions
 1. [Highest-priority action based on standup]
@@ -108,18 +117,18 @@ After all standup agents complete:
 
 ### 3b. Ask User for Direction
 
-Present the standup board and ask what to focus on next. Offer options:
+Present the board and offer options:
+- Dispatch work on the highest-priority ready bead (`/sprint`)
 - Resolve a blocker
-- Dispatch work on the highest-priority ready bead
 - Run `/meeting` to discuss a tension
-- Run `/fractal` to investigate an unknown
+- Run `/retro` if learnings are stale or bloated
 
 ---
 
 ## Guidelines
 
-1. **Fast.** Standup should complete in under a minute. Use haiku model for standup agents.
-2. **Honest.** "Nothing yet" and "None" are valid answers. Don't fabricate progress.
+1. **Fast.** Standup should complete in under 30 seconds. No agent dispatch -- everything is read-only file operations.
+2. **Honest.** "No activity" and "No learnings yet" are valid. Don't fabricate progress.
 3. **Actionable.** The output should make the next action obvious.
-4. **Memory-aware.** Each member's report draws from their accumulated knowledge, not just beads.
-5. **Lightweight.** No beads creation during standup. It's a read-only status check.
+4. **Learning-aware.** Surface learning health alongside work status -- a member with stale learnings may need a retro.
+5. **Lightweight.** No beads creation during standup. No file writes. Pure read-only status check.
