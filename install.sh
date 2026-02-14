@@ -202,16 +202,34 @@ echo ""
 mkdir -p "$TARGET_DIR/agents"
 mkdir -p "$TARGET_DIR/skills"
 
-# --- Stale symlink cleanup ---
-if [ -z "$PROJECT_DIR" ]; then
-    info "Checking for stale symlinks..."
-    STALE_COUNT=0
+# --- Stale cleanup ---
+info "Checking for stale installations..."
+STALE_COUNT=0
+if [ -f "$MANIFEST_FILE" ]; then
+    # Manifest-based cleanup: remove entries whose source no longer exists
+    while IFS= read -r entry; do
+        [[ "$entry" =~ ^# ]] && continue
+        [ -z "$entry" ] && continue
+        # Only remove if the installed file/link still exists but its source is gone
+        if [ -e "$entry" ] || [ -L "$entry" ]; then
+            # For symlinks, check if target exists; for hardlinks, the entry itself is the check
+            if [ -L "$entry" ]; then
+                target="$(readlink "$entry")"
+                if [ ! -e "$target" ]; then
+                    rm "$entry"
+                    warn "Removed stale link: $entry -> $target"
+                    STALE_COUNT=$((STALE_COUNT + 1))
+                fi
+            fi
+        fi
+    done < "$MANIFEST_FILE"
+else
+    # Legacy fallback: symlink-based detection (no manifest from prior install)
     for dir in "$TARGET_DIR/agents" "$TARGET_DIR/skills"; do
         [ -d "$dir" ] || continue
         for link in "$dir"/*; do
             [ -L "$link" ] || continue
             target="$(readlink "$link")"
-            # Only consider symlinks pointing into this repo
             case "$target" in
                 "$SCRIPT_DIR"/*) ;;
                 *) continue ;;
@@ -223,13 +241,11 @@ if [ -z "$PROJECT_DIR" ]; then
             fi
         done
     done
-    if [ "$STALE_COUNT" -gt 0 ]; then
-        log "Cleaned up $STALE_COUNT stale symlink(s)"
-    else
-        log "No stale symlinks found"
-    fi
+fi
+if [ "$STALE_COUNT" -gt 0 ]; then
+    log "Cleaned up $STALE_COUNT stale installation(s)"
 else
-    info "Skipping stale symlink cleanup (project-local mode)"
+    log "No stale installations found"
 fi
 
 echo ""
