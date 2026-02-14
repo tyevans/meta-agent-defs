@@ -1,0 +1,50 @@
+# Data Pipeline Team Template
+#
+# Usage: Copy this to your project as .claude/team.yaml and customize:
+# 1. Replace <project-name> with your pipeline name
+# 2. Adjust ownership globs for your data engineering stack
+# 3. Update tools based on your language/framework (Python/Spark/etc)
+# 4. Set appropriate budget limits for long-running data tasks
+
+team: <project-name>
+description: "Data pipeline team with engineering, analytics, and infrastructure roles"
+
+defaults:
+  model: sonnet
+  budget: 0.50
+  permission-mode: dontAsk
+
+members:
+  - name: data-eng
+    role: "ETL pipelines, data ingestion, and processing workflows"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(python:*)", "Bash(git:*)"]
+    owns:
+      - "pipelines/**"
+      - "etl/**"
+      - "src/ingestion/**"
+      - "src/transforms/**"
+      - "dags/**"
+      - "airflow/**"
+
+  - name: analytics
+    role: "ML models, data analysis, and feature engineering"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(python:*)", "Bash(git:*)"]
+    owns:
+      - "models/**"
+      - "notebooks/**"
+      - "analysis/**"
+      - "src/features/**"
+      - "experiments/**"
+      - "*.ipynb"
+
+  - name: infra
+    role: "Infrastructure, deployment, orchestration, and monitoring"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(terraform:*)", "Bash(git:*)"]
+    owns:
+      - "infrastructure/**"
+      - "terraform/**"
+      - "k8s/**"
+      - "docker/**"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - ".github/**"

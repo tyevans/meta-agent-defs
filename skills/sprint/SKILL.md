@@ -1,6 +1,6 @@
 ---
 name: sprint
-description: "Plan and dispatch work to team members with the learning loop: assign tasks by ownership, spawn agents with injected learnings, parse reflections, and persist new learnings. Use when you have ready beads and a team assembled. Keywords: dispatch, execute, work, plan, assign, run, do, build."
+description: "Plan and dispatch work to team members with the learning loop: assign tasks by ownership, spawn agents with injected learnings, parse reflections, and persist new learnings. Works with or without beads backlog tracking. Use when you have a team assembled and work to dispatch. Keywords: dispatch, execute, work, plan, assign, run, do, build."
 argument-hint: "[task filter or focus area]"
 disable-model-invocation: true
 user-invocable: true
@@ -15,11 +15,12 @@ You are running a **Sprint** -- the core execution loop for a persistent learnin
 
 ## When to Use
 
-- When you have a team assembled (via `/assemble`) and ready beads in the backlog
+- When you have a team assembled (via `/assemble`) and work to dispatch
 - When you want to dispatch work to team members with the learning loop
 - When agents should accumulate knowledge from each task to improve on the next
-- After a planning session (like `/blossom`) produces a prioritized backlog
+- After a planning session (like `/blossom`) produces tasks to execute
 - When you want structured reflection and learning persistence after each task
+- Works with beads backlog (pulls from `bd ready`) or without (accepts manual task descriptions)
 
 ## The Learning Loop
 
@@ -45,7 +46,9 @@ Read `.claude/team.yaml`. If it doesn't exist, tell the user to run `/assemble` 
 
 For each member, read `memory/agents/<name>/learnings.md`. Note the current size (line count) and most recent entries.
 
-### 1c. Load Backlog
+### 1c. Load Backlog (conditional)
+
+**If `.beads/` exists in the project root**, check the backlog:
 
 ```bash
 bd ready
@@ -55,16 +58,20 @@ bd blocked
 
 If a focus area was provided via `$ARGUMENTS`, filter to relevant beads.
 
+**If `.beads/` does not exist**, skip this step. The sprint will accept manual task descriptions from the user instead of pulling from the backlog.
+
 ---
 
 ## Phase 2: Plan Assignments
 
 ### 2a. Match Tasks to Members
 
-For each ready bead, determine the best-fit member by:
+**If beads are available**, for each ready bead, determine the best-fit member by:
 1. **Ownership match**: Does the bead's likely file scope overlap with a member's `owns` patterns?
 2. **Role match**: Does the bead's topic align with a member's role description?
 3. **Learning advantage**: Has a member accumulated relevant learnings for this type of task?
+
+**If beads are not available**, ask the user to describe the tasks they want dispatched, then match tasks to members based on role and ownership fit.
 
 ### 2b. Present Sprint Plan
 
@@ -131,11 +138,15 @@ Use the full spawn command template from team-protocol.md when:
 - JSON schema enforcement is needed (`--json-schema`)
 - The task is complex enough to warrant a full CLI session
 
-### 3c. Mark Bead In-Progress
+### 3c. Mark Bead In-Progress (conditional)
+
+**If beads are available**:
 
 ```bash
 bd update <bead-id> --status=in_progress
 ```
+
+**If beads are not available**, skip this step.
 
 ---
 
@@ -167,13 +178,15 @@ For each suggested learning:
 - TrustService requires bootstrap before first call (added: 2026-02-13)
 ```
 
-### 4c. Update Bead
+### 4c. Update Bead (conditional)
 
-Based on `task_result.status`:
+**If beads are available**, based on `task_result.status`:
 - **completed**: `bd close <bead-id>`
 - **partial**: Keep in-progress, note what remains
 - **blocked**: `bd update <bead-id> --notes="Blocked: <blocked_by>"`
 - **failed**: `bd update <bead-id> --notes="Failed: <summary>"`
+
+**If beads are not available**, skip bead updates and simply note the task status in the sprint report.
 
 ### 4d. Report Progress
 

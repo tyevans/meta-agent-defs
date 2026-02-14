@@ -43,7 +43,9 @@ git log --oneline -20
 
 Note which commits were made this session, how many files were touched, and the types of changes (feat, fix, refactor, docs, chore).
 
-### 1b. Backlog Activity
+### 1b. Backlog Activity (conditional)
+
+**If `.beads/` exists in the project root**, check backlog activity:
 
 ```bash
 bd stats
@@ -51,6 +53,8 @@ bd list --status=closed
 ```
 
 Note how many tasks were completed, what types they were, and whether any were closed as duplicates or stale (vs. genuinely completed).
+
+**If `.beads/` does not exist**, skip this step and rely on git activity and conversation context alone.
 
 ### 1c. Conversation Context
 

@@ -66,6 +66,10 @@ meta-agent-defs/
 │   ├── handoff/SKILL.md         # Session transition (inline)
 │   ├── review/SKILL.md          # Code review (context: fork)
 │   └── retro/SKILL.md           # Session retrospective (inline)
+├── rules/                       # Global rules (symlinked to ~/.claude/rules/)
+│   └── team-protocol.md         # Team manifest, spawn protocol, reflection schema
+├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
+│   └── teams/                   # Starter team.yaml files for common project types
 ├── bin/
 │   └── claude-orchestrate      # CLI launcher: bypass perms + claude-in-claude dispatch
 ├── prompts/

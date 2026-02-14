@@ -217,6 +217,14 @@ echo ""
 # Ensure ~/.claude/ exists
 mkdir -p "$TARGET_DIR/agents"
 mkdir -p "$TARGET_DIR/skills"
+if [ -z "$PROJECT_DIR" ]; then
+    if [ -d "$SCRIPT_DIR/rules" ]; then
+        mkdir -p "$TARGET_DIR/rules"
+    fi
+    if [ -d "$SCRIPT_DIR/templates" ]; then
+        mkdir -p "$TARGET_DIR/templates"
+    fi
+fi
 
 # --- Stale cleanup ---
 info "Checking for stale installations..."
@@ -241,7 +249,7 @@ if [ -f "$MANIFEST_FILE" ]; then
     done < "$MANIFEST_FILE"
 else
     # Legacy fallback: symlink-based detection (no manifest from prior install)
-    for dir in "$TARGET_DIR/agents" "$TARGET_DIR/skills"; do
+    for dir in "$TARGET_DIR/agents" "$TARGET_DIR/skills" "$TARGET_DIR/rules"; do
         [ -d "$dir" ] || continue
         for link in "$dir"/*; do
             [ -L "$link" ] || continue
@@ -281,6 +289,26 @@ for skill_dir in "$SCRIPT_DIR"/skills/*/; do
     name="$(basename "$skill_dir")"
     link_dir "$skill_dir" "$TARGET_DIR/skills/$name"
 done
+
+# --- Rules ---
+if [ -z "$PROJECT_DIR" ]; then
+    if [ -d "$SCRIPT_DIR/rules" ]; then
+        info "Installing rules..."
+        link_dir "$SCRIPT_DIR/rules" "$TARGET_DIR/rules"
+    fi
+else
+    info "Skipping global rules (project-local mode - use .claude/rules/ instead)"
+fi
+
+# --- Templates ---
+if [ -z "$PROJECT_DIR" ]; then
+    if [ -d "$SCRIPT_DIR/templates" ]; then
+        info "Installing templates..."
+        link_dir "$SCRIPT_DIR/templates" "$TARGET_DIR/templates"
+    fi
+else
+    info "Skipping templates (project-local mode - global feature)"
+fi
 
 # --- Settings ---
 if [ -z "$PROJECT_DIR" ]; then
@@ -364,6 +392,12 @@ info "What was installed:"
 echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
 echo "  Skills:   $(ls -d "$SCRIPT_DIR"/skills/*/ 2>/dev/null | wc -l) skills"
 if [ -z "$PROJECT_DIR" ]; then
+    if [ -d "$SCRIPT_DIR/rules" ]; then
+        echo "  Rules:    $(ls -1 "$SCRIPT_DIR"/rules/*.md 2>/dev/null | wc -l) global rules"
+    fi
+    if [ -d "$SCRIPT_DIR/templates" ]; then
+        echo "  Templates: $(find "$SCRIPT_DIR/templates" -type f -name "*.yaml" 2>/dev/null | wc -l) team templates"
+    fi
     echo "  Settings: settings.json (hooks + env)"
     if [ "$INSTALL_CLI" = true ]; then
         echo "  Scripts:  $(ls -1 "$SCRIPT_DIR"/bin/* 2>/dev/null | wc -l) CLI commands -> $BIN_DIR/"
@@ -380,6 +414,12 @@ info "To verify:"
 echo "  ls -la $TARGET_DIR/agents/"
 echo "  ls -la $TARGET_DIR/skills/"
 if [ -z "$PROJECT_DIR" ]; then
+    if [ -d "$SCRIPT_DIR/rules" ]; then
+        echo "  ls -la $TARGET_DIR/rules/"
+    fi
+    if [ -d "$SCRIPT_DIR/templates" ]; then
+        echo "  ls -la $TARGET_DIR/templates/"
+    fi
     echo "  ls -la $TARGET_DIR/settings.json"
     if [ "$INSTALL_CLI" = true ]; then
         echo "  which claude-orchestrate"

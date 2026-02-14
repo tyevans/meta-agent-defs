@@ -4,7 +4,8 @@
 - Global agents in agents/*.md (3): agent-generator, code-reviewer, project-bootstrapper
 - Project-local agents in .claude/agents/*.md (8): agent-author, definition-tester, effectiveness-auditor, installer-maintainer, pattern-researcher, settings-editor, skill-author, sync-auditor
 - Agent frontmatter: name, description, tools, model, permissionMode
-- Rules in .claude/rules/*.md (8): agent-authoring, agent-memory, commits, definition-of-done, fan-out-protocol, hook-authoring, security, skill-authoring, team-protocol
+- Rules in .claude/rules/*.md (7): agent-authoring, agent-memory, commits, definition-of-done, fan-out-protocol, hook-authoring, security, skill-authoring
+- Global rules in rules/*.md (1): team-protocol — symlinked to ~/.claude/rules/ by install.sh (added: 2026-02-13)
 - Rules use `paths:` frontmatter to scope which files they apply to
 - Memory protocol uses tiered structure: Core (30 lines, high-reuse fundamentals) + Task-Relevant (30 lines, context-specific). Consolidation triggers at 60 lines with 4 mechanisms: merge, archive (>21 days), promote (3+ sprints), validate cross-agent notes (14-day window) (added: 2026-02-13)
 
@@ -18,4 +19,4 @@
 - (none yet)
 
 ## Cross-Agent Notes
-- (none yet)
+- (from agent-author) install.sh follows consistent pattern for global artifacts: create dir under TARGET_DIR, skip in project-local mode with message, include in stale cleanup, show in summary (added: 2026-02-13)

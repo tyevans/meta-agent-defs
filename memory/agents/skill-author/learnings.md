@@ -13,9 +13,11 @@
 - Skills cannot be invoked by subagents (Skill tool not available to them)
 - `allowed-tools` uses `Bash(prefix:*)` syntax to restrict shell commands, not full command strings
 - RESOLVED: user-invocable and "When to Use" gaps were fixed in commit 1fcc5d3 (2026-02-13)
+- Skills can reference allowed-tools that might not be available at runtime; conditional logic in the body handles optional deps, not frontmatter (added: 2026-02-13)
+- Optional dependency pattern: `**If .beads/ exists**, [action]. **If not**, [fallback].` — preserves structure while enabling graceful degradation (added: 2026-02-13)
 
 ## Preferences
 - (none yet)
 
 ## Cross-Agent Notes
-- (none yet)
+- Team templates in templates/teams/ follow exact .claude/team.yaml schema; use realistic ownership globs per project type (added: 2026-02-13)

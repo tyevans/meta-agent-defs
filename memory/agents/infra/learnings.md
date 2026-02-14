@@ -24,4 +24,4 @@
 - (none yet)
 
 ## Cross-Agent Notes
-- (none yet)
+- (from agent-author) New global rules/ directory added — install.sh now symlinks rules/*.md to ~/.claude/rules/ following same pattern as agents/ and skills/ (added: 2026-02-13)

@@ -228,6 +228,8 @@ workbench/
     session-health/SKILL.md   # /session-health -- session diagnostic (inline)
     handoff/SKILL.md          # /handoff -- session transition (inline)
     retro/SKILL.md            # /retro -- session retrospective (inline)
+  rules/
+    team-protocol.md          # Team manifest format, spawn protocol, reflection schema (global)
   settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
   install.sh                  # Symlink installer (idempotent, non-destructive)

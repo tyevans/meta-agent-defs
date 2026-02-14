@@ -1,0 +1,49 @@
+# Web Fullstack Team Template
+#
+# Usage: Copy this to your project as .claude/team.yaml and customize:
+# 1. Replace <project-name> with your actual project name
+# 2. Adjust ownership globs to match your file structure
+# 3. Add/remove tools based on your workflow needs
+# 4. Set budget and permission-mode to match your preferences
+
+team: <project-name>
+description: "Full-stack web application team with frontend, backend, and QA roles"
+
+defaults:
+  model: sonnet
+  budget: 0.50
+  permission-mode: dontAsk
+
+members:
+  - name: frontend
+    role: "Frontend implementation and UI/UX"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "src/components/**"
+      - "src/pages/**"
+      - "src/styles/**"
+      - "public/**"
+      - "*.html"
+      - "*.css"
+
+  - name: backend
+    role: "API development, database, and server-side logic"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "src/api/**"
+      - "src/routes/**"
+      - "src/models/**"
+      - "src/middleware/**"
+      - "src/db/**"
+      - "migrations/**"
+
+  - name: qa
+    role: "Testing, quality assurance, and integration validation"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "tests/**"
+      - "e2e/**"
+      - "cypress/**"
+      - "playwright/**"
+      - "*.test.*"
+      - "*.spec.*"

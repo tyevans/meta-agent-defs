@@ -1,0 +1,54 @@
+# Monorepo Team Template
+#
+# Usage: Copy this to your project as .claude/team.yaml and customize:
+# 1. Replace <project-name> with your monorepo name
+# 2. Add more package-specific members as needed
+# 3. Adjust ownership patterns for your workspace structure
+# 4. Update tools based on your package manager (npm/yarn/pnpm)
+
+team: <project-name>
+description: "Monorepo team with platform infrastructure and package owners"
+
+defaults:
+  model: sonnet
+  budget: 0.50
+  permission-mode: dontAsk
+
+members:
+  - name: infra
+    role: "Workspace tooling, build system, and shared infrastructure"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "package.json"
+      - "turbo.json"
+      - "nx.json"
+      - "lerna.json"
+      - "tsconfig.base.json"
+      - "scripts/**"
+      - ".github/**"
+      - "tools/**"
+
+  - name: package-core
+    role: "Core shared package development"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "packages/core/**"
+      - "packages/shared/**"
+      - "packages/utils/**"
+
+  - name: package-app
+    role: "Application package development"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "apps/**"
+      - "packages/web/**"
+      - "packages/mobile/**"
+
+  - name: package-docs
+    role: "Documentation and example applications"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "docs/**"
+      - "examples/**"
+      - "packages/docs/**"
+      - "README.md"

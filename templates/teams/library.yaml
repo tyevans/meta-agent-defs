@@ -1,0 +1,46 @@
+# Library Team Template
+#
+# Usage: Copy this to your project as .claude/team.yaml and customize:
+# 1. Replace <project-name> with your library name
+# 2. Adjust ownership globs based on your library structure
+# 3. Update tools list if you use a different package manager
+# 4. Set budget limits appropriate for your team workflow
+
+team: <project-name>
+description: "Library development team with core implementation, docs, and release roles"
+
+defaults:
+  model: sonnet
+  budget: 0.50
+  permission-mode: dontAsk
+
+members:
+  - name: core
+    role: "Core library implementation and API design"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "src/**"
+      - "lib/**"
+      - "index.*"
+      - "package.json"
+      - "tsconfig.json"
+
+  - name: docs
+    role: "Documentation, examples, and usage guides"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - "docs/**"
+      - "examples/**"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "*.mdx"
+
+  - name: release
+    role: "Version management, publishing, and CI/CD"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(npm:*)", "Bash(git:*)"]
+    owns:
+      - ".github/**"
+      - ".gitlab-ci.yml"
+      - "scripts/**"
+      - "package.json"
+      - "CHANGELOG.md"

@@ -153,11 +153,13 @@ Write `memory/team/retro-history.md`:
 
 ### 2e. Initialize Backlog (optional)
 
-If the project doesn't already have beads and the user wants backlog tracking:
+**If beads (bd CLI) is available** and the project doesn't already have a `.beads/` directory, ask the user if they want backlog tracking:
 
 ```bash
 bd create --title="EPIC: [project name] team setup" --type=feature --priority=2
 ```
+
+**If beads is not available**, skip this step. The team can still function without beads by using manual task descriptions in `/sprint`.
 
 ---
 

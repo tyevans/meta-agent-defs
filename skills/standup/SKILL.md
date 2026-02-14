@@ -1,6 +1,6 @@
 ---
 name: standup
-description: "Run a team standup to sync status, surface blockers, and plan next actions. Reads the team manifest and each member's learnings for a file-based status report. Use at the start of a session, after a break, or when you need to reorient. Keywords: status, sync, blockers, progress, team, check-in."
+description: "Run a team standup to sync status, surface blockers, and plan next actions. Reads the team manifest and each member's learnings for a file-based status report. Works with or without beads backlog tracking. Use at the start of a session, after a break, or when you need to reorient. Keywords: status, sync, blockers, progress, team, check-in."
 argument-hint: "[focus area]"
 disable-model-invocation: true
 user-invocable: true
@@ -38,7 +38,9 @@ Read `.claude/team.yaml` to discover members, their roles, and ownership pattern
 
 If no `.claude/team.yaml` exists, tell the user to run `/assemble` first and stop.
 
-### 1b. Check Backlog
+### 1b. Check Backlog (conditional)
+
+**If `.beads/` exists in the project root**, check the backlog:
 
 ```bash
 bd stats
@@ -46,6 +48,8 @@ bd ready
 bd list --status=in_progress
 bd blocked
 ```
+
+**If `.beads/` does not exist**, skip this step entirely. The standup will focus on git activity and learning health only.
 
 ### 1c. Check Git
 
@@ -82,9 +86,11 @@ Read each member's `memory/agents/<name>/learnings.md` and note:
 - **Cross-agent notes**: Pending notes from other members
 - **Size**: Whether approaching the 150-line cap
 
-### 2c. Relevant Beads
+### 2c. Relevant Beads (conditional)
 
-Check if any in-progress or ready beads match this member's ownership patterns (by scanning bead titles/descriptions against the member's role keywords).
+**If beads are available**, check if any in-progress or ready beads match this member's ownership patterns (by scanning bead titles/descriptions against the member's role keywords).
+
+**If beads are not available**, skip this step.
 
 ---
 
@@ -104,12 +110,13 @@ Check if any in-progress or ready beads match this member's ownership patterns (
 Health: healthy (active commits + growing learnings), stale (no recent activity), bloated (learnings >120 lines), cold (no learnings yet)
 
 ### Backlog Snapshot
+[Only include this section if beads are available]
 - **Ready**: [count] tasks available
 - **In Progress**: [count] tasks active
 - **Blocked**: [count] tasks blocked
 
 ### Blockers
-[List any blocked beads or issues. "No blockers" if clear.]
+[Only include if beads are available. List any blocked beads or issues. "No blockers" if clear.]
 
 ### Learning Highlights
 [Notable recent learnings across the team. 2-3 most relevant items.]
