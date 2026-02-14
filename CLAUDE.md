@@ -24,11 +24,17 @@ Portable Claude Code workflow definitions (agents, skills, hooks, settings) main
 ## Quick Reference
 
 ```bash
-# Install symlinks to ~/.claude/
+# Install (global symlinks to ~/.claude/)
 ./install.sh
 
-# Uninstall (run from this repo directory)
-find ~/.claude -type l -lname "$(pwd)/*" -delete
+# Install to a specific project
+./install.sh /path/to/project
+
+# Install with hardlinks instead of symlinks
+./install.sh --hardlink
+
+# Uninstall (uses manifest written during install)
+xargs rm -f < ~/.claude/.meta-agent-defs.manifest
 
 # Beads
 bd stats                        # Backlog overview

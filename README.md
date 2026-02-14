@@ -40,12 +40,26 @@ cd workbench
 ./install.sh
 ```
 
-That's it. The installer symlinks everything into `~/.claude/`. It's idempotent -- rerun it after pulling updates, and existing symlinks are refreshed. Existing files are backed up with timestamps so nothing is lost.
+That's it. The installer symlinks everything into `~/.claude/`. It's idempotent -- rerun it after pulling updates, and existing links are refreshed. Existing files are backed up with timestamps so nothing is lost.
 
-To uninstall (run from the repo directory):
+### Install Options
 
 ```bash
-find ~/.claude -type l -lname "$(pwd)/*" -delete
+./install.sh                          # Global symlinks to ~/.claude/
+./install.sh /path/to/project         # Project-local (agents + skills only)
+./install.sh --hardlink               # Hardlinks instead of symlinks
+./install.sh /path/to/project --hardlink  # Both
+./install.sh --help                   # Show usage
+```
+
+Project-local mode installs only agents and skills -- settings, MCP servers, and CLI scripts are skipped since they're global concerns.
+
+### Uninstall
+
+The installer writes a manifest listing every installed file. To uninstall:
+
+```bash
+xargs rm -f < ~/.claude/.meta-agent-defs.manifest
 ```
 
 To also remove MCP servers:
