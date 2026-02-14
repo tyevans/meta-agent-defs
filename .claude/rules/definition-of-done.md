@@ -17,6 +17,7 @@ What "done" means for each type of change in this repo.
 - [ ] YAML frontmatter includes required fields: `name`, `description`, `allowed-tools`, `context`
 - [ ] Uses `$ARGUMENTS` for user input where applicable
 - [ ] Has clear phase structure with numbered steps
+- [ ] Includes Phase 0 or equivalent precondition gate if the skill has prerequisites (e.g., loaded context, clean git state, prior skill output)
 - [ ] Tested by running the slash command in a live session
 - [ ] `install.sh` re-run to verify symlink creation
 - [ ] `docs/INDEX.md` updated with new skill entry

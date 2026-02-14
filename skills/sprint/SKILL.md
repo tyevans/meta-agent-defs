@@ -60,6 +60,15 @@ If a focus area was provided via `$ARGUMENTS`, filter to relevant beads.
 
 **If `.beads/` does not exist**, skip this step. The sprint will accept manual task descriptions from the user instead of pulling from the backlog.
 
+### 1d. Prerequisite Gate (STOP if incomplete)
+
+Do not proceed to Phase 2 until all context is loaded:
+- [ ] team.yaml was read (not just referenced — Read tool returned its contents)
+- [ ] Every member's learnings.md was read
+- [ ] Backlog state is known (bd ready output is in context, or user provided tasks)
+
+If any prerequisite is missing, go back and complete it now. Planning without loaded context produces wrong assignments.
+
 ---
 
 ## Phase 2: Plan Assignments

@@ -44,6 +44,7 @@ Ask yourself:
 - **Original goal**: What did the user first ask for this session?
 - **Current work**: What are you doing right now?
 - **Drift**: Has scope crept from the original goal? How far?
+- **Batch progress**: If processing a numbered list or collection, how many items are done vs remaining? If >50% done, recommend checkpointing results to a file before continuing.
 
 Scope drift isn't always bad — discovered work is natural. But if you've drifted far from the original intent, flag it.
 
@@ -72,7 +73,7 @@ Based on the above, recommend ONE of:
 |--------|------|-----|
 | **Continue** | Light-moderate load, on-topic, quality fine | Keep working |
 | **Compact** | Heavy load but good progress, want to keep context | `/compact` — preserves key context, frees space |
-| **Checkpoint & Continue** | Moderate load, want a save point | Commit current work, `bd sync`, then continue |
+| **Checkpoint & Continue** | Moderate load, mid-batch work, or want a save point | Commit current work, write intermediate results to `memory/scratch/<slug>.md` if mid-batch, `bd sync`, then continue |
 | **Fresh session** | Overloaded, scope has drifted, or quality degrading | Commit all work, `bd sync`, push, then `/clear` or new session |
 | **Break into subagents** | Remaining work is parallelizable | Dispatch independent tasks to subagents to avoid further context fill |
 
