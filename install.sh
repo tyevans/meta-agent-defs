@@ -6,7 +6,6 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLAUDE_DIR="$HOME/.claude"
 
 # Colors
 GREEN='\033[0;32m'
@@ -17,6 +16,55 @@ NC='\033[0m' # No Color
 log()  { echo -e "${GREEN}[+]${NC} $1"; }
 warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 info() { echo -e "${BLUE}[i]${NC} $1"; }
+
+# --- Argument parsing ---
+PROJECT_DIR=""
+USE_HARDLINKS=false
+
+show_help() {
+    cat << EOF
+Usage: ./install.sh [project_dir] [--hardlink] [--help]
+
+Options:
+  project_dir   Install to project_dir/.claude/ instead of ~/.claude/
+  --hardlink    Use hardlinks instead of symlinks
+  --help, -h    Show this help message
+EOF
+    exit 0
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            ;;
+        --hardlink)
+            USE_HARDLINKS=true
+            shift
+            ;;
+        -*)
+            echo "Unknown option: $1"
+            show_help
+            ;;
+        *)
+            # Positional argument: project_dir
+            if [ -z "$PROJECT_DIR" ]; then
+                PROJECT_DIR="$1"
+            else
+                echo "Error: Multiple positional arguments provided"
+                show_help
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Set TARGET_DIR based on parsed arguments
+if [ -n "$PROJECT_DIR" ]; then
+    TARGET_DIR="$PROJECT_DIR/.claude"
+else
+    TARGET_DIR="$HOME/.claude"
+fi
 
 link_file() {
     local src="$1"
@@ -48,7 +96,7 @@ echo ""
 echo "meta-agent-defs V5 installer"
 echo "============================"
 echo "Source: $SCRIPT_DIR"
-echo "Target: $CLAUDE_DIR"
+echo "Target: $TARGET_DIR"
 echo ""
 
 # --- Dependency checks ---
@@ -69,13 +117,13 @@ fi
 echo ""
 
 # Ensure ~/.claude/ exists
-mkdir -p "$CLAUDE_DIR/agents"
-mkdir -p "$CLAUDE_DIR/skills"
+mkdir -p "$TARGET_DIR/agents"
+mkdir -p "$TARGET_DIR/skills"
 
 # --- Stale symlink cleanup ---
 info "Checking for stale symlinks..."
 STALE_COUNT=0
-for dir in "$CLAUDE_DIR/agents" "$CLAUDE_DIR/skills"; do
+for dir in "$TARGET_DIR/agents" "$TARGET_DIR/skills"; do
     [ -d "$dir" ] || continue
     for link in "$dir"/*; do
         [ -L "$link" ] || continue
@@ -105,7 +153,7 @@ info "Installing agents..."
 for agent in "$SCRIPT_DIR"/agents/*.md; do
     [ -f "$agent" ] || continue
     name="$(basename "$agent")"
-    link_file "$agent" "$CLAUDE_DIR/agents/$name"
+    link_file "$agent" "$TARGET_DIR/agents/$name"
 done
 
 # --- Skills ---
@@ -113,12 +161,12 @@ info "Installing skills..."
 for skill_dir in "$SCRIPT_DIR"/skills/*/; do
     [ -d "$skill_dir" ] || continue
     name="$(basename "$skill_dir")"
-    link_file "$skill_dir" "$CLAUDE_DIR/skills/$name"
+    link_file "$skill_dir" "$TARGET_DIR/skills/$name"
 done
 
 # --- Settings ---
 info "Installing settings..."
-link_file "$SCRIPT_DIR/settings.json" "$CLAUDE_DIR/settings.json"
+link_file "$SCRIPT_DIR/settings.json" "$TARGET_DIR/settings.json"
 
 # --- MCP Servers ---
 MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
@@ -174,12 +222,12 @@ if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
 fi
 echo ""
 info "To verify:"
-echo "  ls -la ~/.claude/agents/"
-echo "  ls -la ~/.claude/skills/"
-echo "  ls -la ~/.claude/settings.json"
+echo "  ls -la $TARGET_DIR/agents/"
+echo "  ls -la $TARGET_DIR/skills/"
+echo "  ls -la $TARGET_DIR/settings.json"
 echo "  which claude-orchestrate"
 echo ""
 info "To uninstall, remove the symlinks:"
-echo "  find ~/.claude -type l -lname '$SCRIPT_DIR/*' -delete"
+echo "  find $TARGET_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
 echo "  find $BIN_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
 echo ""
