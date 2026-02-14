@@ -16,16 +16,9 @@ Teams are defined in `.claude/team.yaml`. This is the single source of truth for
 team: project-slug
 description: "One-line project description"
 
-defaults:
-  model: sonnet
-  budget: 0.50
-  permission-mode: dontAsk
-
 members:
   - name: architect
     role: "System design, API contracts, patterns"
-    model: opus            # override default
-    budget: 1.00           # override default
     tools: [Read, Grep, Glob, "Bash(git:*)"]
     owns: ["src/core/**", "docs/**", "*.md"]
 
@@ -46,17 +39,6 @@ members:
 | `role` | member | One-line responsibility description |
 | `tools` | member | Tool list for `--allowedTools` |
 | `owns` | member | Glob patterns for files this member is responsible for |
-
-### Optional Fields
-
-| Field | Scope | Default | Description |
-|-------|-------|---------|-------------|
-| `defaults.model` | top | `sonnet` | Default model for all members |
-| `defaults.budget` | top | `0.50` | Default max budget in USD |
-| `defaults.permission-mode` | top | `dontAsk` | Default permission mode |
-| `model` | member | from defaults | Model override |
-| `budget` | member | from defaults | Budget override |
-| `permission-mode` | member | from defaults | Permission mode override |
 
 ## Learnings Files
 
@@ -123,43 +105,43 @@ Retrospective summaries append to `memory/team/retro-history.md`.
 
 ## Spawn Protocol
 
-The orchestrator constructs `claude -p` invocations from the manifest and learnings.
+The orchestrator dispatches team members via the Task tool.
 
-### Command Template
+### Dispatch via Task Tool
 
-```bash
-claude -p \
-  --append-system-prompt "$(cat <<'PROMPT'
-# Team Member: <name>
+Use the Task tool with `subagent_type: "general-purpose"` (or a custom agent type matching the member name if registered in `.claude/agents/`).
+
+The task prompt must include:
+1. The member's accumulated learnings (contents of `memory/agents/<name>/learnings.md`)
+2. The task description with bead reference and context
+3. Reflection instructions requesting structured output
+
+### Prompt Template
+
+```
+You are acting as team member "<name>".
 Role: <role>
 Owns: <owns patterns>
 
 ## Your Accumulated Learnings
 <contents of memory/agents/<name>/learnings.md>
 
+## Task
+<task description with bead reference>
+
 ## Reflection Protocol
-After completing your task, return structured JSON matching the reflection schema.
-Include honest self-assessment in the reflection section.
-Suggest learnings that should be persisted for future spawns.
-PROMPT
-)" \
-  --model <model> \
-  --allowedTools "<tools joined by comma>" \
-  --permission-mode <permission-mode> \
-  --max-budget-usd <budget> \
-  --output-format json \
-  --json-schema '<reflection schema JSON>' \
-  --no-session-persistence \
-  "<task description with bead reference and context>"
+After completing your task, end your response with a structured reflection:
+- task_result: status (completed/partial/blocked/failed), summary, files_changed
+- reflection: what_worked, what_didnt, confidence (high/medium/low)
+- suggested_learnings: category, content, for_agent (if cross-agent)
+- follow_up: suggested_next, needs_human
 ```
 
-### Prompt Composition Order
+### Dispatch Strategy
 
-1. Base system prompt (Claude Code default)
-2. `--append-system-prompt` with: role, owns, learnings, reflection protocol
-3. Task prompt (the `-p` argument)
+**Default: serialize.** Dispatch one task at a time, review output, then dispatch next. This lets each task benefit from the previous one's learnings.
 
-This means the agent sees its identity and accumulated knowledge before the task.
+**For independent tasks: parallelize.** Use `run_in_background: true` on Task calls when tasks touch different ownership areas and have no shared files.
 
 ## Reflection Schema
 
@@ -243,7 +225,7 @@ Every spawned team member returns this JSON structure:
 
 File-based learnings are the **primary** persistence mechanism:
 - Version-controlled (git history shows learning evolution)
-- Injectable into CLI prompts (works with `claude -p`)
+- Injectable into agent prompts via Task tool dispatch
 - Human-readable and editable
 
 Memory MCP remains available as a **secondary** mechanism for:

@@ -2,7 +2,7 @@
 name: handoff
 description: "Capture the orchestrator's mental model for a structured session transition. Use at end of long sessions, when /session-health recommends a fresh session, or before switching workstreams."
 argument-hint: "[focus area]"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 ---

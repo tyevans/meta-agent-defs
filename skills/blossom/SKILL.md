@@ -2,7 +2,7 @@
 name: blossom
 description: "Run spike-driven exploration to discover and plan work for an unknown or loosely-defined goal. Use when you need to explore a codebase area, create an epic with prioritized tasks, or convert a vague objective into a structured backlog. Keywords: explore, discover, spike, plan, epic, backlog, investigate."
 argument-hint: "<goal or area to explore>"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage
 context: fork
@@ -36,14 +36,14 @@ If `$ARGUMENTS` is empty or too vague, ask the user one clarifying question. Oth
 ### 1b. Create the Epic
 
 ```bash
-bd create --title="EPIC: [goal description]" --type=feature --priority=2
+bd create --title="EPIC: [goal description]" --type=epic --priority=2
 ```
 
 Save the returned epic ID. All subsequent beads will be wired as dependencies of this epic.
 
 ### 1c. Identify Initial Spike Areas
 
-Based on the goal, identify 3-6 areas that need investigation. Each spike should target a specific, bounded area of the codebase or architecture. Good spike scoping examples:
+Decompose the goal into 3-6 bounded spike areas (this is a **/decompose** — splitting one large goal into MECE sub-parts). Each spike should target a specific, bounded area of the codebase or architecture. Good spike scoping examples:
 
 - "Audit domain/agents/ for dead code and unused events"
 - "Map all trust system integration points"
@@ -164,9 +164,9 @@ After the team is created (see Team Lifecycle), spike teammates are already runn
 
 ### Spike Instructions
 
-Each spike agent (whether background Task or team teammate) receives these instructions:
+Each spike agent (whether background Task or team teammate) receives these instructions. The spike report uses **pipe format** (see `/rules/pipe-format.md`) so downstream primitives can consume spike output directly.
 
-> You are executing a discovery spike for the Blossom workflow.
+> You are executing a discovery spike for the Blossom workflow. This is a **/gather**-style investigation — collect findings with sources and confidence levels.
 >
 > **Your area:** [spike description]
 >
@@ -187,32 +187,36 @@ Each spike agent (whether background Task or team teammate) receives these instr
 >    - **LIKELY**: Strong evidence from multiple signals but couldn't fully trace the chain
 >    - **POSSIBLE**: Suspicious pattern that needs a deeper spike to verify
 >
-> **Report format (you MUST follow this exactly):**
+> **Report format (pipe format — you MUST follow this exactly):**
 >
 > ```
-> ## Spike Report: [area]
+> ## Spike findings for [area]
 >
-> ### Firm Tasks Found
-> For each confirmed issue, provide:
-> - **Title:** [action verb] [specific thing] (e.g., "Remove dead SandboxV1 handler")
-> - **Confidence:** CONFIRMED | LIKELY
-> - **Priority:** P0-P4
-> - **Evidence:** [file path + line number + what you found + how you verified]
-> - **Scope:** [estimated files to change]
+> **Source**: /blossom (spike)
+> **Input**: [spike description]
 >
-> ### Areas Needing Deeper Spikes
-> For each area that needs more investigation:
-> - **Area:** [specific sub-area]
-> - **Why:** [what suggests there is work here but you could not confirm]
-> - **What to look for:** [specific questions the deeper spike should answer]
+> ### Items
+>
+> 1. **[action verb] [specific thing]** — [what you found and how you verified]
+>    - source: [file path:line number]
+>    - confidence: CONFIRMED | LIKELY | POSSIBLE
+>    - priority: P0-P4
+>    - scope: [estimated files to change]
+>
+> 2. ...
+>
+> ### Deeper Spikes Needed
+>
+> For each area needing more investigation:
+> - **[specific sub-area]** — [what suggests work here but could not confirm]
+>   - look-for: [specific questions the deeper spike should answer]
 >
 > ### Clean Areas
-> - [area]: No issues found. [brief evidence -- what you read and why you're confident]
+> - [area]: No issues found. [brief evidence — what you read and why you're confident]
 >
 > ### Summary
-> - Firm tasks: N (CONFIRMED: X, LIKELY: Y)
-> - Deeper spikes needed: M
-> - Clean areas: K
+>
+> [One paragraph: N firm tasks (X CONFIRMED, Y LIKELY), M deeper spikes needed, K clean areas.]
 > ```
 
 **For team teammates, add this prefix to the instructions:**
@@ -224,9 +228,10 @@ Each spike agent (whether background Task or team teammate) receives these instr
 1. **Review the spike report** for quality:
    - Are findings CONFIRMED with evidence, or just hedged guesses?
    - Did the agent actually read code, or just grep for patterns?
+   - Does the report follow pipe format (`## ... / **Source**: /blossom (spike)`)?
    - If quality is poor, note it in the spike's closing notes for future tuning
 
-2. **Create firm task beads** from the "Firm Tasks Found" section:
+2. **Create firm task beads** from the Items section:
 
 ```bash
 bd create --title="[title from spike report]" --type=task --priority=[P level as 0-4] \
@@ -234,7 +239,7 @@ bd create --title="[title from spike report]" --type=task --priority=[P level as
 bd dep add <epic-id> <task-id>
 ```
 
-3. **Create new spike beads** from the "Areas Needing Deeper Spikes" section:
+3. **Create new spike beads** from the "Deeper Spikes Needed" section:
 
 ```bash
 bd create --title="SPIKE: [deeper area]" --type=task --priority=2 \
@@ -259,7 +264,7 @@ If new spikes were created, dispatch them (via idle teammate reuse or new backgr
 
 ## Phase 3: Consolidate
 
-After all spikes are complete and all firm tasks created, run consolidation to clean up the backlog before wiring dependencies.
+After all spikes are complete and all firm tasks created, run consolidation to clean up the backlog before wiring dependencies. Consolidation applies **/filter** logic (dedup, stale detection — binary keep/drop per item) and **/assess** logic (completeness audit — categorical verdict per architectural slice).
 
 ### Dispatch Mode A: Background Agents (no team active)
 
@@ -378,59 +383,46 @@ Trace the longest dependency chain. This is the minimum time to epic completion.
 
 ## Phase 6: Report
 
-Present the final blossom report to the user:
+Present the final blossom report in **pipe format** so downstream primitives (/rank, /filter, /assess) can consume the backlog directly:
 
 ```markdown
-## Blossom Report: [epic title]
+## Explored backlog for [epic title]
 
-### Epic
-- **ID:** [epic-id]
-- **Title:** [epic title]
+**Source**: /blossom
+**Input**: [original $ARGUMENTS]
 
-### Exploration Summary
+### Items
+
+1. **[task title]** — [evidence summary]
+   - source: [primary file:line or area]
+   - confidence: CONFIRMED | LIKELY
+   - priority: P0-P4
+   - depends-on: [task IDs or "none"]
+   - agent: [recommended agent type]
+
+2. ...
+
+### Exploration
+
+- **Epic ID:** [epic-id]
 - **Dispatch mode:** [background agents | team blossom-<id>]
-- **Total spikes executed:** N
-- **Spike depth:** M levels (how many rounds of recursion)
-- **Spike quality:** [brief assessment -- did agents confirm or hedge?]
+- **Total spikes:** N executed across M depth levels
+- **Spike quality:** [brief assessment — did agents confirm or hedge?]
 - **Areas explored:** [list of top-level spike areas]
 - **Clean areas:** [areas confirmed as needing no work]
-- **Teammates used:** [N spike teammates, 1 consolidator] (team mode only)
-- **Teammates reused:** [N times teammates were reassigned] (team mode only)
-
-### Consolidation Results
-*(Include results from consolidation -- dedup, gap-fill, stale task, and dependency counts)*
-
-### Backlog
-
-| ID | Title | Priority | Depends On | Agent | Confidence |
-|----|-------|----------|------------|-------|------------|
-| tehmop-xxx | Remove dead handler | P1 | - | refactorer | CONFIRMED |
-| tehmop-yyy | Add missing tests | P2 | tehmop-xxx | test-generator | CONFIRMED |
-| ... | ... | ... | ... | ... | ... |
+- **Consolidation:** [dedup N, stale N, gap-fill N, deps modified N]
 
 ### Critical Path
+
 [Longest dependency chain with task IDs and titles]
 
 ### Parallel Opportunities
-[Tasks that can be worked on simultaneously because they have no dependencies on each other]
 
-### Statistics
-- Firm tasks created: N
-- P0 (critical): N
-- P1 (high): N
-- P2 (medium): N
-- P3 (low): N
-- P4 (backlog): N
-- CONFIRMED: N
-- LIKELY: N
+[Tasks with no dependencies on each other that can be worked simultaneously]
 
-### Recommended Execution Order
-1. [First task to tackle and why]
-2. [Second task]
-3. ...
+### Summary
 
-### Open Questions
-[Any unresolved questions that came up during exploration]
+[One paragraph synthesizing the exploration: total tasks, priority distribution (P0: N, P1: N, P2: N, P3: N, P4: N), confidence distribution (CONFIRMED: N, LIKELY: N), recommended execution order, and any open questions from exploration.]
 ```
 
 ---

@@ -2,7 +2,7 @@
 name: retro
 description: "Run an automated session retrospective to evaluate velocity, quality, process, and blockers, then persist durable learnings to MEMORY.md. Use at the end of a work session, after completing an epic, or when you want to reflect on what worked and what did not."
 argument-hint: "[focus area or session topic]"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(wc:*), Write, Edit
 ---

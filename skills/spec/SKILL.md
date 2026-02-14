@@ -2,7 +2,7 @@
 name: spec
 description: "Create a structured specification document through progressive elaboration before implementation. Use when you need a complete design before coding, for features with multiple valid approaches, or when architectural alignment matters. Keywords: spec, frd, sdd, requirements, design, specification, document."
 argument-hint: "<goal or feature to specify>"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(git:*), Task
 context: fork

@@ -2,9 +2,9 @@
 name: assemble
 description: "Create a persistent learning team for a project with roles, ownership, and file-based learnings that improve agent behavior across sessions. Use when starting a new project, forming a team for long-horizon work, or upgrading from ad-hoc agent dispatch to structured team coordination. Keywords: team, project, setup, roles, persistent, agents, staff, learning."
 argument-hint: "<project description>"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(mkdir:*), Write, Edit, Task
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(mkdir:*), Write, Edit, Task, AskUserQuestion
 ---
 
 # Assemble: Persistent Learning Team Creation
@@ -24,12 +24,55 @@ You are running **Assemble** -- a workflow to create a persistent agent team tha
 ## How It Works
 
 ```
-Explore project → Propose roles + ownership → User confirms
+Route (args vs interactive) → Explore project → Propose roles + ownership → User confirms
   → Write team.yaml manifest
     → Create learnings.md per member (seeded with role context)
       → Create shared team memory (decisions.md)
         → Initialize backlog → Report
 ```
+
+## Phase 0: Route
+
+**If `$ARGUMENTS` is provided:**
+- Proceed to Phase 1 with the provided project description
+
+**If `$ARGUMENTS` is empty:**
+- Enter Interactive Mode (see below)
+
+### Interactive Mode
+
+When invoked without arguments, guide the user through team setup conversationally:
+
+#### Step 0.1: Understand the Project
+
+Ask the user to describe their project in 1-2 sentences. Then explore the current directory to understand context:
+- List files in current directory (`ls -la`)
+- Read README, CLAUDE.md, or other project docs if present
+- Check package.json, Cargo.toml, pyproject.toml, or similar to identify stack
+- Look for existing `.claude/team.yaml` (this may be a team update)
+
+#### Step 0.2: Propose Roles
+
+Based on what you found, propose 3-4 roles using the templates below. For each role, suggest:
+- **Role name** (e.g., architect, backend, frontend)
+- **Responsibility** (1 sentence)
+- **Ownership patterns** (glob patterns based on actual directory structure)
+
+Present the proposal as a table (same format as Phase 1c) and ask the user:
+- "Does this team structure work for your project?"
+- "Would you like to add, remove, or modify any roles?"
+
+#### Step 0.3: Refine Roles
+
+For each role the user confirms or adds, ask about ownership if it's not obvious from the project structure:
+- "Which files/directories should [role] be responsible for?"
+- Provide suggested defaults based on common patterns
+
+#### Step 0.4: Confirm and Transition
+
+Show the final team proposal one more time, then proceed to Phase 2 (Create the Team) with the gathered information.
+
+---
 
 ## Phase 1: Understand the Project
 
@@ -156,7 +199,7 @@ Write `memory/team/retro-history.md`:
 **If beads (bd CLI) is available** and the project doesn't already have a `.beads/` directory, ask the user if they want backlog tracking:
 
 ```bash
-bd create --title="EPIC: [project name] team setup" --type=feature --priority=2
+bd create --title="EPIC: [project name] team setup" --type=epic --priority=2
 ```
 
 **If beads is not available**, skip this step. The team can still function without beads by using manual task descriptions in `/sprint`.

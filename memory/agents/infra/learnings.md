@@ -17,8 +17,6 @@
 - memory/ directory is project-local, NOT handled by install.sh -- correct by design (added: 2026-02-13)
 - .claude/team.yaml and memory/ are both committed to git, not ignored (added: 2026-02-13)
 - install.sh writes .meta-agent-defs.manifest for reliable uninstall (both symlink and hardlink modes) (added: 2026-02-13)
-- CLI scripts (bin/) are opt-in via --with-cli flag, not installed by default (added: 2026-02-13)
-- `env -u CLAUDECODE claude -p ...` bypasses nested session detection for claude-in-claude dispatch (added: 2026-02-13)
 
 ## Preferences
 - (none yet)

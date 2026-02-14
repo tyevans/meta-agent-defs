@@ -2,7 +2,7 @@
 name: tracer
 description: "Build a feature iteratively by implementing the thinnest end-to-end path first, then widening pass by pass. Use when integration risk is high, for features crossing system boundaries, or when you want always-working increments. Keywords: tracer, iterative, incremental, end-to-end, thin slice, vertical slice."
 argument-hint: "<feature to implement>"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(git:*), Bash(npm:*), Bash(npx:*), Task
 context: fork

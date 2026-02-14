@@ -2,7 +2,7 @@
 name: consolidate
 description: "Review and tighten the beads backlog by deduplicating tasks, filling vertical slice gaps, detecting stale items, and cleaning up dependencies. Use after a blossom run, when the backlog feels unwieldy, before starting a new sprint, or when you suspect duplicate or stale tasks. Keywords: backlog, cleanup, dedup, triage, hygiene, review, organize."
 argument-hint: "[area or scope]"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 context: fork
@@ -26,17 +26,17 @@ You are running the **Consolidate** workflow — a structured pass over the curr
 Consolidate works in 6 phases:
 
 ```
-Survey the backlog
-  -> Dedup (merge overlapping tasks)
-    -> Vertical slice audit (fill gaps)
-      -> Stale detection (close dead tasks)
-        -> Dependency cleanup (simplify the DAG)
-          -> Report changes
+Survey [gather]
+  -> Dedup [filter: not duplicate]
+    -> Vertical slice audit [assess: complete/missing-companion]
+      -> Stale detection [filter: not stale]
+        -> Dependency cleanup [verify]
+          -> Report [pipe format]
 ```
 
 ---
 
-## Phase 1: Survey
+## Phase 1: Survey *(gather pattern — collect backlog info with sources)*
 
 ### 1a. Get the Full Picture
 
@@ -63,7 +63,7 @@ Group tasks into clusters by the area they touch (e.g., "domain/sandbox", "infra
 
 ---
 
-## Phase 2: Dedup
+## Phase 2: Dedup *(filter pattern — criterion: "not duplicate")*
 
 ### 2a. Find Overlaps
 
@@ -98,7 +98,7 @@ Track: how many tasks closed, how many merged, how many clusters remain.
 
 ---
 
-## Phase 3: Vertical Slice Audit
+## Phase 3: Vertical Slice Audit *(assess pattern — rubric: complete / missing-companion)*
 
 ### 3a. Discover the Project's Architecture
 
@@ -150,7 +150,7 @@ bd dep add <outer-task> <inner-task>
 
 ---
 
-## Phase 4: Stale Detection
+## Phase 4: Stale Detection *(filter pattern — criterion: "not stale")*
 
 ### 4a. Identify Stale Tasks
 
@@ -183,7 +183,7 @@ bd close <stale-id> --reason="Already completed in commit <hash>"
 
 ---
 
-## Phase 5: Dependency Cleanup
+## Phase 5: Dependency Cleanup *(verify pattern — check dependency validity)*
 
 ### 5a. Remove Redundant Transitive Dependencies
 
@@ -215,30 +215,47 @@ bd show <epic-id>  # Verify "depends on" lists children, "blocks" is empty or ex
 
 ---
 
-## Phase 6: Report
+## Phase 6: Report *(pipe format output)*
 
 ### 6a. Summarize Changes
 
-Present a clear summary:
+Emit the consolidation report in pipe format:
 
 ```markdown
-## Consolidation Report
+## Consolidated Backlog for [area or "full backlog"]
 
-### Actions Taken
-- **Closed (dedup)**: X tasks merged or deduplicated
-- **Closed (stale)**: X tasks no longer relevant
-- **Created (gap fill)**: X companion tasks added for vertical slices
-- **Dependencies**: X redundant deps removed, X new deps added
+**Source**: /consolidate
+**Input**: [target area or "full backlog review"]
+
+### Items
+
+1. **Closed (dedup)** — X tasks merged or deduplicated
+   - source: Phase 2
+2. **Closed (stale)** — X tasks no longer relevant
+   - source: Phase 4
+3. **Created (gap fill)** — X companion tasks added for vertical slices
+   - source: Phase 3
+4. **Dependencies cleaned** — X redundant deps removed, X new deps added
+   - source: Phase 5
 
 ### Backlog Health
-- **Before**: X open tasks, Y blocked, Z in-progress
-- **After**: X open tasks, Y blocked, Z in-progress
-- **Clusters**: [list of task clusters with counts]
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Open tasks | X | X |
+| Blocked | Y | Y |
+| In-progress | Z | Z |
+| Clusters | [list] | [list] |
 
 ### Recommendations
+
 - [Any observations about backlog health]
 - [Suggested next priorities]
 - [Areas that might need a fresh blossom spike]
+
+### Summary
+
+[One paragraph synthesis of the consolidation: what changed, current backlog health, and recommended next steps.]
 ```
 
 ---

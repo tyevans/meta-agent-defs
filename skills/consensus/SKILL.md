@@ -2,7 +2,7 @@
 name: consensus
 description: "Surface design trade-offs by having three independent agents propose solutions optimized for different qualities, then synthesize agreements and tensions. Use for architectural decisions, when torn between approaches, or when you suspect hidden trade-offs. Keywords: consensus, architecture, trade-off, design, decision, compare."
 argument-hint: "<design problem or architectural decision>"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, AskUserQuestion
 context: fork
