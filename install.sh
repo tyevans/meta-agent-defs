@@ -61,6 +61,11 @@ done
 
 # Set TARGET_DIR based on parsed arguments
 if [ -n "$PROJECT_DIR" ]; then
+    # Validate that PROJECT_DIR exists and is a directory
+    if [ ! -d "$PROJECT_DIR" ]; then
+        echo "Error: PROJECT_DIR '$PROJECT_DIR' does not exist or is not a directory"
+        exit 1
+    fi
     TARGET_DIR="$PROJECT_DIR/.claude"
 else
     TARGET_DIR="$HOME/.claude"
@@ -121,29 +126,33 @@ mkdir -p "$TARGET_DIR/agents"
 mkdir -p "$TARGET_DIR/skills"
 
 # --- Stale symlink cleanup ---
-info "Checking for stale symlinks..."
-STALE_COUNT=0
-for dir in "$TARGET_DIR/agents" "$TARGET_DIR/skills"; do
-    [ -d "$dir" ] || continue
-    for link in "$dir"/*; do
-        [ -L "$link" ] || continue
-        target="$(readlink "$link")"
-        # Only consider symlinks pointing into this repo
-        case "$target" in
-            "$SCRIPT_DIR"/*) ;;
-            *) continue ;;
-        esac
-        if [ ! -e "$target" ]; then
-            rm "$link"
-            warn "Removed stale symlink: $link -> $target"
-            STALE_COUNT=$((STALE_COUNT + 1))
-        fi
+if [ -z "$PROJECT_DIR" ]; then
+    info "Checking for stale symlinks..."
+    STALE_COUNT=0
+    for dir in "$TARGET_DIR/agents" "$TARGET_DIR/skills"; do
+        [ -d "$dir" ] || continue
+        for link in "$dir"/*; do
+            [ -L "$link" ] || continue
+            target="$(readlink "$link")"
+            # Only consider symlinks pointing into this repo
+            case "$target" in
+                "$SCRIPT_DIR"/*) ;;
+                *) continue ;;
+            esac
+            if [ ! -e "$target" ]; then
+                rm "$link"
+                warn "Removed stale symlink: $link -> $target"
+                STALE_COUNT=$((STALE_COUNT + 1))
+            fi
+        done
     done
-done
-if [ "$STALE_COUNT" -gt 0 ]; then
-    log "Cleaned up $STALE_COUNT stale symlink(s)"
+    if [ "$STALE_COUNT" -gt 0 ]; then
+        log "Cleaned up $STALE_COUNT stale symlink(s)"
+    else
+        log "No stale symlinks found"
+    fi
 else
-    log "No stale symlinks found"
+    info "Skipping stale symlink cleanup (project-local mode)"
 fi
 
 echo ""
@@ -165,49 +174,61 @@ for skill_dir in "$SCRIPT_DIR"/skills/*/; do
 done
 
 # --- Settings ---
-info "Installing settings..."
-link_file "$SCRIPT_DIR/settings.json" "$TARGET_DIR/settings.json"
+if [ -z "$PROJECT_DIR" ]; then
+    info "Installing settings..."
+    link_file "$SCRIPT_DIR/settings.json" "$TARGET_DIR/settings.json"
+else
+    info "Skipping settings.json (project-local mode - would cause duplicate hooks)"
+fi
 
 # --- MCP Servers ---
-MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
-if [ -f "$MCP_CONFIG" ]; then
-    if command -v claude &>/dev/null; then
-        info "Installing MCP servers..."
-        # Parse server names from the JSON config
-        SERVER_NAMES=$(python3 -c "import json; [print(k) for k in json.load(open('$MCP_CONFIG')).keys()]" 2>/dev/null)
-        if [ -n "$SERVER_NAMES" ]; then
-            while IFS= read -r name; do
-                # Extract command and args for this server
-                CMD=$(python3 -c "import json; print(json.load(open('$MCP_CONFIG'))['$name']['command'])" 2>/dev/null)
-                ARGS=$(python3 -c "import json; print(' '.join(json.load(open('$MCP_CONFIG'))['$name']['args']))" 2>/dev/null)
-                if [ -n "$CMD" ] && [ -n "$ARGS" ]; then
-                    # claude mcp add exits 1 if server already exists -- that's fine
-                    OUTPUT=$(claude mcp add "$name" --scope user -- $CMD $ARGS 2>&1) && \
-                        log "MCP: $name" || \
-                        { if echo "$OUTPUT" | grep -q "already exists"; then
-                            log "MCP: $name (already installed)"
-                          else
-                            warn "MCP: Failed to add $name -- $OUTPUT"
-                          fi; }
-                fi
-            done <<< "$SERVER_NAMES"
+if [ -z "$PROJECT_DIR" ]; then
+    MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
+    if [ -f "$MCP_CONFIG" ]; then
+        if command -v claude &>/dev/null; then
+            info "Installing MCP servers..."
+            # Parse server names from the JSON config
+            SERVER_NAMES=$(python3 -c "import json; [print(k) for k in json.load(open('$MCP_CONFIG')).keys()]" 2>/dev/null)
+            if [ -n "$SERVER_NAMES" ]; then
+                while IFS= read -r name; do
+                    # Extract command and args for this server
+                    CMD=$(python3 -c "import json; print(json.load(open('$MCP_CONFIG'))['$name']['command'])" 2>/dev/null)
+                    ARGS=$(python3 -c "import json; print(' '.join(json.load(open('$MCP_CONFIG'))['$name']['args']))" 2>/dev/null)
+                    if [ -n "$CMD" ] && [ -n "$ARGS" ]; then
+                        # claude mcp add exits 1 if server already exists -- that's fine
+                        OUTPUT=$(claude mcp add "$name" --scope user -- $CMD $ARGS 2>&1) && \
+                            log "MCP: $name" || \
+                            { if echo "$OUTPUT" | grep -q "already exists"; then
+                                log "MCP: $name (already installed)"
+                              else
+                                warn "MCP: Failed to add $name -- $OUTPUT"
+                              fi; }
+                    fi
+                done <<< "$SERVER_NAMES"
+            else
+                warn "MCP: Could not parse $MCP_CONFIG"
+            fi
         else
-            warn "MCP: Could not parse $MCP_CONFIG"
+            info "Skipping MCP server installation (claude CLI not found)"
         fi
-    else
-        info "Skipping MCP server installation (claude CLI not found)"
     fi
+else
+    info "Skipping MCP servers (project-local mode - global-only)"
 fi
 
 # --- CLI Scripts ---
-info "Installing CLI scripts..."
-BIN_DIR="$HOME/.local/bin"
-mkdir -p "$BIN_DIR"
-for script in "$SCRIPT_DIR"/bin/*; do
-    [ -f "$script" ] || continue
-    name="$(basename "$script")"
-    link_file "$script" "$BIN_DIR/$name"
-done
+if [ -z "$PROJECT_DIR" ]; then
+    info "Installing CLI scripts..."
+    BIN_DIR="$HOME/.local/bin"
+    mkdir -p "$BIN_DIR"
+    for script in "$SCRIPT_DIR"/bin/*; do
+        [ -f "$script" ] || continue
+        name="$(basename "$script")"
+        link_file "$script" "$BIN_DIR/$name"
+    done
+else
+    info "Skipping CLI scripts (project-local mode - PATH-based)"
+fi
 
 echo ""
 log "Installation complete!"
@@ -215,19 +236,29 @@ echo ""
 info "What was installed:"
 echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
 echo "  Skills:   $(ls -d "$SCRIPT_DIR"/skills/*/ 2>/dev/null | wc -l) skills"
-echo "  Settings: settings.json (hooks + env)"
-echo "  Scripts:  $(ls -1 "$SCRIPT_DIR"/bin/* 2>/dev/null | wc -l) CLI commands -> $BIN_DIR/"
-if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
-    echo "  MCP:      $(python3 -c "import json; print(len(json.load(open('$MCP_CONFIG'))))" 2>/dev/null || echo '?') server(s)"
+if [ -z "$PROJECT_DIR" ]; then
+    echo "  Settings: settings.json (hooks + env)"
+    echo "  Scripts:  $(ls -1 "$SCRIPT_DIR"/bin/* 2>/dev/null | wc -l) CLI commands -> $BIN_DIR/"
+    MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
+    if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
+        echo "  MCP:      $(python3 -c "import json; print(len(json.load(open('$MCP_CONFIG'))))" 2>/dev/null || echo '?') server(s)"
+    fi
+else
+    echo "  Mode:     Project-local (settings, MCP, CLI scripts skipped)"
 fi
 echo ""
 info "To verify:"
 echo "  ls -la $TARGET_DIR/agents/"
 echo "  ls -la $TARGET_DIR/skills/"
-echo "  ls -la $TARGET_DIR/settings.json"
-echo "  which claude-orchestrate"
+if [ -z "$PROJECT_DIR" ]; then
+    echo "  ls -la $TARGET_DIR/settings.json"
+    echo "  which claude-orchestrate"
+fi
 echo ""
 info "To uninstall, remove the symlinks:"
 echo "  find $TARGET_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
-echo "  find $BIN_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
+if [ -z "$PROJECT_DIR" ]; then
+    BIN_DIR="$HOME/.local/bin"
+    echo "  find $BIN_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
+fi
 echo ""
