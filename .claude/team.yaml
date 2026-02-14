@@ -1,0 +1,23 @@
+team: meta-agent-defs
+description: "Portable Claude Code workflow definitions (agents, skills, hooks, settings) maintained in markdown and JSON"
+
+defaults:
+  model: sonnet
+  budget: 0.50
+  permission-mode: dontAsk
+
+members:
+  - name: skill-author
+    role: "Writing and revising skill definitions, ensuring consistent structure, testing slash command invocation"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(git:*)"]
+    owns: ["skills/**"]
+
+  - name: agent-author
+    role: "Writing and revising agent definitions and rules, ensuring frontmatter compliance and cross-reference consistency"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(git:*)"]
+    owns: ["agents/**", ".claude/agents/**", ".claude/rules/**"]
+
+  - name: infra
+    role: "Installer, settings, hooks, MCP config, ensuring symlinks work and hooks fire correctly"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(git:*)", "Bash(./install.sh:*)", "Bash(ls:*)"]
+    owns: ["install.sh", "settings.json", "mcp-servers.json", ".claude/settings.json"]
