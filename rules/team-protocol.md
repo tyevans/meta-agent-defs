@@ -16,16 +16,9 @@ Teams are defined in `.claude/team.yaml`. This is the single source of truth for
 team: project-slug
 description: "One-line project description"
 
-defaults:
-  model: sonnet
-  budget: 0.50
-  permission-mode: dontAsk
-
 members:
   - name: architect
     role: "System design, API contracts, patterns"
-    model: opus            # override default
-    budget: 1.00           # override default
     tools: [Read, Grep, Glob, "Bash(git:*)"]
     owns: ["src/core/**", "docs/**", "*.md"]
 
@@ -46,17 +39,6 @@ members:
 | `role` | member | One-line responsibility description |
 | `tools` | member | Tool list for `--allowedTools` |
 | `owns` | member | Glob patterns for files this member is responsible for |
-
-### Optional Fields
-
-| Field | Scope | Default | Description |
-|-------|-------|---------|-------------|
-| `defaults.model` | top | `sonnet` | Default model for all members |
-| `defaults.budget` | top | `0.50` | Default max budget in USD |
-| `defaults.permission-mode` | top | `dontAsk` | Default permission mode |
-| `model` | member | from defaults | Model override |
-| `budget` | member | from defaults | Budget override |
-| `permission-mode` | member | from defaults | Permission mode override |
 
 ## Learnings Files
 
