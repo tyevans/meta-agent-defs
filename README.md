@@ -68,6 +68,7 @@ The installer creates symlinks from `~/.claude/` to this repo. Edit files here, 
 | Skill | Mode | What It Does |
 |-------|------|-------------|
 | `/blossom <goal>` | fork | Spike-driven exploration. Takes a vague goal and recursively investigates the codebase, producing a prioritized backlog of verified tasks. |
+| `/fractal <goal>` | inline | Goal-directed recursive exploration. Evaluates every finding against the goal and prunes paths that don't serve it. Produces focused synthesis, not exhaustive backlogs. |
 | `/consensus <decision>` | fork | Multi-perspective design synthesis. Three independent agents propose solutions optimized for simplicity, performance, and maintainability, then surfaces agreements and tensions. |
 | `/spec <feature>` | fork | Structured specification. Produces a complete design document through progressive elaboration -- populate, validate, refine, architecture review. |
 | `/premortem <feature>` | fork | Risk-first analysis. Three agents examine a feature through security, reliability, and user/business lenses, then designs concrete mitigations. |
@@ -77,6 +78,9 @@ The installer creates symlinks from `~/.claude/` to this repo. Edit files here, 
 
 | Skill | Mode | What It Does |
 |-------|------|-------------|
+| `/meeting <topic>` | inline | Interactive multi-agent dialogue. Forms a panel of 3-4 agents with different perspectives and facilitates a live group discussion. |
+| `/assemble <project>` | inline | Persistent team creation. Defines roles, initializes per-agent memory via Memory MCP, and sets up a shared backlog. |
+| `/standup [team]` | inline | Team status sync. Each agent checks their memory and assigned beads, reports progress, blockers, and planned next actions. |
 | `/consolidate [area]` | fork | Backlog hygiene. Deduplicates, fills vertical-slice gaps, detects stale tasks, cleans up dependencies. |
 | `/review [target]` | fork | Structured code review. Examines staged changes, commits, or PRs across correctness, security, style, architecture, and test coverage. |
 | `/session-health` | inline | Self-diagnostic. Assesses context load, scope drift, and quality degradation. Auto-discoverable by Claude. |
@@ -141,13 +145,15 @@ For cloud backends (Honeycomb, Datadog, Grafana Cloud), override `OTEL_EXPORTER_
 
 ## Workflow Skill Library
 
-The five workflow skills form a composable library for different phases and situations in AI-assisted development. Each skill is self-contained, but they chain naturally.
+The workflow skills form a composable library for different phases and situations in AI-assisted development. Each skill is self-contained, but they chain naturally.
 
 ### Quick Reference
 
 | Skill | One-Line Description | When to Use | Produces |
 |-------|---------------------|-------------|----------|
 | `/blossom` | Recursive spike-driven exploration | You don't know what to build yet | Prioritized backlog with verified tasks |
+| `/fractal` | Goal-directed recursive exploration | You need focused understanding, not a full backlog | Synthesis of goal-relevant findings |
+| `/meeting` | Interactive multi-agent dialogue | You want to brainstorm or flesh out requirements | Meeting summary with consensus, tensions, and action items |
 | `/consensus` | Multi-perspective design synthesis | Multiple valid approaches, unclear trade-offs | Decision record with agreements and tensions |
 | `/spec` | Structured specification through progressive elaboration | You know what to build but need a complete design | Spec document (`.specs/*.md`) reviewed by architecture guardian |
 | `/premortem` | Risk-first failure analysis | High-stakes feature, security-sensitive change | Ranked failure scenarios with concrete mitigations |
@@ -158,6 +164,9 @@ The five workflow skills form a composable library for different phases and situ
 The skills connect into natural workflows depending on where you are in a project:
 
 ```
+ /meeting ──> /fractal ──────────> synthesis ──> /spec or /tracer
+  (discuss)   (deep-dive)                        (design or build)
+
  /blossom ─────────────> backlog ──────> pick a task ──> /tracer
    (explore)                                               (build)
 
@@ -166,12 +175,18 @@ The skills connect into natural workflows depending on where you are in a projec
 
  /premortem ──> mitigations ──> /spec or /tracer
   (stress-test)                  (design or build with mitigations baked in)
+
+ /assemble ──> /standup ──> dispatch work ──> /standup ──> ...
+  (form team)  (sync)       (any skill)       (sync again)
 ```
 
 **Common flows:**
 
+- **Team-based project**: `/assemble` (form team) -> `/standup` (sync) -> dispatch work -> `/standup` (repeat)
+- **Requirements unclear**: `/meeting` (brainstorm with panel) -> `/fractal` (deep-dive findings) -> `/spec` (design)
 - **Greenfield feature**: `/consensus` (pick an approach) -> `/spec` (detailed design) -> `/tracer` (incremental implementation)
 - **Exploration-first**: `/blossom` (discover scope) -> pick highest-priority task -> `/tracer` (implement it)
+- **Focused understanding**: `/fractal` (goal-directed exploration) -> synthesis of findings -> decide next step
 - **High-stakes change**: `/premortem` (surface risks) -> feed mitigations into `/spec` or `/tracer`
 - **Just build it**: `/tracer` alone when the path is clear and you want always-working increments
 
@@ -197,6 +212,10 @@ meta-agent-defs/
     code-reviewer.md          # Read-only code review across 4 quality dimensions
   skills/
     blossom/SKILL.md          # /blossom -- spike-driven exploration (fork)
+    fractal/SKILL.md          # /fractal -- goal-directed recursive exploration (inline)
+    meeting/SKILL.md          # /meeting -- interactive multi-agent dialogue (inline)
+    assemble/SKILL.md         # /assemble -- persistent team creation (inline)
+    standup/SKILL.md          # /standup -- team status sync (inline)
     consensus/SKILL.md        # /consensus -- multi-perspective design synthesis (fork)
     spec/SKILL.md             # /spec -- structured specification (fork)
     premortem/SKILL.md        # /premortem -- risk-first failure analysis (fork)

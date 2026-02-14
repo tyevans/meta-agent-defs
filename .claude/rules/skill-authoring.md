@@ -60,3 +60,4 @@ Every skill MUST include:
 - Do not set `disable-model-invocation: false` unless the skill should be auto-discovered by Claude
 - Do not duplicate logic that exists in another skill -- factor shared patterns into agents instead
 - Do not duplicate logic that exists in an agent -- if an agent already handles the workflow, don't recreate it as a skill
+- Do not embed session-close boilerplate (bd sync, git status, git commit) -- the beads SessionStart hook already injects the session close protocol into every session

@@ -219,13 +219,6 @@ bd create --title="[SEVERITY]: [finding title]" --type=task --priority=<1-for-cr
   --description="Found during code review of [target]. Location: [file:line]. Issue: [description]. Suggestion: [fix]."
 ```
 
-### 5c. Session Close Reminder
-
-```bash
-bd sync --flush-only
-git status
-```
-
 ---
 
 ## Guidelines

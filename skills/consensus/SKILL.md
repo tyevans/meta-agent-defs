@@ -342,20 +342,6 @@ If the decision leads directly to implementation, note which skill should run ne
 - **If implementation needs detailed planning**: Recommend `/spec [chosen approach]`
 - **If implementation needs incremental exploration**: Recommend `/tracer [starting point]`
 
-### 5c. Session Close Reminder
-
-```bash
-bd sync
-git status
-```
-
-If there are beads state changes to commit:
-
-```bash
-git add .beads/
-git commit -m "chore: consensus decision on [problem title]"
-```
-
 ---
 
 ## Guidelines

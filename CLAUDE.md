@@ -47,6 +47,10 @@ meta-agent-defs/
 │   └── code-reviewer.md        # Read-only code review agent
 ├── skills/                      # Skill definitions (symlinked to ~/.claude/skills/)
 │   ├── blossom/SKILL.md         # Spike-driven exploration (context: fork)
+│   ├── fractal/SKILL.md         # Goal-directed recursive exploration (inline)
+│   ├── meeting/SKILL.md         # Interactive multi-agent dialogue (inline)
+│   ├── assemble/SKILL.md        # Persistent team creation with memory (inline)
+│   ├── standup/SKILL.md         # Team status sync (inline)
 │   ├── consolidate/SKILL.md     # Backlog review (context: fork)
 │   ├── session-health/SKILL.md  # Session diagnostic (inline, auto-discoverable)
 │   ├── handoff/SKILL.md         # Session transition (inline)

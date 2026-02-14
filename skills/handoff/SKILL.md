@@ -23,14 +23,13 @@ You are running a **session handoff** -- capturing the orchestrator's mental mod
 
 ## Overview
 
-Handoff works in 5 phases:
+Handoff works in 4 phases:
 
 ```
 Gather state (backlog + git + context)
   -> Document decisions and discoveries
     -> Identify loose ends and risks
       -> Write handoff note
-        -> Session close (sync + status)
 ```
 
 ---
@@ -167,37 +166,6 @@ bd create --title="HANDOFF: [summary of session]" --type=task --priority=1 \
 ```
 
 Alternatively, if the project uses auto memory, write to the memory directory for the project.
-
----
-
-## Phase 5: Session Close
-
-### 5a. Sync State
-
-```bash
-bd sync --flush-only
-```
-
-### 5b. Commit Any Beads State
-
-```bash
-git status
-```
-
-If there are beads state changes:
-
-```bash
-git add .beads/
-git commit -m "chore: session handoff [focus area or date]"
-```
-
-### 5c. Final Status
-
-Report to the user:
-- Number of tasks completed this session
-- Number of tasks in-progress (with handoff notes)
-- Number of tasks ready for next session
-- Whether all work is committed and synced
 
 ---
 

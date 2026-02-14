@@ -390,24 +390,6 @@ bd create --title="[follow-up task]" --type=task --priority=[0-4] \
 
 ---
 
-## Session Close Reminder
-
-Before finishing, run the session close protocol:
-
-```bash
-bd sync
-git status
-```
-
-If there are uncommitted changes or beads state to commit:
-
-```bash
-git add .
-git commit -m "chore: tracer session for [feature name]"
-```
-
----
-
 ## Guidelines
 
 1. **Each phase produces a working increment.** Never proceed to the next phase if the current one is broken.

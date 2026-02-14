@@ -240,12 +240,6 @@ Present a clear summary:
 - [Areas that might need a fresh blossom spike]
 ```
 
-### 6b. Sync
-
-```bash
-bd sync
-```
-
 ---
 
 ## Guidelines

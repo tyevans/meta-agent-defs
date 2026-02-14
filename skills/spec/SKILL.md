@@ -403,24 +403,6 @@ The spec is ready for review. The design uses existing patterns from `lib/core/`
 
 ---
 
-## Session Close Reminder
-
-Before finishing, ensure all work is saved:
-
-```bash
-bd sync --flush-only
-git status
-```
-
-If the spec file is new and should be tracked:
-
-```bash
-git add .specs/
-git commit -m "docs: add spec for [feature name]"
-```
-
----
-
 ## Guidelines
 
 1. **Fresh agents prevent contamination** — Each phase uses new agents with clean context

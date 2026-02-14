@@ -398,22 +398,6 @@ bd create --title="Implement: [feature name]" --type=feature --priority=2 \
   --description="[feature summary from Phase 1]. All pre-mortem mitigations must complete before implementation."
 ```
 
-### 5c. Session Close Reminder
-
-Before finishing, run the session close protocol:
-
-```bash
-bd sync
-git status
-```
-
-If there are beads state changes to commit:
-
-```bash
-git add .beads/
-git commit -m "chore: premortem analysis for [feature name]"
-```
-
 ---
 
 ## Guidelines

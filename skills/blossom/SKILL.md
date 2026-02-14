@@ -434,24 +434,6 @@ Present the final blossom report to the user:
 
 ---
 
-## Session Close Reminder
-
-Before finishing, run the session close protocol:
-
-```bash
-bd sync
-git status
-```
-
-If there are beads state changes to commit:
-
-```bash
-git add .beads/
-git commit -m "chore: blossom backlog for [goal description]"
-```
-
----
-
 ## Key Principles
 
 1. **Explore, don't implement.** Spikes discover work; they never do it.
