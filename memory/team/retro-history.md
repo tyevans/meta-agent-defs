@@ -36,3 +36,11 @@
 - New learnings: 7 across 3 members (infra +4, skill-author +3, agent-author +1 updated)
 - Key insight: "Never spend tokens on awareness — spend formatting on it." Two-tier model: free shell pulse (automatic) + opt-in LLM skills. Product meetings with genuine role tension produced concrete, shippable outcomes faster than solo planning.
 - Backlog state: 115/115 closed, 0 open
+
+## Retro: 2026-02-14 (session 6 — pipe format validation)
+- Tasks completed: 5 (epic + 3 spec amendments + empirical validation)
+- Meetings: 2 (Architect+Skeptic on spec gaps, Pragmatist+Scientist on results)
+- Test runs: 8 (5 gather, 1 full chain, 1 disambiguation, 1 failure injection) — all passed
+- New learnings: 0 new team learnings (session was validation-focused, not implementation)
+- Key insight: Rule 9 (validation heuristic) works as a safety net — model self-reports intake AND flags corruption without being asked. Subagent turn limits (~30 calls for 3-step chain) require running multi-step chains in main session.
+- Backlog state: 124/124 closed, 0 open

@@ -20,7 +20,7 @@ You are running a **session retrospective** -- a structured reflection on the cu
 
 ## Overview
 
-Retro works in 6 phases:
+Retro works in 7 phases:
 
 ```
 Gather session data (git + backlog + conversation context)
@@ -28,7 +28,8 @@ Gather session data (git + backlog + conversation context)
     -> Extract keep/stop/try learnings
       -> Team learning health (if team exists)
         -> Update MEMORY.md with durable insights
-          -> Present structured report
+          -> Capture action items as beads
+            -> Present structured report
 ```
 
 ---
@@ -216,7 +217,22 @@ Read MEMORY.md after edits to confirm it is well-structured and under the line l
 
 ---
 
-## Phase 6: Report
+## Phase 6: Capture Action Items (conditional)
+
+**If `.beads/` exists**, create a bead for each action item identified in Phase 3:
+
+```bash
+bd create --title="<action item>" --type=task --priority=<2-4> \
+  --description="From retro on [date]. Context: [relevant finding from Phase 2]"
+```
+
+Action items that are vague observations ("improve testing") are not beads — only create beads for items specific enough to act on in a single session. Typically 1-3 beads per retro; zero is fine if no concrete follow-ups emerged.
+
+**If `.beads/` does not exist**, list action items in the report only.
+
+---
+
+## Phase 7: Report
 
 Present a structured retrospective report:
 
@@ -235,8 +251,8 @@ Present a structured retrospective report:
 - [specific item with evidence and suggested change]
 
 ### Action Items
-- [ ] [specific, actionable item for the next session]
-- [ ] [specific, actionable item for the next session]
+- [ ] [bead ID]: [title] (P[priority])
+- [ ] [bead ID]: [title] (P[priority])
 
 ### Memory Updates
 - [list each change made to MEMORY.md: added, updated, or removed]
