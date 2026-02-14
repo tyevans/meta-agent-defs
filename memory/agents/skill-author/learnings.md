@@ -11,6 +11,8 @@
 - Fan-out-protocol.md has Agent Preamble section — skills reference it instead of repeating investigation boilerplate (added: 2026-02-14)
 - Characterization-over-procedure pattern: 2-3 sentence "You think like..." characterization outperforms procedural step lists for agent prompts (added: 2026-02-14)
 - Consensus uses adaptive 8-lens palette with selection logic; parameterized agent template instead of hardcoded 3 agents (added: 2026-02-14)
+- Consensus has optional debate round (Phase 2.5): anonymized cross-proposal challenge via background agents, not teams (added: 2026-02-14)
+- Anonymization in cross-proposal patterns: remove lens-identifying language, use neutral labels (A/B/C), let agents respond to ideas not biases (added: 2026-02-14)
 - Blossom has pushback protocol in quality gate — re-prompts teammates (team mode) or flags for re-dispatch (background mode) (added: 2026-02-14)
 
 ## Gotchas
@@ -37,6 +39,8 @@
 
 ## Preferences
 - Interactive mode pattern: check if $ARGUMENTS is empty in Phase 0, fork to conversational flow that gathers info then rejoins main workflow at a later phase (added: 2026-02-13)
+- Checkpoints in recursive skills: specify trigger precisely (depth transitions vs every iteration), default to non-blocking (safety net, not gate) (added: 2026-02-14)
+- When borrowing patterns across skills, adapt semantics to target skill's constraints (e.g., fractal's immutable goal means "pivot" can't change the goal, only the exploration path) (added: 2026-02-14)
 
 ## Cross-Agent Notes
 - Team templates in templates/teams/ follow exact .claude/team.yaml schema; use realistic ownership globs per project type (triaged: 2026-02-14)

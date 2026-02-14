@@ -142,6 +142,29 @@ After each handler report, evaluate findings using the **assess** primitive's ca
 Accumulated answers: [count]. Handlers dispatched: [used]/12 max. Status: [CONTINUE | STOP: goal satisfied | STOP: diminishing returns].
 ```
 
+### User Checkpoint (at depth transitions)
+
+When the current depth level is exhausted (all handlers at Level N have reported) and DEEPEN items exist, pause before going deeper. Synthesize progress and confirm direction with the user.
+
+**Checkpoint message:**
+
+> **Progress so far:**
+> - Accumulated answers: [count]
+> - Remaining DEEPEN items: [count]
+> - Current depth: Level [N]
+> - Handlers dispatched: [count]/12
+>
+> **Next step:** Go to Level [N+1] to investigate [list DEEPEN areas, one line each].
+>
+> **Continue** deeper, **pivot** to different areas, or **conclude** now?
+
+**User choices:**
+- **Continue** → Proceed with recursion (see below). No change to goal or DEEPEN items.
+- **Pivot** → Ask user which DEEPEN items to pursue (let them prune or redirect). Update the recursion plan accordingly.
+- **Conclude** → Skip to Phase 3 synthesis with current ANSWER findings.
+
+This checkpoint is a safety net, not a gate. If the user doesn't respond within a reasonable time or says "continue", proceed normally.
+
 ### Termination Conditions
 
 Check after every evaluation. Stop when ANY is true:
@@ -154,7 +177,7 @@ When stopping, proceed to Phase 3 even if DEEPEN items remain. Fractal's value i
 
 ### Recursion
 
-If DEEPEN items exist and no termination condition is met, dispatch new handlers for them. Increment the depth level in their prompt. Continue until termination.
+If DEEPEN items exist and no termination condition is met, and the user checkpoint confirms continuation (if applicable), dispatch new handlers for them. Increment the depth level in their prompt. Continue until termination.
 
 ---
 

@@ -23,7 +23,8 @@
 - install.sh writes .meta-agent-defs.manifest for reliable uninstall (both symlink and hardlink modes) (added: 2026-02-13)
 
 ## Preferences
-- (none yet)
+- bin/git-pulse.sh is the shared entry point for git session metrics — skills should call it instead of raw git log (added: 2026-02-14)
+- Bash parameter expansion `${VAR:+"$VAR"}` is essential for optional flags with spaces in git commands (added: 2026-02-14)
 
 ## Cross-Agent Notes
 - rules/ follows the global-portable symlink pattern (like agents/, skills/). Three-way symmetry: portable directory + install.sh symlink logic + .claude/ project override. Replicate this pattern when adding new global config categories. (triaged: 2026-02-14)

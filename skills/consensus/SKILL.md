@@ -22,15 +22,16 @@ You are running the **Consensus** workflow -- a multi-perspective synthesis patt
 
 ## Overview
 
-Consensus works in 5 phases:
+Consensus works in 5 phases (with an optional debate round):
 
 ```
 Frame the problem (same starting point for all agents)
   -> Select 3 optimization lenses (adaptive based on problem type)
     -> Solicit 3 perspectives (one per lens)
-      -> Synthesize (agreements = high confidence, tensions = actual trade-offs)
-        -> Present report with recommendation
-          -> Record decision for future context
+      -> [OPTIONAL] Debate round (cross-proposal challenge)
+        -> Synthesize (agreements = high confidence, tensions = actual trade-offs)
+          -> Present report with recommendation
+            -> Record decision for future context
 ```
 
 ---
@@ -162,26 +163,107 @@ Allow all three agents to complete. Do not proceed until all three have returned
 
 ---
 
+## Phase 2.5: Debate Round (OPTIONAL)
+
+After collecting all three initial proposals, ask the user if they want to run a debate round:
+
+```
+Run debate round? (adds cost but surfaces deeper trade-offs)
+
+Debate round: Each advocate will see anonymized summaries of the other proposals and can revise their approach or challenge competing ideas. This adds 3 more agent dispatches but often reveals trade-offs that isolated analysis misses.
+
+Y/N?
+```
+
+If the user declines, skip directly to Phase 3.
+
+If the user approves:
+
+### 2.5a. Anonymize Proposals
+
+Create a summary of each proposal that removes lens-identifying language:
+
+```markdown
+**Proposal A**:
+- Approach: [1-2 sentence summary, neutral language]
+- Complexity: [simple/moderate/complex]
+- Key decisions: [bullet list]
+
+**Proposal B**:
+- Approach: [1-2 sentence summary, neutral language]
+- Complexity: [simple/moderate/complex]
+- Key decisions: [bullet list]
+
+**Proposal C**:
+- Approach: [1-2 sentence summary, neutral language]
+- Complexity: [simple/moderate/complex]
+- Key decisions: [bullet list]
+```
+
+**Critical**: Do not reveal which lens generated which proposal. Use neutral labels (A/B/C) and remove any lens-specific language ("to maximize simplicity", "for better performance", etc.). The goal is to let advocates respond to the IDEAS, not to known biases.
+
+### 2.5b. Dispatch Debate Agents
+
+Dispatch three NEW background agents (one per original lens). Each agent receives:
+
+1. The original problem statement from Phase 1
+2. Their own original proposal (fully detailed)
+3. The anonymized summaries of the other two proposals (Proposal A/B/C)
+
+**Debate Agent Prompt Template**:
+
+> You are the **[Lens Name] Advocate** revisiting your proposal after seeing competing approaches.
+>
+> **Your original proposal**:
+> [Full original proposal text]
+>
+> **Competing proposals** (anonymized):
+> [Proposal A/B/C summaries -- excluding the agent's own proposal]
+>
+> **Original problem statement**:
+> [Problem Statement from Phase 1]
+>
+> **Your task**:
+> 1. **What you'd revise**: After seeing the alternatives, what would you change about your original proposal? Be specific. If nothing, say why your approach still holds.
+> 2. **Weaknesses you see**: What concerns or risks do you identify in the competing proposals? What are they missing or getting wrong?
+> 3. **Potential hybrid**: Is there a way to combine ideas from multiple proposals that would be superior to any single approach?
+>
+> Be concrete and constructive. The goal is productive disagreement, not point-scoring.
+
+### 2.5c. Wait for Debate Results
+
+Allow all three debate agents to complete. Do not proceed until all three have returned their responses.
+
+---
+
 ## Phase 3: Synthesize
 
 ### 3a. Review Proposals
 
-Read all three agent reports thoroughly. For each agent, extract:
+Read all three initial agent reports thoroughly. For each agent, extract:
 - Core approach (what they're proposing)
 - Key decisions (why they chose this approach)
 - Trade-offs (what they're sacrificing)
 - Files touched
 - Complexity estimate
 
+**If debate round ran**: Also review the debate responses to identify:
+- Revisions each advocate made to their approach
+- Cross-proposal critiques and concerns raised
+- Potential hybrid approaches suggested
+- Points of convergence revealed through dialogue
+
 ### 3b. Identify Agreements
 
-Compare the three proposals to find areas where **all three agents agree**. These are high-confidence recommendations.
+Compare the three proposals (including debate revisions if available) to find areas where **all three agents agree**. These are high-confidence recommendations.
 
 Examples of agreements:
 - All three suggest using the same data structure
 - All three recommend touching the same core files
 - All three agree a certain abstraction is unnecessary
 - All three converge on the same integration point
+- **If debate ran**: Advocates revised toward a common approach
+- **If debate ran**: All three identified the same weakness in a competing idea
 
 Create an **Agreements** list with each point of consensus and what it tells you:
 
@@ -193,37 +275,59 @@ Create an **Agreements** list with each point of consensus and what it tells you
 - **All three touch [file path]**: This file is central to the solution.
 ```
 
+**If debate ran**: Note any convergence that emerged during the debate round that wasn't present in initial proposals. This is particularly strong signal.
+
 ### 3c. Identify Tensions
 
 Find areas where agents **disagree** or propose **conflicting approaches**. These are the actual design tensions.
 
-For each tension, articulate what the trade-off is:
+For each tension, articulate what the trade-off is. **If debate ran**, incorporate critiques and revisions into the tension analysis:
 
 ```markdown
 ### Tension: [Brief title]
 
 **[Lens 1] says**: [approach] because [reason]
-**[Lens 2] says**: [approach] because [reason]
-**[Lens 3] says**: [approach] because [reason]
+  - **After debate**: [revision made, if any, or "stood firm because..."]
+  - **Critiques raised**: [concerns about competing proposals]
 
-**The actual trade-off**: [what you gain and lose with each choice]
+**[Lens 2] says**: [approach] because [reason]
+  - **After debate**: [revision made, if any, or "stood firm because..."]
+  - **Critiques raised**: [concerns about competing proposals]
+
+**[Lens 3] says**: [approach] because [reason]
+  - **After debate**: [revision made, if any, or "stood firm because..."]
+  - **Critiques raised**: [concerns about competing proposals]
+
+**The actual trade-off**: [what you gain and lose with each choice, incorporating debate insights]
 ```
 
-Example (using Simplicity/Performance/Maintainability lenses):
+Example (using Simplicity/Performance/Maintainability lenses, with debate):
 
 ```markdown
 ### Tension: In-memory cache vs. database query
 
 **Simplicity says**: Query the database every time because it requires no cache management code or invalidation logic
-**Performance says**: Pre-load all data into an in-memory map on startup because database round-trips add 50-100ms per request
-**Maintainability says**: Use a TTL-based cache with automatic invalidation because it handles updates gracefully and is testable
+  - **After debate**: Acknowledged staleness isn't a concern for this use case, but still prefers no cache
+  - **Critiques raised**: Performance approach adds complexity for marginal gains given query frequency
 
-**The actual trade-off**: Simplicity minimizes code but sacrifices performance. Performance maximizes speed but adds staleness risk. Maintainability balances both but adds a dependency and configuration complexity.
+**Performance says**: Pre-load all data into an in-memory map on startup because database round-trips add 50-100ms per request
+  - **After debate**: Revised to lazy-load with TTL after seeing Maintainability's invalidation concerns
+  - **Critiques raised**: Simplicity's no-cache approach will bottleneck at scale
+
+**Maintainability says**: Use a TTL-based cache with automatic invalidation because it handles updates gracefully and is testable
+  - **After debate**: Stood firm; both alternatives have documented downsides
+  - **Critiques raised**: Simplicity's approach ignores performance constraints, Performance's approach ignores update patterns
+
+**The actual trade-off**: Simplicity minimizes code but sacrifices performance. Performance maximizes speed but adds staleness risk (now mitigated by TTL). Maintainability balances both but adds a dependency and configuration complexity. **Debate revealed**: All three agree updates are infrequent enough that staleness is manageable, narrowing the actual choice to code complexity vs. performance headroom.
 ```
+
+**If debate ran**: Pay attention to revisions that narrow the design space -- when advocates adjust their positions after seeing alternatives, the remaining disagreement is more precisely defined.
 
 ### 3d. Identify Majority Positions
 
 Find cases where **2 of 3 agents agree**. These are likely good choices, but note the dissenting opinion.
+
+**If debate ran**: Check whether majority positions strengthened (dissenter revised toward majority) or weakened (majority advocate(s) acknowledged dissenter's concerns).
 
 ```markdown
 ### Majority: [Brief title]
@@ -232,6 +336,8 @@ Find cases where **2 of 3 agents agree**. These are likely good choices, but not
 **1 agent ([Lens C]) dissents**: [concern or alternative]
 
 **Interpretation**: [what this tells you]
+
+**If debate ran**: [convergence/divergence observed]
 ```
 
 ---
@@ -265,19 +371,22 @@ Present the synthesis to the user:
 ### Three Proposals
 
 **[Lens 1] Advocate**:
-- Approach: [1-2 sentence summary]
+- Initial approach: [1-2 sentence summary]
 - Complexity: [simple/moderate/complex]
 - Key trade-offs: [what's sacrificed]
+- **If debate ran**: [revisions made or "held firm"]
 
 **[Lens 2] Advocate**:
-- Approach: [1-2 sentence summary]
+- Initial approach: [1-2 sentence summary]
 - Complexity: [simple/moderate/complex]
 - Key trade-offs: [what's sacrificed]
+- **If debate ran**: [revisions made or "held firm"]
 
 **[Lens 3] Advocate**:
-- Approach: [1-2 sentence summary]
+- Initial approach: [1-2 sentence summary]
 - Complexity: [simple/moderate/complex]
 - Key trade-offs: [what's sacrificed]
+- **If debate ran**: [revisions made or "held firm"]
 
 ---
 
@@ -376,7 +485,8 @@ If the decision leads directly to implementation, note which skill should run ne
 - **Agreements are gold**: Where all three converge, that's a high-confidence decision. Do it.
 - **Tensions are the point**: Disagreements surface actual trade-offs the user might not have considered. Make them explicit.
 - **Recommend honestly**: Your recommendation should acknowledge what's being sacrificed, not just what's being gained.
-- **This is expensive**: Three parallel agents reading the codebase independently. Use this for meaningful decisions, not trivial choices.
+- **This is expensive**: Three parallel agents reading the codebase independently. Use this for meaningful decisions, not trivial choices. Debate round doubles the agent count to six.
+- **Debate round surfaces deeper trade-offs**: The optional debate round adds cost but reveals tensions that isolated analysis often misses. Use it for high-stakes decisions where understanding second-order effects matters.
 - **This produces a DECISION, not an IMPLEMENTATION**: Consensus answers "which approach" but not "exactly how". Pair with `/spec` or `/tracer` for execution.
 - **Concrete over abstract**: Reject agent proposals that are too high-level. Demand specific files, specific changes, specific trade-offs.
 - **Verify agents read code**: If an agent's proposal doesn't reference actual file contents, challenge it. Speculation is not useful here.
