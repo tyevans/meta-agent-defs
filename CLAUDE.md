@@ -33,9 +33,6 @@ Portable Claude Code workflow definitions (agents, skills, hooks, settings) main
 # Install with hardlinks instead of symlinks
 ./install.sh --hardlink
 
-# Also install CLI scripts to ~/.local/bin/
-./install.sh --with-cli
-
 # Uninstall (uses manifest written during install)
 xargs rm -f < ~/.claude/.meta-agent-defs.manifest
 
@@ -70,10 +67,6 @@ meta-agent-defs/
 │   └── team-protocol.md         # Team manifest, spawn protocol, reflection schema
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
-├── bin/
-│   └── claude-orchestrate      # CLI launcher: bypass perms + claude-in-claude dispatch
-├── prompts/
-│   └── orchestrate-system.md   # System prompt for orchestrator mode
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
 ├── mcp-servers.json            # MCP server definitions (installed globally)
 ├── install.sh                  # Symlink installer (idempotent, includes bin/ -> ~/.local/bin/)

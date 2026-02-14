@@ -99,44 +99,27 @@ Ask the user to approve, reorder, reassign, or remove tasks.
 
 For each approved assignment, in the approved order:
 
-### 3a. Compose the Spawn
+### 3a. Compose the Prompt
 
-Build the `claude -p` command following the spawn protocol from team-protocol.md:
+Build the task prompt following the spawn protocol from team-protocol.md:
 
 1. Read the member's current `learnings.md`
-2. Construct the `--append-system-prompt` with:
-   - Team member identity (name, role, owns)
-   - Full contents of their learnings.md
-   - Reflection protocol instructions
-3. Construct the task prompt with:
-   - Bead ID and title
-   - Bead description (from `bd show <id>`)
-   - Any relevant context from previous dispatches in this sprint
+2. Compose a prompt that includes: member identity (name, role, owns), learnings, task description, and reflection instructions
+3. Include any relevant context from previous dispatches in this sprint
 
 ### 3b. Execute
 
-**Default: use Task tool dispatch** (in-process, simpler):
+Dispatch via the Task tool:
 
 ```
 Task({
   subagent_type: "general-purpose",
-  model: "<member's model>",
-  prompt: "<composed prompt including learnings and reflection instructions>"
+  model: "<member's model from team.yaml>",
+  prompt: "<composed prompt with identity, learnings, task, and reflection instructions>"
 })
 ```
 
-The prompt must include:
-- The member's role and ownership context
-- Their full learnings file contents
-- The task description with bead reference
-- Reflection instructions: "After completing your task, provide a structured summary with: task_result (status, summary, files_changed), reflection (what_worked, what_didnt, confidence), suggested_learnings (category, content, for_agent), and follow_up (blocked_by, suggested_next, needs_human)."
-
-**Alternative: `claude -p` dispatch** (out-of-process, for budget enforcement):
-
-Use the full spawn command template from team-protocol.md when:
-- Budget enforcement is needed (`--max-budget-usd`)
-- JSON schema enforcement is needed (`--json-schema`)
-- The task is complex enough to warrant a full CLI session
+For independent tasks that touch different ownership areas, use `run_in_background: true` to parallelize.
 
 ### 3c. Mark Bead In-Progress (conditional)
 

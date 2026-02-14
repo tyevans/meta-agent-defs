@@ -90,7 +90,7 @@ When a project has a team manifest (`.claude/team.yaml`), file-based learnings a
 ### Advantages over MCP
 
 - Version-controlled (git history shows learning evolution)
-- Injectable into CLI prompts (works with `claude -p`)
+- Injectable into agent prompts via Task tool dispatch
 - Human-readable and editable
 - Reviewable in PRs
 
