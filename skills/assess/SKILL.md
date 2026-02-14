@@ -21,7 +21,7 @@ You are running the **assess** primitive — evaluating items against a rubric w
 
 ### 1. Find Items
 
-Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input. If no prior primitive output exists, treat $ARGUMENTS as both rubric and item source — extract items directly.
+Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input and read the `**Pipeline**` field to construct provenance. If no prior primitive output exists, treat $ARGUMENTS as both rubric and item source — extract items directly.
 
 ### 2. Parse Rubric
 
@@ -36,7 +36,7 @@ Assess each item against the rubric. Assign a categorical verdict with reasoning
 Output in pipe format:
 
 - **Header**: `## [Assessed ...]`
-- **Metadata**: `**Source**: /assess`, `**Input**: [one-line rubric]`
+- **Metadata**: `**Source**: /assess`, `**Input**: [one-line rubric]`, `**Pipeline**: [upstream chain -> /assess (N items)]` or `(none — working from direct input)`
 - **Items**: Numbered list grouped by category (highest severity first), each with verdict in bold (e.g., **CRITICAL** — detail)
 - **Rubric**: Table showing categories and their definitions (inserted between Items and Summary per pipe format rules)
 - **Summary**: One paragraph explaining the evaluation rationale and distribution across categories

@@ -33,7 +33,7 @@ If codebase results are insufficient or the topic requires external context, use
 Output in pipe format:
 
 - **Header**: `## [Findings on ...]`
-- **Metadata**: `**Source**: /gather`, `**Input**: [one-line topic]`
+- **Metadata**: `**Source**: /gather`, `**Input**: [one-line topic]`, `**Pipeline**: (none — working from direct input)` (or append to upstream pipeline if composing with prior primitive)
 - **Items**: Numbered list with title, detail, source (file:line or URL), and confidence (CONFIRMED/LIKELY/POSSIBLE)
 - **Summary**: One paragraph synthesis of all findings
 

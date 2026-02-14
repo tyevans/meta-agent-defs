@@ -21,7 +21,7 @@ You are running the **plan** primitive — sequencing items into a dependency-aw
 
 ## Process
 
-1. **Find Items**: Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input. If no prior primitive output exists, extract items directly from $ARGUMENTS.
+1. **Find Items**: Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input and read the `**Pipeline**` field to construct provenance. If no prior primitive output exists, extract items directly from $ARGUMENTS.
 2. **Identify Dependencies**: For each item, determine what it depends on. Use Read/Grep/Glob to understand technical dependencies in the codebase when applicable.
 3. **Sequence by Dependency**: Order items so dependencies come before dependents. Apply constraint from $ARGUMENTS if present (e.g., "minimize risk" → de-risk blockers first; "fastest path" → shortest critical path).
 4. **Emit Sequenced Output**: Output in pipe format with execution-order numbering, dependency metadata, and ASCII dependency graph.
@@ -31,7 +31,7 @@ You are running the **plan** primitive — sequencing items into a dependency-aw
 Output in pipe format:
 
 - **Header**: `## Execution Sequence for [topic]`
-- **Metadata**: `**Source**: /plan`, `**Input**: [one-line topic + constraint]`
+- **Metadata**: `**Source**: /plan`, `**Input**: [one-line topic + constraint]`, `**Pipeline**: [upstream chain -> /plan (N items)]` or `(none — working from direct input)`
 - **Items**: Numbered list in EXECUTION ORDER, each with:
   - **Title** — what this step does
   - **depends-on**: [item numbers or "none"]

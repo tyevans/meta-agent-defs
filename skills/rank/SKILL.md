@@ -21,7 +21,7 @@ You are running the **rank** primitive — scoring and ordering items by user-sp
 
 ### 1. Find Items
 
-Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input. If no prior primitive output exists, treat $ARGUMENTS as both criteria and item source — extract items directly.
+Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input and read the `**Pipeline**` field to construct provenance. If no prior primitive output exists, treat $ARGUMENTS as both criteria and item source — extract items directly.
 
 ### 2. Parse Criteria
 
@@ -36,7 +36,7 @@ Assign numeric scores (1-5 scale) for each criterion per item. Calculate overall
 Output in pipe format:
 
 - **Header**: `## [Ranked ...]`
-- **Metadata**: `**Source**: /rank`, `**Input**: [one-line criteria]`
+- **Metadata**: `**Source**: /rank`, `**Input**: [one-line criteria]`, `**Pipeline**: [upstream chain -> /rank (N items)]` or `(none — working from direct input)`
 - **Items**: Numbered list (re-ordered by score), each with title, detail, and source from original
 - **Criteria**: Table showing item scores per criterion (inserted between Items and Summary per pipe format rules)
 - **Summary**: One paragraph explaining the ranking rationale and top/bottom items

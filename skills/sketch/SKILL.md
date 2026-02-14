@@ -20,9 +20,9 @@ You are running the **sketch** primitive — producing a minimal code skeleton w
 
 ## Process
 
-1. **Check context** for prior primitive output (gather, rank, distill). If found, sketch based on those findings.
+1. **Check context** for prior primitive output (gather, rank, distill). If found, sketch based on those findings and read the `**Pipeline**` field to construct provenance.
 2. **Search codebase** (if needed) using Grep/Glob to understand existing structure/conventions.
-3. **Emit skeleton** in pipe format with code blocks containing TODO placeholders.
+3. **Emit skeleton** in pipe format with code blocks containing TODO placeholders. Include `**Pipeline**` in metadata — append this step to the upstream chain, or `(none — working from direct input)` if no upstream.
 
 Output format: numbered list where each item is a file/module with a code block showing structure and TODO comments marking implementation points.
 

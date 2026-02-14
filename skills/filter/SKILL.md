@@ -20,13 +20,13 @@ You are running the **filter** primitive — applying a criterion to items and k
 
 ## Process
 
-1. **Find Items**: Search conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, use those items. Otherwise extract items from conversation context or $ARGUMENTS.
+1. **Find Items**: Search conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, use those items and read the `**Pipeline**` field to construct provenance. Otherwise extract items from conversation context or $ARGUMENTS.
 
 2. **Parse Criterion**: Extract the filter rule from $ARGUMENTS. Support both positive ("security-related", "confirmed only") and negative ("not stale", "not duplicate") filters.
 
 3. **Apply Filter**: Evaluate each item against the criterion. Binary decision: KEEP or DROP. Preserve all attributes (source, confidence, detail) for kept items.
 
-4. **Emit Filtered Output**: Output in pipe format with header, metadata, kept items as numbered list, a Dropped section noting what was removed and why, and summary.
+4. **Emit Filtered Output**: Output in pipe format with header, metadata (including `**Pipeline**` — append this step to the upstream pipeline chain, or `(none — working from direct input)` if no upstream), kept items as numbered list, a Dropped section noting what was removed and why, and summary.
 
 ## Guidelines
 

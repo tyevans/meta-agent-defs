@@ -2,7 +2,7 @@
 
 ## Codebase Patterns
 - Skills live in skills/<name>/SKILL.md with YAML frontmatter (name, description, allowed-tools, context)
-- 27 skills: 15 workflow + 12 composable primitives (gather, distill, rank, diff-ideas, sketch, verify, decompose, filter, assess, critique, plan, merge)
+- 28 skills: 15 workflow + 12 composable primitives + /status (gather, distill, rank, diff-ideas, sketch, verify, decompose, filter, assess, critique, plan, merge)
 - Skills with `context: fork` run in isolation (blossom, consolidate, review); others run inline
 - All skills use `disable-model-invocation: false` — the `true` setting blocks the Skill tool entirely
 - `$ARGUMENTS` is how skills receive user input from the slash command
@@ -15,6 +15,11 @@
 - RESOLVED: user-invocable and "When to Use" gaps were fixed in commit 1fcc5d3 (2026-02-13)
 - Skills can reference allowed-tools that might not be available at runtime; conditional logic in the body handles optional deps, not frontmatter (added: 2026-02-13)
 - Optional dependency pattern: `**If .beads/ exists**, [action]. **If not**, [fallback].` — preserves structure while enabling graceful degradation (added: 2026-02-13)
+
+## Pipeline Provenance
+- All primitives use two-touch pattern: detect upstream Pipeline field during input, emit extended Pipeline during output (added: 2026-02-14)
+- Merge uses `+` notation for showing merged branches: `/gather (8) + /gather (6) -> /merge (10)` (added: 2026-02-14)
+- Pipeline line is mandatory in pipe format — `(none — working from direct input)` when no upstream (added: 2026-02-14)
 
 ## Composition Patterns
 - Gather is almost always first — other primitives need structured items to work on (added: 2026-02-13)
@@ -30,4 +35,4 @@
 - Interactive mode pattern: check if $ARGUMENTS is empty in Phase 0, fork to conversational flow that gathers info then rejoins main workflow at a later phase (added: 2026-02-13)
 
 ## Cross-Agent Notes
-- Team templates in templates/teams/ follow exact .claude/team.yaml schema; use realistic ownership globs per project type (added: 2026-02-13)
+- Team templates in templates/teams/ follow exact .claude/team.yaml schema; use realistic ownership globs per project type (triaged: 2026-02-14)

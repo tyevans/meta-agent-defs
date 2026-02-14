@@ -20,13 +20,13 @@ You are running the **distill** primitive — reducing verbose input to essentia
 
 ## Process
 
-1. **Detect Input Source**: Check conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, use that as input. Otherwise treat conversation context as raw input.
+1. **Detect Input Source**: Check conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, use that as input and read its `**Pipeline**` field to construct provenance. Otherwise treat conversation context as raw input.
 
 2. **Parse Target**: Extract reduction target from $ARGUMENTS ("to N bullets", "to 1 paragraph", or a topic to filter by). Default to "5 bullets" if unspecified.
 
 3. **Distill**: Reduce to essential points while preserving source attribution and confidence levels (if present in input). Prioritize CONFIRMED over LIKELY over POSSIBLE.
 
-4. **Emit Output**: Structured in pipe format with header, metadata, numbered items (even for single items), and one-paragraph summary.
+4. **Emit Output**: Structured in pipe format with header, metadata (including `**Pipeline**` — append this step to the upstream pipeline chain, or `(none — working from direct input)` if no upstream), numbered items (even for single items), and one-paragraph summary.
 
 ## Guidelines
 

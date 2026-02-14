@@ -21,7 +21,7 @@ You are running the **critique** primitive — adversarial review of outputs, cl
 
 ## Process
 
-1. **Find Input**: Search conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, critique those items. Otherwise critique $ARGUMENTS directly.
+1. **Find Input**: Search conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, critique those items and read the `**Pipeline**` field to construct provenance. Otherwise critique $ARGUMENTS directly.
 
 2. **Apply Focus**: If $ARGUMENTS specifies a focus area (e.g., "security", "scalability"), prioritize criticisms in that dimension. If empty, critique everything.
 
@@ -32,7 +32,7 @@ You are running the **critique** primitive — adversarial review of outputs, cl
 
 4. **Emit Structured Output** in pipe format:
    - **Header**: `## [Critique of ...]`
-   - **Metadata**: `**Source**: /critique`, `**Input**: [one-line summary]`
+   - **Metadata**: `**Source**: /critique`, `**Input**: [one-line summary]`, `**Pipeline**: [upstream chain -> /critique (N items)]` or `(none — working from direct input)`
    - **Items**: Numbered list, each with verdict (FLAW/GAP/RISK), detail, and optional source
    - **Severity**: Table mapping each criticism to impact (HIGH/MEDIUM/LOW)
    - **Summary**: One paragraph synthesis

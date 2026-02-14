@@ -20,7 +20,7 @@ You are running the **verify** primitive — checking claims and assertions agai
 
 ## Process
 
-1. **Identify claims**: Parse $ARGUMENTS or read findings from prior primitive output in context (detected via pipe format: `## ... / **Source**: /...`)
+1. **Identify claims**: Parse $ARGUMENTS or read findings from prior primitive output in context (detected via pipe format: `## ... / **Source**: /...`). If upstream found, read its `**Pipeline**` field to construct provenance
 2. **Gather evidence**: Use Grep/Read to check code, git log/show for history, WebSearch/WebFetch for external claims
 3. **Assess each claim**: Mark as **VERIFIED** (evidence confirms), **REFUTED** (evidence contradicts), or **UNCERTAIN** (insufficient/conflicting evidence)
 4. **Emit structured output** in pipe format with verification status prominent
@@ -28,7 +28,7 @@ You are running the **verify** primitive — checking claims and assertions agai
 ## Output Format
 
 - **Header**: `## [Verification of ...]`
-- **Metadata**: `**Source**: /verify`, `**Input**: [one-line claims summary]`
+- **Metadata**: `**Source**: /verify`, `**Input**: [one-line claims summary]`, `**Pipeline**: [upstream chain -> /verify (N items)]` or `(none — working from direct input)`
 - **Items**: Numbered list with title, verification status (VERIFIED/REFUTED/UNCERTAIN), evidence, source (file:line or URL), and confidence (CONFIRMED for verified, POSSIBLE for uncertain)
 - **Summary**: One paragraph synthesis of verification results
 

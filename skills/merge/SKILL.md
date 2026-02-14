@@ -22,7 +22,7 @@ You are running the **merge** primitive — combining multiple pipe-format block
 
 ### 1. Detect All Pipe-Format Blocks
 
-Scan conversation context for ALL blocks matching the pipe-format pattern (the `**Source**: /...` marker). Collect every one, not just the most recent. Note the source skill for each block.
+Scan conversation context for ALL blocks matching the pipe-format pattern (the `**Source**: /...` marker). Collect every one, not just the most recent. Note the source skill and `**Pipeline**` field for each block.
 
 ### 2. Parse Items
 
@@ -54,9 +54,13 @@ Between Items and Summary, add a **Merge Details** section showing:
 - Number of confidence upgrades applied
 - Topic filter used (if any)
 
-### 7. Emit Unified Output
+### 7. Construct Pipeline Provenance
 
-Output in pipe format with header, metadata, deduplicated items as numbered list, Merge Details section, and final summary.
+Build the `**Pipeline**` field by combining the pipeline chains from all input blocks. Use `+` to show merged branches (e.g., `/gather (8 items) + /gather (6 items) -> /merge (10 items)`).
+
+### 8. Emit Unified Output
+
+Output in pipe format with header, metadata (including `**Pipeline**`), deduplicated items as numbered list, Merge Details section, and final summary.
 
 ## Guidelines
 

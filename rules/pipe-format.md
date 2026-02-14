@@ -11,6 +11,7 @@ Every primitive emits a markdown block with these sections:
 
 **Source**: /<skill-name>
 **Input**: <what was asked, one line>
+**Pipeline**: /gather (12 items) -> /distill (5 items)
 
 ### Items
 
@@ -34,6 +35,7 @@ Every primitive emits a markdown block with these sections:
 4. **Summary is always present.** One paragraph, no bullet points.
 5. **No YAML, no JSON.** Markdown only — LLMs parse it natively.
 6. **Skill-specific sections go between Items and Summary.** Example: /rank adds a `### Criteria` section; /diff-ideas adds a `### Comparison` table.
+7. **Pipeline line is always present.** When upstream pipe-format output is detected in context, construct the chain from prior `**Pipeline**` and `**Source**` fields showing each step and its item count (e.g., `/gather (12 items) -> /distill (5 items)`). When no upstream output is detected, use `(none — working from direct input)`.
 
 ## Input Contract
 

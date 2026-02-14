@@ -20,12 +20,12 @@ You are running the **diff-ideas** primitive — comparing two approaches side-b
 
 ## Process
 
-Identify the two approaches from $ARGUMENTS or from the top 2 items in prior pipe-format output in context. Research each approach using codebase (Grep, Glob, Read) first, then web (WebSearch, WebFetch) if needed. Emit structured comparison in pipe format with a comparison table between Items and Summary.
+Identify the two approaches from $ARGUMENTS or from the top 2 items in prior pipe-format output in context (if upstream detected, read its `**Pipeline**` field to construct provenance). Research each approach using codebase (Grep, Glob, Read) first, then web (WebSearch, WebFetch) if needed. Emit structured comparison in pipe format with a comparison table between Items and Summary, including `**Pipeline**` in metadata.
 
 ## Output Format
 
 - **Header**: `## Comparison: [A] vs [B]`
-- **Metadata**: `**Source**: /diff-ideas`, `**Input**: [one-line comparison request]`
+- **Metadata**: `**Source**: /diff-ideas`, `**Input**: [one-line comparison request]`, `**Pipeline**: [upstream chain -> /diff-ideas (N items)]` or `(none — working from direct input)`
 - **Items**: Numbered list (1 per approach) with key characteristics
 - **Comparison**: Table with dimensions as rows, approaches as columns, winner per dimension
 - **Summary**: One paragraph recommendation with reasoning

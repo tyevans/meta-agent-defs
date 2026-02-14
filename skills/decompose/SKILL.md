@@ -20,7 +20,7 @@ You are running the **decompose** primitive — breaking a goal or topic into bo
 
 ## Process
 
-1. **Identify the whole**: Parse $ARGUMENTS or read prior primitive output from context (detected via `## ... / **Source**: /...` pattern).
+1. **Identify the whole**: Parse $ARGUMENTS or read prior primitive output from context (detected via `## ... / **Source**: /...` pattern). If upstream found, read its `**Pipeline**` field to construct provenance.
 2. **Search for structure**: Use Grep/Glob/Read to understand the codebase's actual structure relevant to the topic. Ground decomposition in reality, not speculation.
 3. **Split into sub-parts**: Identify 3-6 bounded sub-parts that are MECE (mutually exclusive, collectively exhaustive).
 
@@ -29,7 +29,7 @@ You are running the **decompose** primitive — breaking a goal or topic into bo
 Output in pipe format:
 
 - **Header**: `## Decomposition of [topic]`
-- **Metadata**: `**Source**: /decompose`, `**Input**: [one-line topic]`
+- **Metadata**: `**Source**: /decompose`, `**Input**: [one-line topic]`, `**Pipeline**: [upstream chain -> /decompose (N items)]` or `(none — working from direct input)`
 - **Items**: Numbered list where each item includes:
   - **Title** — what this sub-part covers
   - **Scope**: what's included

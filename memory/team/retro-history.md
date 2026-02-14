@@ -29,3 +29,10 @@
 - Pruned: 2 stale skill-author entries updated (skill count, disable-model-invocation), 1 duplicate section header merged
 - Key insight: Standup → sprint → retro cycle ran end-to-end smoothly. All 4 dispatches were first-attempt successes. The backlog is now 106/107 closed with only 1 bead remaining (P2 audit task).
 - Backlog state: 106/107 closed, 1 open (P2 audit task)
+
+## Retro: 2026-02-14 (session 5 — observable progress)
+- Tasks completed: 6 (3 P1 hook changes + pipeline provenance + path registry + /status skill)
+- Meeting: 4-agent product meeting (User Advocate, Architect, Skeptic, Pragmatist) — 3 rounds
+- New learnings: 7 across 3 members (infra +4, skill-author +3, agent-author +1 updated)
+- Key insight: "Never spend tokens on awareness — spend formatting on it." Two-tier model: free shell pulse (automatic) + opt-in LLM skills. Product meetings with genuine role tension produced concrete, shippable outcomes faster than solo planning.
+- Backlog state: 115/115 closed, 0 open
