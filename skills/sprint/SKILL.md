@@ -2,7 +2,7 @@
 name: sprint
 description: "Plan and dispatch work to team members with the learning loop: assign tasks by ownership, spawn agents with injected learnings, parse reflections, and persist new learnings. Works with or without beads backlog tracking. Use when you have a team assembled and work to dispatch. Keywords: dispatch, execute, work, plan, assign, run, do, build."
 argument-hint: "[task filter or focus area]"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Task
 ---

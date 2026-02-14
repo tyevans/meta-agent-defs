@@ -2,7 +2,7 @@
 name: standup
 description: "Run a team standup to sync status, surface blockers, and plan next actions. Reads the team manifest and each member's learnings for a file-based status report. Works with or without beads backlog tracking. Use at the start of a session, after a break, or when you need to reorient. Keywords: status, sync, blockers, progress, team, check-in."
 argument-hint: "[focus area]"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task
 ---

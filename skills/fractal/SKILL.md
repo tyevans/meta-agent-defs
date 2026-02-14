@@ -2,7 +2,7 @@
 name: fractal
 description: "Run goal-directed recursive exploration that prunes paths not serving the goal. Use when you need to deeply understand something, explore a codebase area with focus, or decompose a vague objective into concrete findings. Keywords: explore, research, investigate, understand, deep-dive, discover."
 argument-hint: "<goal>"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(mkdir:*), Task, Write
 ---

@@ -19,7 +19,7 @@ Every skill file must have YAML frontmatter with these fields:
 ---
 name: lowercase-with-hyphens
 description: "When and why to use this skill. Include keywords for auto-discovery."
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 ---
@@ -30,7 +30,7 @@ allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 - **name**: Matches the directory name, lowercase with hyphens
 - **description**: Quoted string explaining when to invoke. Include keywords at the end for auto-discovery by Claude
 - **argument-hint**: Optional. Shows usage hint (e.g., `"<goal>"`, `"[target]"`)
-- **disable-model-invocation**: Set `true` to prevent Claude from auto-invoking; `false` for auto-discoverable skills
+- **disable-model-invocation**: Default `false` (auto-discoverable). Only set `true` if auto-invocation would be genuinely dangerous
 - **user-invocable**: Set `true` so users can invoke via `/name`
 - **allowed-tools**: Minimal tool list. Use `Bash(prefix:*)` syntax to restrict shell commands
 - **context**: Set `fork` for skills that run in isolation (heavy exploration). Omit for inline skills
@@ -57,7 +57,7 @@ Every skill MUST include:
 ## Don't Do This
 
 - Do not include Write/Edit in allowed-tools unless the skill modifies files
-- Do not set `disable-model-invocation: false` unless the skill should be auto-discovered by Claude
+- Do not set `disable-model-invocation: true` — it blocks the Skill tool and prevents programmatic invocation. All skills default to `false`
 - Do not duplicate logic that exists in another skill -- factor shared patterns into agents instead
 - Do not duplicate logic that exists in an agent -- if an agent already handles the workflow, don't recreate it as a skill
 - Do not embed session-close boilerplate (bd sync, git status, git commit) -- the beads SessionStart hook already injects the session close protocol into every session

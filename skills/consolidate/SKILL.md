@@ -2,7 +2,7 @@
 name: consolidate
 description: "Review and tighten the beads backlog by deduplicating tasks, filling vertical slice gaps, detecting stale items, and cleaning up dependencies. Use after a blossom run, when the backlog feels unwieldy, before starting a new sprint, or when you suspect duplicate or stale tasks. Keywords: backlog, cleanup, dedup, triage, hygiene, review, organize."
 argument-hint: "[area or scope]"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 context: fork

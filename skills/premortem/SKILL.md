@@ -2,7 +2,7 @@
 name: premortem
 description: "Identify how a feature could fail before building it, then design mitigations into the implementation plan. Use for high-stakes features, security-sensitive changes, anything touching money/auth/data integrity, or when you want to surface hidden risks. Keywords: premortem, risk, failure, security, resilience, mitigation."
 argument-hint: "<feature or change to stress-test>"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, AskUserQuestion
 context: fork

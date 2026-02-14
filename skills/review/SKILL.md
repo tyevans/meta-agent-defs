@@ -2,7 +2,7 @@
 name: review
 description: "Run a structured code review across correctness, security, style, architecture, and testing dimensions. Use after subagent implementation, before merging PRs, when reviewing commit ranges, or for a second opinion on changes."
 argument-hint: "[target: staged changes, commit, range, PR#]"
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(gh:*), Bash(bd:*)
 context: fork
