@@ -4,7 +4,7 @@ description: "Show unified system status: backlog, recent activity, team health,
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)"]
+allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(bin/git-pulse.sh:*)"]
 context: inline
 ---
 
@@ -69,6 +69,18 @@ git status --short
 
 **If `.claude/team.yaml` does not exist**, note "No team configured."
 
+### 1e. Hotspots (Churn Heatmap)
+
+**If `bin/git-pulse.sh` exists**, run:
+
+```bash
+bin/git-pulse.sh --since="7 days ago"
+```
+
+Extract the `churn_N` lines from the output. These show files with highest modification frequency.
+
+**If `bin/git-pulse.sh` does not exist**, skip this section.
+
 ---
 
 ## Phase 2: Format Output
@@ -95,6 +107,18 @@ Present all collected data in this structure. Do not add commentary or analysis 
 
 **Working tree**: [clean | N files modified/untracked]
 [If dirty, show git status --short output]
+
+### Hotspots
+[If git-pulse.sh data collected:]
+| File | Edits (7d) |
+|------|------------|
+| [path] | [N] |
+| [path] | [N] |
+...
+
+Show top 5-10 churning files from the `churn_N` lines.
+
+[If git-pulse.sh not available or no churn data, omit this section entirely.]
 
 ### Team
 [Team name and member table:]
@@ -129,6 +153,7 @@ Generate 1-5 suggestions based purely on observed state. Use these rules:
 | No last session file | "First session — review backlog and pick a starting task" |
 | In-progress tasks exist | "Resume in-progress work: [task titles]" |
 | Everything is clean and no ready tasks | "Backlog is clear — create new tasks or run `/blossom` to explore" |
+| Any file has >3x the average churn count | "Review [file path] for stability — high churn may indicate design issues" |
 
 Only include suggestions that match the current state. Do not invent conditions.
 
