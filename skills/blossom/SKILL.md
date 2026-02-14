@@ -3,8 +3,9 @@ name: blossom
 description: "Run spike-driven exploration to discover and plan work for an unknown or loosely-defined goal. Use when you need to explore a codebase area, create an epic with prioritized tasks, or convert a vague objective into a structured backlog. Keywords: explore, discover, spike, plan, epic, backlog, investigate."
 argument-hint: "<goal or area to explore>"
 disable-model-invocation: true
+user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage
-#context: fork
+context: fork
 ---
 
 # Blossom: Emergent Spike-Driven Epic Workflow

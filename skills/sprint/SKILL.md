@@ -13,6 +13,14 @@ You are running a **Sprint** -- the core execution loop for a persistent learnin
 
 **Focus area (optional):** $ARGUMENTS
 
+## When to Use
+
+- When you have a team assembled (via `/assemble`) and ready beads in the backlog
+- When you want to dispatch work to team members with the learning loop
+- When agents should accumulate knowledge from each task to improve on the next
+- After a planning session (like `/blossom`) produces a prioritized backlog
+- When you want structured reflection and learning persistence after each task
+
 ## The Learning Loop
 
 ```

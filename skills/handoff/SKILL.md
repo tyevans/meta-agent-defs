@@ -165,7 +165,7 @@ bd create --title="HANDOFF: [summary of session]" --type=task --priority=1 \
   --description="[full handoff note content]"
 ```
 
-Alternatively, if the project uses auto memory, write to the memory directory for the project.
+If the project has a `memory/` directory, optionally write the handoff note there as `memory/handoff-[date].md` for persistent reference.
 
 ---
 

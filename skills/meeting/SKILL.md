@@ -13,6 +13,14 @@ You are facilitating a **Meeting** -- an interactive group discussion with a pan
 
 **Topic:** $ARGUMENTS
 
+## When to Use
+
+- When you want to brainstorm with multiple perspectives on a design problem
+- When clarifying requirements through dialogue before committing to an approach
+- When pressure-testing an idea by having different roles challenge it
+- When exploring trade-offs through interactive discussion rather than parallel reports
+- When the user wants to steer the conversation and ask follow-ups in real time
+
 ## Phase 1: Assemble the Panel
 
 ### 1a. Choose Roles
@@ -63,7 +71,7 @@ Task({
 > 3. If you have a question that would sharpen the discussion, ask it.
 > 4. Keep responses to 2-4 paragraphs. This is a conversation, not a monograph.
 >
-> Before starting, check for prior learnings: read your memory node `agent:<role-name>` via the Memory MCP if available.
+> Before starting, check for prior learnings: if a file-based learnings file exists at `memory/agents/<role-name>/learnings.md`, read it for accumulated context.
 
 ### 1d. Opening Round
 

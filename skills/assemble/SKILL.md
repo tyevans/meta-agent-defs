@@ -13,6 +13,14 @@ You are running **Assemble** -- a workflow to create a persistent agent team tha
 
 **Project:** $ARGUMENTS
 
+## When to Use
+
+- When starting a new project that will have multiple work sessions
+- When upgrading from ad-hoc agent dispatch to structured team coordination
+- When you want agents to accumulate knowledge and improve over time
+- When a project has clear ownership boundaries (backend, frontend, infrastructure, etc.)
+- When working on long-horizon work that benefits from persistent context
+
 ## How It Works
 
 ```

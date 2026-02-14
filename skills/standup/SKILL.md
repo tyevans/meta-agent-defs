@@ -13,6 +13,14 @@ You are running a **Standup** -- a quick status sync with a persistent learning 
 
 **Focus area (optional):** $ARGUMENTS
 
+## When to Use
+
+- At the start of a work session to get oriented on team status
+- After a break or context switch to reorient on what's in progress
+- When you need a quick view of blockers, learning health, and available work
+- Before planning a sprint to understand current team state
+- When you want a read-only status check without dispatching agents
+
 ## How It Works
 
 ```
@@ -28,7 +36,7 @@ Read team.yaml → Check backlog + git → Per-member activity report
 
 Read `.claude/team.yaml` to discover members, their roles, and ownership patterns.
 
-If no `.claude/team.yaml` exists, check for legacy `.claude/teams/*.md` files. If neither exists, tell the user to run `/assemble` first and stop.
+If no `.claude/team.yaml` exists, tell the user to run `/assemble` first and stop.
 
 ### 1b. Check Backlog
 

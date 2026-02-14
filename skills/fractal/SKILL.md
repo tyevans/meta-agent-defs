@@ -13,6 +13,14 @@ You are running **Fractal** -- goal-directed recursive exploration. Unlike exhau
 
 **Goal:** $ARGUMENTS
 
+## When to Use
+
+- When you need to deeply understand a specific codebase area or concept
+- When a vague objective needs to be decomposed into concrete findings
+- When exploration should stay focused on a goal (not exhaustive discovery)
+- When you want recursive investigation with aggressive pruning of irrelevant paths
+- When you need to answer specific questions rather than survey everything
+
 ## Phase 1: Seed
 
 ### 1a. Clarify
