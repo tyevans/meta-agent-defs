@@ -87,12 +87,23 @@ Each member has a file at `memory/agents/<name>/learnings.md`. These are version
 - **Preferences** — User/project preferences for style, approach, tooling
 - **Cross-Agent Notes** — Learnings forwarded from other team members
 
-### Size Cap
+### Size Cap and Tiered Structure
 
-Learnings files are capped at **150 lines**. When a file exceeds this:
-1. Merge similar entries
-2. Archive stale entries (>30 days without reference) to `memory/agents/<name>/archive.md`
-3. Promote frequently-referenced entries to `.claude/rules/` or CLAUDE.md
+Learnings files are capped at **60 lines**. Structure them as:
+
+- **Core (30 lines max)**: Always-injected entries with high reuse frequency (5+ references across sprints). These are foundational patterns and gotchas that apply to every task.
+- **Task-Relevant (30 lines max)**: Selective entries that apply to specific contexts. These should be pruned more aggressively.
+
+### Consolidation Triggers
+
+When a file exceeds 60 lines or meets any of these conditions:
+1. **Merge similar entries**: Consolidate learnings that say the same thing in different ways
+2. **Archive stale entries**: Move entries older than 21 days (without recent references) to `memory/agents/<name>/archive.md`
+3. **Promote high-value entries**: If a learning has been confirmed across 3+ sprints, promote it to `.claude/rules/` or CLAUDE.md
+4. **Validate cross-agent notes**: Notes in "Cross-Agent Notes" that are older than 14 days must be either:
+   - Acknowledged (merged into other sections)
+   - Acted upon (integrated into the agent's workflow)
+   - Discarded (moved to archive with rationale)
 
 ## Shared Team Memory
 
@@ -219,9 +230,10 @@ Every spawned team member returns this JSON structure:
 
 ### 4. Prune (during /retro)
 - Merge duplicate or similar entries
-- Archive stale entries (>30 days, never referenced)
+- Archive stale entries (>21 days, never referenced)
 - Promote high-value entries to rules or CLAUDE.md
-- Ensure no file exceeds 150 lines
+- Validate cross-agent notes (acknowledge, act, or discard within 14 days)
+- Ensure no file exceeds 60 lines (30 core + 30 task-relevant)
 
 ### 5. Transfer (optional)
 - When a new member is added, seed their learnings from related members
