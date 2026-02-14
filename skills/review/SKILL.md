@@ -24,11 +24,10 @@ You are running a **structured code review** -- a systematic examination of chan
 Review works in 5 phases:
 
 ```
-Determine scope (what to review)
-  -> Read and understand changes
-    -> Evaluate across dimensions
-      -> Produce findings with severity
-        -> Summary and next actions
+Gather: Determine scope + read changes
+  -> Assess: Evaluate across 5 dimensions
+    -> Filter: Produce findings by severity
+      -> Emit pipe format output + verdict
 ```
 
 ---
@@ -90,9 +89,9 @@ For each logical change:
 
 ---
 
-## Phase 3: Evaluate
+## Phase 3: Assess — Evaluate Across Dimensions
 
-Review across these dimensions. For each dimension, note any findings.
+Evaluate changes using the **assess** pattern: apply each dimension as a rubric, assign a categorical verdict (CRITICAL/WARNING/SUGGESTION/NITPICK) per finding.
 
 ### 3a. Correctness
 
@@ -140,9 +139,11 @@ Review across these dimensions. For each dimension, note any findings.
 
 ---
 
-## Phase 4: Produce Findings
+## Phase 4: Filter — Produce Findings in Pipe Format
 
-### Severity Levels
+Emit all findings as a pipe-format Items list, then apply the **filter** pattern to separate must-fix from optional.
+
+### Severity Levels (Assess Rubric)
 
 | Severity | Meaning | Action |
 |----------|---------|--------|
@@ -151,55 +152,65 @@ Review across these dimensions. For each dimension, note any findings.
 | **SUGGESTION** | Better approach exists, readability improvement | Consider for this or follow-up |
 | **NITPICK** | Style preference, minor inconsistency | Optional, author's discretion |
 
-### Finding Format
+### Finding Format (Pipe Format Items)
 
-For each finding:
+Each finding is a numbered item following pipe format:
 
 ```markdown
-### [SEVERITY]: [brief title]
+1. **CRITICAL: [brief title]** — [what is wrong and what to do instead]
+   - source: file/path.ext:line_number
+   - dimension: correctness | security | style | architecture | testing
 
-**Location**: `file/path.ext:line_number`
-**Dimension**: [correctness | security | style | architecture | testing]
-
-**Issue**: [What is wrong or could be better]
-
-**Evidence**: [The specific code, pattern, or behavior that triggered this finding]
-
-**Suggestion**: [What to do instead, with code example if applicable]
+2. **WARNING: [brief title]** — [issue and suggestion]
+   - source: file/path.ext:line_number
+   - dimension: correctness | security | style | architecture | testing
 ```
+
+Group items by severity (CRITICAL first, then WARNING, SUGGESTION, NITPICK). Include evidence inline in the detail text. If a code example helps, include it after the item as an indented block.
 
 ---
 
-## Phase 5: Summary and Next Actions
+## Phase 5: Summary — Emit Pipe Format Output
 
-### 5a. Review Summary
+### 5a. Review Output
+
+Emit the full review in pipe format:
 
 ```markdown
-## Review Summary
+## Reviewed [target description]
 
-**Target**: [what was reviewed]
-**Files reviewed**: N
-**Findings**: C critical, W warnings, S suggestions, N nitpicks
+**Source**: /review
+**Input**: [what was reviewed, one line]
 
-### Verdict: [PASS | PASS WITH CONDITIONS | FAIL]
+### Items
+
+1. **CRITICAL: [title]** — [detail with evidence and suggestion]
+   - source: file/path.ext:line_number
+   - dimension: correctness
+
+2. **WARNING: [title]** — [detail]
+   - source: file/path.ext:line_number
+   - dimension: security
+
+...
+
+### Verdict
+
+| Verdict | Files Reviewed | Critical | Warning | Suggestion | Nitpick |
+|---------|---------------|----------|---------|------------|---------|
+| [PASS / PASS WITH CONDITIONS / FAIL] | N | C | W | S | N |
 
 **Conditions** (if applicable):
 - [ ] [condition that must be met before merge]
 
-### Critical Findings
-[list critical findings with file:line references]
-
-### Warnings
-[list warning findings with file:line references]
-
-### Suggestions
-[list suggestions]
-
-### Nitpicks
-[list nitpicks]
-
 ### What Looks Good
+
 - [positive observations -- things done well worth noting]
+
+### Summary
+
+[One paragraph synthesis: overall quality assessment, risk areas,
+and recommended next actions.]
 ```
 
 ### Verdict Criteria

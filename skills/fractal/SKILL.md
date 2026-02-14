@@ -50,9 +50,9 @@ Write `.fractal/goal.md`:
 
 This file is the source of truth. Every handler receives the goal verbatim. Every evaluation checks findings against the dimensions.
 
-### 1c. Identify Initial Areas
+### 1c. Decompose into Areas
 
-Based on the goal, identify 2-4 areas to investigate. Prefer depth over breadth -- fewer focused areas over many shallow ones.
+Follow the **decompose** primitive's approach: break the goal into 2-4 MECE investigation areas with clear scope boundaries. Prefer depth over breadth -- fewer focused areas over many shallow ones. Each area must be independently investigable.
 
 ### 1d. Dispatch Handlers
 
@@ -78,27 +78,33 @@ Each handler receives this prompt (fill in bracketed values):
 >
 > Investigate your area by reading actual code. For each finding, assess whether it serves the GOAL.
 >
-> Report using this structure:
+> Report using pipe format:
 >
-> ## Handler Report: [your area]
+> ## Investigated [your area]
 >
-> ### Answers
-> Findings that directly serve the goal:
-> - **What**: [concrete finding with file paths and evidence]
-> - **Goal-fit**: [1 sentence connecting finding to goal]
+> **Source**: /fractal (handler)
+> **Input**: [your area]
+>
+> ### Items
+>
+> 1. **[finding title]** — [concrete finding with evidence]
+>    - source: [file:line]
+>    - confidence: CONFIRMED | LIKELY | POSSIBLE
+>    - goal-fit: [1 sentence connecting finding to goal]
 >
 > ### Go Deeper
+>
 > Sub-areas that might serve the goal but need their own investigation:
-> - **Sub-area**: [specific, bounded area]
-> - **Signal**: [what you saw that suggests value]
-> - **Question**: [what the next handler should answer]
+> - **[sub-area]** — [what you saw that suggests value]
+>   - question: [what the next handler should answer]
 >
 > ### Dead Ends
-> Areas investigated that do NOT serve the goal:
-> - [area]: [why irrelevant]
 >
-> ### Assessment
-> [2-3 sentences. How well does this area serve the goal? Is the richest vein in Answers or Go Deeper? Should the orchestrator prioritize depth here or move on?]
+> - **[area]** — [why irrelevant]
+>
+> ### Summary
+>
+> [2-3 sentences. How well does this area serve the goal? Is the richest vein in Items or Go Deeper? Should the orchestrator prioritize depth here or move on?]
 >
 > Rules:
 > - Read code. Do not speculate. Cite file paths.
@@ -108,28 +114,33 @@ Each handler receives this prompt (fill in bracketed values):
 
 ### Goal-Fit Evaluation
 
-After each handler report, evaluate findings inline:
+After each handler report, evaluate findings using the **assess** primitive's categorical rubric (ANSWER / DEEPEN / PRUNE):
 
 ```markdown
-### Goal-Fit Evaluation: Round [N]
+## Assessed handler findings for goal-fit
 
-**Goal**: [one-line restatement]
-**Accumulated answers**: [count]
+**Source**: /fractal (assess)
+**Input**: Round [N] evaluation against goal
 
-| Finding | Goal-Fit | Decision | Reasoning |
-|---------|----------|----------|-----------|
-| [summary] | HIGH | ANSWER | [serves goal because...] |
-| [sub-area] | MEDIUM | DEEPEN | [promising but unresolved...] |
-| [sub-area] | LOW | PRUNE | [tangential to goal...] |
+### Items
 
-**Handlers dispatched**: [used]/12 max
-**Status**: [CONTINUE | STOP: goal satisfied | STOP: diminishing returns]
+1. **[finding or sub-area]** — **ANSWER** — [serves goal because...]
+   - source: [from handler report]
+2. **[sub-area]** — **DEEPEN** — [promising but unresolved...]
+3. **[area]** — **PRUNE** — [tangential to goal...]
+
+### Rubric
+
+| Category | Definition |
+|----------|------------|
+| ANSWER   | Finding directly serves the goal. Add to synthesis. |
+| DEEPEN   | Promising signal, unresolved. Dispatch a new handler. |
+| PRUNE    | Not goal-relevant. Skip. |
+
+### Summary
+
+Accumulated answers: [count]. Handlers dispatched: [used]/12 max. Status: [CONTINUE | STOP: goal satisfied | STOP: diminishing returns].
 ```
-
-**Decisions:**
-- **ANSWER**: Finding directly serves the goal. Add to synthesis.
-- **DEEPEN**: Promising signal, unresolved. Dispatch a new handler.
-- **PRUNE**: Not goal-relevant. Skip.
 
 ### Termination Conditions
 
@@ -149,24 +160,36 @@ If DEEPEN items exist and no termination condition is met, dispatch new handlers
 
 ## Phase 3: Synthesize
 
+Follow the **distill** primitive's approach: reduce all accumulated ANSWER findings into a final pipe-format report.
+
 ### 3a. Final Report
 
-Present the synthesis:
-
 ```markdown
-## Fractal Report: [goal, short form]
+## Fractal findings on [goal, short form]
 
-### Answers
-[Numbered list of all ANSWER findings, organized by goal dimension]
+**Source**: /fractal
+**Input**: [goal, one line]
+
+### Items
+
+1. **[finding title]** — [detail, organized by goal dimension]
+   - source: [file:line]
+   - confidence: CONFIRMED | LIKELY | POSSIBLE
 
 ### Exploration Shape
+
 - **Areas explored**: [list]
 - **Max depth reached**: [N]
 - **Handlers dispatched**: [N]
 - **Dead ends**: [list of pruned areas]
 
 ### Open Questions
+
 [Anything unresolved that the user should know about]
+
+### Summary
+
+[One paragraph synthesis of all findings relative to the goal.]
 ```
 
 ### 3b. Optional: Create Beads
@@ -194,6 +217,6 @@ git status
 3. **Depth over breadth.** 3 deep investigations beat 6 shallow ones. Start with 2-4 areas, not 6+.
 4. **Handlers are disposable.** They investigate and report. The orchestrator makes all strategic decisions.
 5. **Stop when valuable.** "Done" is when the goal dimensions are addressed, not when exploration is exhausted.
-6. **Show your reasoning.** The goal-fit evaluation table makes pruning decisions visible and auditable.
+6. **Show your reasoning.** The assess-style evaluation table makes pruning decisions visible and auditable.
 7. **No beads during exploration.** Fractal produces understanding. Beads are an optional output, not the workflow.
-8. **Density over length.** Handler reports under 500 words. Evaluation tables, not prose.
+8. **Density over length.** Handler reports under 500 words. Pipe format, not prose.
