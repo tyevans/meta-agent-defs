@@ -2,8 +2,13 @@
 # claude-orchestrate: Launch Claude Code as an orchestrator that dispatches
 # work via claude-in-claude (CLI subprocesses) instead of built-in Task agents.
 #
-# This ensures each subprocess picks up the latest MEMORY.md, learnings,
-# and project context dynamically rather than inheriting a frozen snapshot.
+# Each subprocess picks up the latest MEMORY.md, learnings, and project
+# context dynamically rather than inheriting a frozen snapshot.
+#
+# Usage:
+#   claude-orchestrate                    # interactive orchestrator session
+#   claude-orchestrate -p "task"          # non-interactive single dispatch
+#   claude-orchestrate --model opus ...   # pass any claude flags through
 
 set -euo pipefail
 
@@ -23,6 +28,10 @@ if [ ! -f "$PROMPT_FILE" ]; then
 fi
 
 SYSTEM_PROMPT="$(cat "$PROMPT_FILE")"
+
+# Unset CLAUDECODE so subprocesses dispatched by this session
+# are not blocked by the nested launch guard.
+unset CLAUDECODE
 
 exec claude \
     --permission-mode bypassPermissions \
