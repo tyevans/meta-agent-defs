@@ -71,6 +71,10 @@ else
     TARGET_DIR="$HOME/.claude"
 fi
 
+# Define manifest file location and tracking array
+MANIFEST_FILE="$TARGET_DIR/.meta-agent-defs.manifest"
+INSTALLED_FILES=()
+
 # --- Cross-filesystem check for hardlinks ---
 if [ "$USE_HARDLINKS" = true ]; then
     # Get parent directory of TARGET_DIR (since TARGET_DIR may not exist yet)
@@ -102,6 +106,7 @@ link_file() {
 
             if [ "$SRC_INODE" = "$DST_INODE" ]; then
                 log "Already linked: $dst"
+                INSTALLED_FILES+=("$dst")
                 return
             else
                 # Different inode — back up and hardlink
@@ -110,11 +115,13 @@ link_file() {
                 warn "Backed up existing file: $dst -> $backup"
                 ln "$src" "$dst"
                 log "Hardlinked: $dst -> $src"
+                INSTALLED_FILES+=("$dst")
             fi
         else
             # Nothing exists — create fresh hardlink
             ln "$src" "$dst"
             log "Hardlinked: $dst -> $src"
+            INSTALLED_FILES+=("$dst")
         fi
     else
         # Symlink mode (original behavior)
@@ -123,6 +130,7 @@ link_file() {
             rm "$dst"
             ln -s "$src" "$dst"
             log "Updated: $dst -> $src"
+            INSTALLED_FILES+=("$dst")
         elif [ -e "$dst" ]; then
             # Regular file exists — back it up
             local backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
@@ -130,10 +138,12 @@ link_file() {
             warn "Backed up existing file: $dst -> $backup"
             ln -s "$src" "$dst"
             log "Linked: $dst -> $src"
+            INSTALLED_FILES+=("$dst")
         else
             # Nothing exists — create fresh
             ln -s "$src" "$dst"
             log "Linked: $dst -> $src"
+            INSTALLED_FILES+=("$dst")
         fi
     fi
 }
@@ -156,6 +166,7 @@ link_dir() {
 
         if [ "$file_count" -gt 0 ]; then
             log "Hardlinked directory: $dst ($file_count files)"
+            INSTALLED_FILES+=("$dst")
         fi
     else
         # Symlink mode: symlink the whole directory
@@ -295,6 +306,22 @@ if [ -z "$PROJECT_DIR" ]; then
 else
     info "Skipping CLI scripts (project-local mode - PATH-based)"
 fi
+
+# --- Write manifest ---
+info "Writing installation manifest..."
+{
+    echo "# meta-agent-defs manifest - installed files"
+    if [ "$USE_HARDLINKS" = true ]; then
+        LINK_MODE="hardlink"
+    else
+        LINK_MODE="symlink"
+    fi
+    echo "# mode=$LINK_MODE target=$TARGET_DIR date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo ""
+    # Sort and deduplicate
+    printf '%s\n' "${INSTALLED_FILES[@]}" | sort -u
+} > "$MANIFEST_FILE"
+log "Manifest written: $MANIFEST_FILE ($(wc -l < "$MANIFEST_FILE") entries)"
 
 echo ""
 log "Installation complete!"
