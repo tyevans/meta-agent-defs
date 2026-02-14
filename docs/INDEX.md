@@ -94,6 +94,30 @@ Common composition sequences (each step's output feeds the next via context):
 /gather -> /distill -> /sketch        # Research -> condense -> prototype
 ```
 
+**Note**: Multi-step chains (3+ primitives) are best run in the main session. If dispatching to a subagent, set `max_turns: 40` to avoid turn limits.
+
+### File-Based Intermediate Results
+
+For chains that may span compression events, save intermediate output to a file and pass the file path to the next primitive:
+
+```bash
+# Step 1: Run first primitive and save output
+User: /gather authentication patterns in this codebase
+  -> produces pipe-format output
+User: Save the gather output above to /tmp/auth-findings.md
+
+# Step 2: After compression or in a new session
+User: /distill /tmp/auth-findings.md
+  -> reads file instead of scanning context
+User: /rank by security risk
+  -> continues chain from distill output
+```
+
+This pattern is especially useful for:
+- Long-running sessions where compression may occur between primitives
+- Preserving research findings across session boundaries
+- Sharing primitive output with subagents (pass file path in task prompt)
+
 ## Agents
 
 | Agent | Purpose | Scope |

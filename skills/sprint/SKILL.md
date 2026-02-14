@@ -121,6 +121,8 @@ Task({
 
 For independent tasks that touch different ownership areas, use `run_in_background: true` to parallelize.
 
+**Note**: If dispatching multi-step primitive chains (3+ steps like gather->distill->rank), set `max_turns: 40` to avoid turn limits.
+
 ### 3c. Mark Bead In-Progress (conditional)
 
 **If beads are available**:
