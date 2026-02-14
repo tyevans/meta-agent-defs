@@ -175,10 +175,20 @@ link_dir() {
 }
 
 echo ""
-echo "meta-agent-defs V5 installer"
-echo "============================"
+echo "Workbench installer"
+echo "==================="
 echo "Source: $SCRIPT_DIR"
 echo "Target: $TARGET_DIR"
+if [ "$USE_HARDLINKS" = true ]; then
+    echo "Mode:   hardlink"
+else
+    echo "Mode:   symlink"
+fi
+if [ -n "$PROJECT_DIR" ]; then
+    echo "Scope:  project-local (agents + skills only)"
+else
+    echo "Scope:  global"
+fi
 echo ""
 
 # --- Dependency checks ---
@@ -364,8 +374,9 @@ if [ -z "$PROJECT_DIR" ]; then
     echo "  which claude-orchestrate"
 fi
 echo ""
-info "To uninstall, remove the symlinks:"
-echo "  find $TARGET_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
+info "To uninstall:"
+echo "  # Remove installed files listed in manifest"
+echo "  xargs rm -f < $MANIFEST_FILE && rm $MANIFEST_FILE"
 if [ -z "$PROJECT_DIR" ]; then
     BIN_DIR="$HOME/.local/bin"
     echo "  find $BIN_DIR -type l -lname '$SCRIPT_DIR/*' -delete"
