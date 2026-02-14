@@ -44,3 +44,11 @@
 - New learnings: 0 new team learnings (session was validation-focused, not implementation)
 - Key insight: Rule 9 (validation heuristic) works as a safety net — model self-reports intake AND flags corruption without being asked. Subagent turn limits (~30 calls for 3-step chain) require running multi-step chains in main session.
 - Backlog state: 124/124 closed, 0 open
+
+## Retro: 2026-02-14 (session 7 — sprint + disambiguation test)
+- Tasks completed: 3 (2 dispatched to skill-author + 1 main-session disambiguation test)
+- Commits: 2 (docs: dispatch guidance + chore: close beads)
+- New learnings: 0 team (documentation session, no novel patterns)
+- Pruned: 1 stale agent-author gotcha removed, 1 infra duplicate header merged
+- Key insight: `from:` override disambiguation works — topic-keyword matching in $ARGUMENTS correctly selects non-recent pipe-format blocks. Sprint skill's serialize-by-default strategy confirmed again: 2/2 dispatches were first-attempt successes.
+- Backlog state: 127/127 closed, 0 open

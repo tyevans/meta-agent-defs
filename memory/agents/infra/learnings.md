@@ -14,7 +14,6 @@
 - When hooks share identical command strings, include the hook name key in edit context to disambiguate (added: 2026-02-14)
 - Always validate JSON after settings.json edits: `python3 -c "import json; json.load(open(...))"` (added: 2026-02-14)
 
-## Codebase Patterns (new)
 - SessionStart hook has 3 logical sections: pulse card → last session context → bd prime (added: 2026-02-14)
 - SessionEnd hook writes memory/sessions/last.md before running bd sync (added: 2026-02-14)
 - `bd ready --limit 1` exists and works for mechanical "next task" suggestions (added: 2026-02-14)
