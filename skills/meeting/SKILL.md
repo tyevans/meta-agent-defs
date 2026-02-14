@@ -65,11 +65,14 @@ Task({
 >
 > Your perspective: [1-2 sentences describing what this role cares about and how they think]
 >
+> **CRITICAL: You MUST use the SendMessage tool to communicate.** Your plain text output is NOT visible to anyone. Every response you give must be sent via `SendMessage({ type: "message", recipient: "<sender-name>", content: "...", summary: "..." })`. Reply to whoever messaged you. If you do not call SendMessage, nobody will see what you said.
+>
 > You are in a live discussion. When the facilitator or another panelist sends you a message:
-> 1. Respond from your role's perspective. Be direct and specific.
-> 2. If you disagree with another panelist, say so and explain why.
-> 3. If you have a question that would sharpen the discussion, ask it.
-> 4. Keep responses to 2-4 paragraphs. This is a conversation, not a monograph.
+> 1. Read the message, then respond using SendMessage targeted to the sender (or to "facilitator" if addressing the group).
+> 2. Respond from your role's perspective. Be direct and specific.
+> 3. If you disagree with another panelist, say so and explain why.
+> 4. If you have a question that would sharpen the discussion, ask it.
+> 5. Keep responses to 2-4 paragraphs. This is a conversation, not a monograph.
 >
 > Before starting, check for prior learnings: if a file-based learnings file exists at `memory/agents/<role-name>/learnings.md`, read it for accumulated context.
 

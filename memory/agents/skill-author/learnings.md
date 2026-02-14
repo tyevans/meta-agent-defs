@@ -2,7 +2,7 @@
 
 ## Codebase Patterns
 - Skills live in skills/<name>/SKILL.md with YAML frontmatter (name, description, allowed-tools, context)
-- 22 skills: 15 workflow + 7 composable primitives (gather, distill, rank, diff-ideas, sketch, verify, decompose, filter, assess, critique, plan, merge)
+- 27 skills: 15 workflow + 12 composable primitives (gather, distill, rank, diff-ideas, sketch, verify, decompose, filter, assess, critique, plan, merge)
 - Skills with `context: fork` run in isolation (blossom, consolidate, review); others run inline
 - All skills use `disable-model-invocation: false` — the `true` setting blocks the Skill tool entirely
 - `$ARGUMENTS` is how skills receive user input from the slash command

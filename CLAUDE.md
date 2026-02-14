@@ -62,20 +62,24 @@ meta-agent-defs/
 │   ├── session-health/SKILL.md  # Session diagnostic (inline, auto-discoverable)
 │   ├── handoff/SKILL.md         # Session transition (inline)
 │   ├── review/SKILL.md          # Code review (context: fork)
-│   └── retro/SKILL.md           # Session retrospective (inline)
+│   ├── retro/SKILL.md           # Session retrospective (inline)
+│   └── <12 composable primitives>  # gather, distill, rank, etc. (inline)
+├── docs/                        # Documentation (cookbook, recipes, team guide, demos)
+├── demos/                       # Demo projects for primitive walkthroughs
 ├── rules/                       # Global rules (symlinked to ~/.claude/rules/)
-│   └── team-protocol.md         # Team manifest, spawn protocol, reflection schema
+│   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
+│   └── pipe-format.md           # Composable primitive output contract
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
 ├── mcp-servers.json            # MCP server definitions (installed globally)
-├── install.sh                  # Symlink installer (idempotent, includes bin/ -> ~/.local/bin/)
+├── install.sh                  # Symlink installer (idempotent)
 ├── .claude/                    # Project-local Claude Code config (NOT symlinked globally)
 │   ├── settings.json           # Project-specific hooks + permissions
 │   ├── AGENTS.md               # Agent catalog for project-local agents
 │   ├── agents/                 # 8 project-local agents (authoring, research, maintenance)
 │   ├── rules/                  # Architectural guardrails
-│   └── commands/               # Project-local slash commands
+│   └── skills/                 # Project-local skill overrides
 └── .beads/                     # Task management state
 ```
 

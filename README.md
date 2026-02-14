@@ -104,6 +104,25 @@ Lightweight, inline skills that run in your current context. Use these for coord
 | `/handoff [focus]` | Session transition. Captures backlog state, decisions, patterns, recommended next steps. |
 | `/retro [focus]` | Session retrospective. Evaluates velocity, quality, process, then persists learnings to MEMORY.md. |
 
+### Composable Primitives
+
+Small, stateless skills that follow the [pipe format](rules/pipe-format.md) contract. Chain them together -- context IS the pipe.
+
+| Skill | What It Does |
+|-------|-------------|
+| `/gather <topic>` | Collect information into structured findings with sources and confidence levels. |
+| `/distill` | Reduce verbose input to essential points. Configurable target: bullets, paragraph, or count. |
+| `/rank <criteria>` | Score and order items by user-specified criteria. |
+| `/filter <criterion>` | Binary keep/drop decision per item. The grep of knowledge work. |
+| `/assess <rubric>` | Evaluate items against a rubric with categorical verdicts (critical/warning/suggestion). |
+| `/decompose <goal>` | Break a goal into bounded sub-parts with clear scope boundaries. |
+| `/diff-ideas <A> vs <B>` | Side-by-side tradeoff analysis across dimensions with per-dimension winner. |
+| `/sketch` | Produce a minimal code skeleton with structure and TODO placeholders. No implementation. |
+| `/verify` | Fact-check claims against source code or documentation. VERIFIED, REFUTED, or UNCERTAIN. |
+| `/critique` | Surface weaknesses, gaps, and risks in a proposal or plan. |
+| `/plan` | Convert analysis into an ordered action plan with dependencies. |
+| `/merge` | Combine multiple pipe-format outputs into a unified synthesis. |
+
 ## Agents
 
 Three portable agents that work on any project.
@@ -227,8 +246,28 @@ workbench/
     session-health/SKILL.md   # /session-health -- session diagnostic (inline)
     handoff/SKILL.md          # /handoff -- session transition (inline)
     retro/SKILL.md            # /retro -- session retrospective (inline)
+    gather/SKILL.md           # /gather -- collect structured findings (inline)
+    distill/SKILL.md          # /distill -- condense to essentials (inline)
+    rank/SKILL.md             # /rank -- score and order items (inline)
+    filter/SKILL.md           # /filter -- binary keep/drop (inline)
+    assess/SKILL.md           # /assess -- categorical rubric evaluation (inline)
+    decompose/SKILL.md        # /decompose -- break into sub-parts (inline)
+    diff-ideas/SKILL.md       # /diff-ideas -- side-by-side tradeoffs (inline)
+    sketch/SKILL.md           # /sketch -- code skeleton with TODOs (inline)
+    verify/SKILL.md           # /verify -- fact-check claims (inline)
+    critique/SKILL.md         # /critique -- surface weaknesses (inline)
+    plan/SKILL.md             # /plan -- ordered action plan (inline)
+    merge/SKILL.md            # /merge -- combine pipe outputs (inline)
+  docs/
+    primitives-cookbook.md     # Annotated walkthroughs of primitive chains
+    primitives-recipes.md     # Common chain patterns
+    team-system-guide.md      # Standalone adopter guide for team system
+    demos/                    # Demo walkthroughs (build-a-feature, OSS audit)
+  demos/
+    todo-app/                 # Intentionally buggy Express app for demo walkthroughs
   rules/
     team-protocol.md          # Team manifest format, spawn protocol, reflection schema (global)
+    pipe-format.md            # Composable primitive output contract (global)
   settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
   install.sh                  # Symlink installer (idempotent, non-destructive)
