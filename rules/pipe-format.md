@@ -13,7 +13,7 @@ Every primitive emits a markdown block with these sections:
 **Input**: <what was asked, one line>
 **Pipeline**: /gather (12 items) -> /distill (5 items)
 
-### Items
+### Items (N)
 
 1. **<title>** — <detail>
    - source: <file:line, URL, or "conversation context">
@@ -36,6 +36,8 @@ Every primitive emits a markdown block with these sections:
 5. **No YAML, no JSON.** Markdown only — LLMs parse it natively.
 6. **Skill-specific sections go between Items and Summary.** Example: /rank adds a `### Criteria` section; /diff-ideas adds a `### Comparison` table.
 7. **Pipeline line is always present.** When upstream pipe-format output is detected in context, construct the chain from prior `**Pipeline**` and `**Source**` fields showing each step and its item count (e.g., `/gather (12 items) -> /distill (5 items)`). When no upstream output is detected, use `(none — working from direct input)`.
+8. **Items heading includes count.** Use `### Items (N)` where N is the number of items. This lets downstream primitives cross-check reported vs actual item counts.
+9. **Validate upstream intake.** Before processing upstream output, state: "Reading N items from /skill-name output above." This makes detection failures visible without tooling.
 
 ## Input Contract
 
@@ -44,6 +46,8 @@ Primitives accept input from two sources:
 - **Conversation context** — output from a prior primitive (the skill reads upward in context)
 
 When a primitive detects structured output from a prior primitive (the `## ... / **Source**: /...` pattern), it uses that as input. Otherwise it treats $ARGUMENTS as the sole input.
+
+**Disambiguation:** When multiple pipe-format blocks exist in context, the most recent one is used. To override, pass an explicit reference in $ARGUMENTS (e.g., `/distill from:gather-auth`). This prevents silent wrong-input consumption in sessions with multiple gather runs.
 
 ## Composability
 
