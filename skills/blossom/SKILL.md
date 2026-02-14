@@ -36,7 +36,7 @@ If `$ARGUMENTS` is empty or too vague, ask the user one clarifying question. Oth
 ### 1b. Create the Epic
 
 ```bash
-bd create --title="EPIC: [goal description]" --type=feature --priority=2
+bd create --title="EPIC: [goal description]" --type=epic --priority=2
 ```
 
 Save the returned epic ID. All subsequent beads will be wired as dependencies of this epic.
