@@ -95,36 +95,32 @@ Send to all panelists in parallel (multiple SendMessage calls in one response).
 
 ---
 
-## Phase 2: Facilitate
+## Phase 2: Facilitation Cycle
 
-This is the interactive core. The user drives the conversation.
+After Phase 1 opening responses arrive, run this cycle for every panelist response. Maintain an **exchange counter** (starts at 0, resets at each checkpoint). The depth limit defaults to 3.
 
-### Facilitation Protocol
+**Step 1. Read and extract.** What is this panelist's key claim? Does it introduce tension — a disagreement, counterargument, or novel angle — that another panelist has not yet addressed?
 
-After each round of panelist responses:
+**Step 2. Relay or skip.**
+- **Tension exists →** Summarize the tension in 1-2 sentences. Send it via direct message to the panelist(s) whose position is most directly challenged by the tension, tagged `[Exchange N of LIMIT]`. Increment exchange counter. When their responses arrive, return to Step 1.
+- **No tension →** Proceed to Step 3.
 
-1. **Summarize** the key points and tensions to the user (2-3 sentences)
-2. **Ask the user** what to explore next. Offer options:
-   - Follow up on a specific point
-   - Ask the panel a new question
-   - Have two panelists debate a point of disagreement
-   - Move to a different aspect of the topic
-   - Wrap up and synthesize
+If the exchange counter has reached the depth limit, skip relay regardless and proceed to Step 3.
 
-### Routing Messages
+**Step 3. Checkpoint with user.** Synthesize the thread in 2-3 sentences: what was discussed, where panelists agreed, what tension remains. Then ask:
 
-- **Prefer direct messages over broadcast.** DMs reliably produce substantive responses; broadcasts often get empty acknowledgments.
-- **To all panelists**: Send individual `message` calls to each panelist in parallel. Only use `broadcast` for simple administrative messages (not for questions that need substantive answers).
-- **To specific panelists**: Use `message` to `<role-name>` for targeted follow-ups
-- **Relaying cross-panelist context**: When forwarding one panelist's point to another, include the substance: "[Panelist A] argued: [key point]. React from your perspective."
-- **Debates**: Send both panelists the same prompt: "Debate: [point of disagreement]. [Panelist A] argues X. [Panelist B] argues Y. Make your best case."
+> **Continue** this thread, **pivot** to a new question, or **conclude** the meeting?
+
+- *Continue* → Reset exchange counter. Formulate a follow-up question informed by the discussion so far. Send to each panelist via direct message (not broadcast). When responses arrive, return to Step 1.
+- *Pivot* → Reset exchange counter. Ask the user for the new topic (or propose one from unresolved tensions). Send to each panelist via direct message (not broadcast). When responses arrive, return to Step 1.
+- *Conclude* → Proceed to Phase 3.
+- *Freeform direction* → If the user gives a specific direction that doesn't match these options (e.g., "Ask the Architect about X"), treat it as a targeted follow-up. Send the user's question to the relevant panelist(s) via direct message, then return to Step 1.
 
 ### Keeping It Productive
 
 - If a panelist gives a generic or empty response ("ready", "standing by"), push back with a direct message restating the question and demanding substance: "Respond NOW with your concrete analysis. Do not acknowledge — respond."
 - If a panelist gives a vague response, push back: "Be more specific. What exactly would you change/build/avoid?"
 - If the discussion goes circular, summarize what's settled and redirect to what's unresolved
-- If a panelist's perspective hasn't been heard, explicitly invite them: "Skeptic, what concerns do you have about this direction?"
 
 ---
 
