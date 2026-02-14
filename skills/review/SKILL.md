@@ -65,6 +65,28 @@ List all files touched and categorize them:
 - **Deleted files**: Verify no remaining references
 - **Renamed/moved files**: Verify all imports/references updated
 
+### 1d. Emit Scope Summary
+
+Emit the scope in pipe format so users can interrupt and compose if needed:
+
+```markdown
+## Review Scope
+
+**Source**: /review (scope)
+**Input**: [target from $ARGUMENTS]
+
+### Items
+
+1. **New**: [file paths] — [count] files added
+2. **Modified**: [file paths] — [count] files changed
+3. **Deleted**: [file paths] — [count] files removed
+4. **Renamed**: [old -> new paths] — [count] files moved
+
+### Summary
+
+[One sentence describing the overall scope and change type (feature, fix, refactor, etc.)]
+```
+
 ---
 
 ## Phase 2: Read and Understand
@@ -86,6 +108,33 @@ For each logical change:
 - Are there tests for the changed code?
 - Do existing tests still pass with these changes?
 - Are new tests needed for new behavior?
+
+### 2d. Emit Understanding Summary
+
+Emit what you learned in pipe format for composability:
+
+```markdown
+## Review Understanding
+
+**Source**: /review (understand)
+**Input**: [target from $ARGUMENTS]
+
+### Items
+
+1. **[Logical change 1]** — [intent: bug fix/feature/refactor] affecting [paths]
+   - source: [file:line ranges]
+   - test coverage: [present/missing/partial]
+
+2. **[Logical change 2]** — [intent and affected areas]
+   - source: [file:line ranges]
+   - test coverage: [present/missing/partial]
+
+...
+
+### Summary
+
+[One paragraph: what changed, why, and how thoroughly it is tested.]
+```
 
 ---
 
