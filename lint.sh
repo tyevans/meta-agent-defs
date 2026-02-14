@@ -111,32 +111,7 @@ fi
 echo ""
 
 # =============================================================================
-# 3. Command structure
-# =============================================================================
-info "Checking commands..."
-
-for cmd in "$SCRIPT_DIR"/commands/*.md; do
-    [ -f "$cmd" ] || continue
-    name="$(basename "$cmd")"
-
-    # Check non-empty
-    if [ ! -s "$cmd" ]; then
-        check_fail "$name: file is empty"
-        continue
-    fi
-
-    # Check for at least one heading
-    if ! grep -qE '^#' "$cmd"; then
-        check_fail "$name: no heading found"
-    else
-        check_pass "$name: non-empty with heading"
-    fi
-done
-
-echo ""
-
-# =============================================================================
-# 4. Skills validation
+# 3. Skills validation
 # =============================================================================
 info "Checking skills..."
 
@@ -187,7 +162,7 @@ done
 echo ""
 
 # =============================================================================
-# 5. MCP config validation
+# 4. MCP config validation
 # =============================================================================
 info "Checking mcp-servers.json..."
 

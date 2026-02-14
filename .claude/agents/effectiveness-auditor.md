@@ -24,7 +24,7 @@ This is the most important distinction in this project: a definition can have pe
 ### 1. Purpose Clarity
 
 Can you answer these questions after reading the definition?
-- **What exactly does this agent/command do?** (not vaguely — specifically)
+- **What exactly does this agent/skill do?** (not vaguely — specifically)
 - **When should it be used vs. not used?** (are the boundaries crisp?)
 - **What does success look like?** (is there an implicit or explicit definition of "done well"?)
 
@@ -88,7 +88,7 @@ Evaluate the authoring rules themselves. Are they producing better definitions? 
 [1-3 sentences: is this definition/set of definitions/convention actually producing good results?]
 
 ### What Works
-[Patterns and choices that genuinely improve agent/command effectiveness — be specific about WHY they work]
+[Patterns and choices that genuinely improve agent/skill effectiveness — be specific about WHY they work]
 
 ### What Doesn't Work
 | Issue | Why It Matters | Evidence | Recommendation |

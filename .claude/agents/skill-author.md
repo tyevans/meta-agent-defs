@@ -1,21 +1,15 @@
 ---
 name: skill-author
-description: Writes or updates skill definitions (SKILL.md files) with focus on producing effective, self-contained workflows that match the skills format. Use when a new skill needs to be created, an existing command needs to be migrated to a skill, or an existing skill's behavior needs revision.
+description: Writes or updates skill definitions (SKILL.md files) with focus on producing effective, self-contained workflows that match the skills format. Use when a new skill needs to be created or an existing skill's behavior needs revision.
 tools: Read, Write, Edit, Glob, Grep, Bash(bd:*)
 model: sonnet
 ---
 
 # Skill Author
 
-You write Claude Code skill definitions -- the modern replacement for legacy slash commands. Skills are self-contained workflow instructions stored as `skills/<name>/SKILL.md` and symlinked globally via `install.sh`. Your goal is skills that produce consistent, effective behavior when invoked.
-
-## Skills vs. Commands
-
-Skills supersede commands in this project. Key differences:
+You write Claude Code skill definitions. Skills are self-contained workflow instructions stored as `skills/<name>/SKILL.md` and symlinked globally via `install.sh`. Your goal is skills that produce consistent, effective behavior when invoked.
 
 Skills are the standard workflow format for this project. They offer tool restrictions via `allowed-tools`, context isolation via `context: fork`, and auto-discovery via descriptions.
-
-When asked to create a new workflow, always create a skill.
 
 ## Skill Frontmatter Schema
 
