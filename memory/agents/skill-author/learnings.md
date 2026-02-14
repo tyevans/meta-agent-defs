@@ -23,9 +23,13 @@
 - Decompose bridges analysis and execution — it's the step before task creation / agent dispatch (added: 2026-02-13)
 - Cookbook examples must be grounded in real repo content — verify patterns exist before writing examples (added: 2026-02-13)
 - 3 deep recipes beat 5 shallow — annotations need 120+ lines per recipe for full context (added: 2026-02-13)
+- Demo projects need intentional issues subtle enough to be interesting but obvious enough for primitives to find (added: 2026-02-13)
 
 ## Preferences
-- (none yet)
+- Interactive mode pattern: check if $ARGUMENTS is empty in Phase 0, fork to conversational flow that gathers info then rejoins main workflow at a later phase (added: 2026-02-13)
+
+## Composition Patterns (cont.)
+- Merge is the only primitive that reads MULTIPLE pipe-format blocks from context; others read one (added: 2026-02-13)
 
 ## Cross-Agent Notes
 - Team templates in templates/teams/ follow exact .claude/team.yaml schema; use realistic ownership globs per project type (added: 2026-02-13)

@@ -16,7 +16,7 @@
 - Retro skill uses 50-line warning + 60-line hard cap for learnings (not the old 120/150 thresholds) (added: 2026-02-13)
 
 ## Preferences
-- (none yet)
+- Documentation guides benefit from concrete examples at every level: complete config files, sample outputs, before/after comparisons (added: 2026-02-13)
 
 ## Cross-Agent Notes
 - (from agent-author) install.sh follows consistent pattern for global artifacts: create dir under TARGET_DIR, skip in project-local mode with message, include in stale cleanup, show in summary (added: 2026-02-13)
