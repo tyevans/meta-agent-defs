@@ -52,3 +52,11 @@
 - Pruned: 1 stale agent-author gotcha removed, 1 infra duplicate header merged
 - Key insight: `from:` override disambiguation works — topic-keyword matching in $ARGUMENTS correctly selects non-recent pipe-format blocks. Sprint skill's serialize-by-default strategy confirmed again: 2/2 dispatches were first-attempt successes.
 - Backlog state: 127/127 closed, 0 open
+
+## Retro: 2026-02-14 (session 8 — cross-pollinate meeting tunings)
+- Tasks completed: 6 (5 tasks + 1 epic close attempt; epic deferred with 2 P4 children)
+- Workflow: /blossom (7 findings) → /sprint (5 dispatched, 2 P4 deferred)
+- Commits: 1 (feat: cross-pollinate meeting tunings to workflow skills)
+- New learnings: 4 for skill-author (preamble, characterization, adaptive lenses, pushback)
+- Key insight: Characterization-over-procedure pattern ("You think like...") condensed agent prompts 50-74% while giving agents richer mental models. Extracting shared boilerplate to a rule file (Agent Preamble) eliminated cross-skill drift.
+- Backlog state: 137/140 closed, 3 open (2 P4 speculative + 1 epic)
