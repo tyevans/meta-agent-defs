@@ -63,3 +63,25 @@ Results come back via TaskOutput or (for teams) SendMessage. Process each result
 | Agents need to be reused for multiple tasks | Teams (reuse via SendMessage) |
 | Simple parallel dispatch, <5 agents | Background Task agents |
 | Complex coordination, 6+ agents | Teams |
+
+## Agent Preamble
+
+Standard investigation instructions for dispatched agents. Include these in agent prompts when applicable:
+
+**Investigation protocol:**
+
+1. Read the actual codebase areas identified in your scope -- use Glob, Grep, and Read to find and examine relevant files
+2. Do not speculate or guess about what exists -- verify by reading the actual implementation
+3. Be concrete and specific -- cite file paths (with line numbers when relevant), function names, and actual code patterns
+4. When you find something, verify it by reading surrounding code:
+   - Check callers/consumers to understand usage
+   - Check if tests cover it
+   - Check configuration, wiring, or integration points
+5. Ground every statement in actual code -- if you cannot verify something by reading files, say "could not verify" rather than guessing
+6. Never flag something as uncertain if you can verify it by reading one more file
+
+**Report requirements:**
+
+- Every claim about existing code must reference a specific file path
+- Distinguish between CONFIRMED findings (verified by reading code), LIKELY findings (strong evidence but incomplete verification), and POSSIBLE findings (suspicious patterns needing deeper investigation)
+- When reporting what does NOT exist, state what you searched for and how you verified the absence

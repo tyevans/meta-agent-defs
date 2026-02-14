@@ -26,10 +26,11 @@ Consensus works in 5 phases:
 
 ```
 Frame the problem (same starting point for all agents)
-  -> Solicit 3 perspectives (simplicity, performance, maintainability)
-    -> Synthesize (agreements = high confidence, tensions = actual trade-offs)
-      -> Present report with recommendation
-        -> Record decision for future context
+  -> Select 3 optimization lenses (adaptive based on problem type)
+    -> Solicit 3 perspectives (one per lens)
+      -> Synthesize (agreements = high confidence, tensions = actual trade-offs)
+        -> Present report with recommendation
+          -> Record decision for future context
 ```
 
 ---
@@ -79,64 +80,81 @@ Draft a structured problem statement that will be given to all three agents iden
 
 **Critical**: All three agents receive this exact same problem statement. The only difference between agents is their optimization lens (see Phase 2).
 
+### 1d. Select Optimization Lenses
+
+Choose the 3 lenses that will produce the most productive tension for this specific problem. Use the lens palette below:
+
+**Lens Palette**:
+- **Simplicity**: Minimize complexity, fewer moving parts, less indirection, boring technology
+- **Performance**: Maximize speed/throughput, minimize latency, optimize resource efficiency
+- **Maintainability**: Optimize for long-term code health, testability, debuggability, future extensibility
+- **Security**: Minimize attack surface, reduce vulnerability exposure, defense in depth
+- **Velocity**: Ship faster, reduce ceremony, minimize coordination overhead
+- **Consistency**: Follow existing patterns, maintain architectural coherence, reduce surprises
+- **Resilience**: Handle failures gracefully, degrade predictably, recover automatically
+- **Usability**: Optimize developer/user experience, reduce cognitive load, minimize friction
+
+**Selection criteria:**
+
+1. Analyze the problem statement and constraints to identify which lenses are most relevant
+2. Pick 3 lenses that will **disagree productively** -- never select two lenses that optimize for the same underlying value
+3. Default to **Simplicity/Performance/Maintainability** if the problem doesn't strongly suggest specific alternatives
+4. Consider constraint-driven selection:
+   - Performance requirements in constraints → include Performance
+   - Security/compliance requirements → include Security
+   - Team velocity pressure → include Velocity
+   - Large existing codebase → include Consistency
+   - User-facing features → include Usability
+   - Distributed systems / failure scenarios → include Resilience
+
+**Present the selection** to the user in one line per lens:
+
+```
+Selected lenses:
+- [Lens 1]: [1-sentence description from palette]
+- [Lens 2]: [1-sentence description from palette]
+- [Lens 3]: [1-sentence description from palette]
+```
+
+Do not proceed to Phase 2 until lens selection is complete.
+
 ---
 
 ## Phase 2: Solicit Perspectives
 
 ### 2a. Dispatch Three Agents in Parallel
 
-Use the Task tool to spawn three background agents with `subagent_type: "general-purpose"` and `run_in_background: true`. Give each agent the same problem statement, but different optimization instructions.
+Use the Task tool to spawn three background agents with `subagent_type: "general-purpose"` and `run_in_background: true`. Give each agent the same problem statement, but different optimization instructions based on the lenses selected in Phase 1d.
 
-**Agent 1: Simplicity Advocate**
+**Agent Prompt Template** (instantiate once per selected lens):
 
-> You are the **Simplicity Advocate**. Your job is to propose the simplest possible solution to the problem below.
+> You are the **[Lens Name] Advocate**. Your job is to propose a solution to the problem below that maximizes [lens name].
 >
-> **Optimization lens**: Minimize complexity. Fewer moving parts, fewer abstractions, less indirection. Prefer boring technology. Ask: "What's the least complex way to solve this?"
+> **Optimization lens**: [Lens description from palette]. [Lens-specific guidance -- see table below]
 >
 > [Problem Statement from Phase 1]
+>
+> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
 >
 > **Your deliverables**:
 > 1. **Proposed approach** (concrete, not abstract -- describe exactly what you would do)
 > 2. **Key design decisions and why**
-> 3. **Trade-offs you're accepting** (what you're giving up by optimizing for simplicity)
+> 3. **Trade-offs you're accepting** (what you're giving up by optimizing for [lens name])
 > 4. **Files you would touch** (specific paths and what changes)
 > 5. **Estimated complexity** (simple / moderate / complex)
->
-> Before proposing, READ the relevant files to understand the current state. Do not guess.
 
-**Agent 2: Performance Advocate**
+**Lens-Specific Guidance** (add to agent prompt based on selected lens):
 
-> You are the **Performance Advocate**. Your job is to propose the most performant solution to the problem below.
->
-> **Optimization lens**: Maximize runtime performance, resource efficiency, and scalability. Minimize latency, memory usage, and computational overhead. Ask: "What's the fastest/most efficient way to solve this?"
->
-> [Problem Statement from Phase 1]
->
-> **Your deliverables**:
-> 1. **Proposed approach** (concrete, not abstract -- describe exactly what you would do)
-> 2. **Key design decisions and why**
-> 3. **Trade-offs you're accepting** (what you're giving up by optimizing for performance)
-> 4. **Files you would touch** (specific paths and what changes)
-> 5. **Estimated complexity** (simple / moderate / complex)
->
-> Before proposing, READ the relevant files to understand the current state. Do not guess.
-
-**Agent 3: Maintainability Advocate**
-
-> You are the **Maintainability Advocate**. Your job is to propose the most maintainable solution to the problem below.
->
-> **Optimization lens**: Maximize long-term maintainability, testability, and extensibility. Optimize for code that will be easy to debug, evolve, and onboard new developers to a year from now. Ask: "What will be easiest to understand and change over time?"
->
-> [Problem Statement from Phase 1]
->
-> **Your deliverables**:
-> 1. **Proposed approach** (concrete, not abstract -- describe exactly what you would do)
-> 2. **Key design decisions and why**
-> 3. **Trade-offs you're accepting** (what you're giving up by optimizing for maintainability)
-> 4. **Files you would touch** (specific paths and what changes)
-> 5. **Estimated complexity** (simple / moderate / complex)
->
-> Before proposing, READ the relevant files to understand the current state. Do not guess.
+| Lens | What to Look For |
+|------|------------------|
+| Simplicity | Fewer moving parts, fewer abstractions, less indirection. Prefer boring technology. Ask: "What's the least complex way to solve this?" |
+| Performance | Maximize runtime performance, resource efficiency, and scalability. Minimize latency, memory usage, and computational overhead. Ask: "What's the fastest/most efficient way to solve this?" |
+| Maintainability | Optimize for long-term code health, testability, and extensibility. Optimize for code that will be easy to debug, evolve, and onboard new developers to a year from now. Ask: "What will be easiest to understand and change over time?" |
+| Security | Minimize attack surface, validate all inputs, assume breach, defense in depth. Ask: "What could go wrong and how do we prevent it?" |
+| Velocity | Minimize ceremony, reduce coordination overhead, use off-the-shelf solutions. Ask: "What's the fastest path to shipping a working solution?" |
+| Consistency | Follow existing patterns, maintain architectural coherence, reduce surprises for future developers. Ask: "What would a developer familiar with this codebase expect?" |
+| Resilience | Handle failures gracefully, degrade predictably, design for recovery. Ask: "What happens when this fails and how do we recover?" |
+| Usability | Reduce cognitive load, minimize friction, optimize for intuitive workflows. Ask: "How do we make this obvious and easy to use?" |
 
 ### 2b. Wait for All Three Reports
 
@@ -184,14 +202,14 @@ For each tension, articulate what the trade-off is:
 ```markdown
 ### Tension: [Brief title]
 
-**Simplicity says**: [approach] because [reason]
-**Performance says**: [approach] because [reason]
-**Maintainability says**: [approach] because [reason]
+**[Lens 1] says**: [approach] because [reason]
+**[Lens 2] says**: [approach] because [reason]
+**[Lens 3] says**: [approach] because [reason]
 
 **The actual trade-off**: [what you gain and lose with each choice]
 ```
 
-Example:
+Example (using Simplicity/Performance/Maintainability lenses):
 
 ```markdown
 ### Tension: In-memory cache vs. database query
@@ -210,8 +228,8 @@ Find cases where **2 of 3 agents agree**. These are likely good choices, but not
 ```markdown
 ### Majority: [Brief title]
 
-**2 agents (Simplicity + Maintainability) propose**: [approach]
-**1 agent (Performance) dissents**: [concern or alternative]
+**2 agents ([Lens A] + [Lens B]) propose**: [approach]
+**1 agent ([Lens C]) dissents**: [concern or alternative]
 
 **Interpretation**: [what this tells you]
 ```
@@ -225,10 +243,9 @@ Find cases where **2 of 3 agents agree**. These are likely good choices, but not
 Based on agreements, tensions, and the problem constraints, propose which approach best fits the situation.
 
 **Decision rubric**:
-- If constraints include performance requirements, weight the Performance advocate more heavily
-- If constraints include complexity limits or team expertise gaps, weight the Simplicity advocate more heavily
-- If constraints include long-term evolution or extensibility, weight the Maintainability advocate more heavily
+- Weight advocates according to how strongly the constraints align with their lens (e.g., if constraints include performance requirements, weight the Performance advocate more heavily)
 - Agreements override individual preferences -- if all three converge, that's the answer
+- When lenses conflict, the constraint hierarchy determines priority (explicit requirements trump aspirational qualities)
 
 ### 4b. Structure the Report
 
@@ -240,19 +257,24 @@ Present the synthesis to the user:
 ### Problem Statement
 [Restate the problem from Phase 1]
 
+### Selected Lenses
+- [Lens 1]: [description]
+- [Lens 2]: [description]
+- [Lens 3]: [description]
+
 ### Three Proposals
 
-**Simplicity Advocate**:
+**[Lens 1] Advocate**:
 - Approach: [1-2 sentence summary]
 - Complexity: [simple/moderate/complex]
 - Key trade-offs: [what's sacrificed]
 
-**Performance Advocate**:
+**[Lens 2] Advocate**:
 - Approach: [1-2 sentence summary]
 - Complexity: [simple/moderate/complex]
 - Key trade-offs: [what's sacrificed]
 
-**Maintainability Advocate**:
+**[Lens 3] Advocate**:
 - Approach: [1-2 sentence summary]
 - Complexity: [simple/moderate/complex]
 - Key trade-offs: [what's sacrificed]
@@ -271,9 +293,9 @@ Present the synthesis to the user:
 ### Tensions (REQUIRES HUMAN DECISION)
 
 #### Tension 1: [title]
-**Simplicity**: [position and reason]
-**Performance**: [position and reason]
-**Maintainability**: [position and reason]
+**[Lens 1]**: [position and reason]
+**[Lens 2]**: [position and reason]
+**[Lens 3]**: [position and reason]
 
 **Trade-off**: [what you gain and lose with each]
 
@@ -347,6 +369,9 @@ If the decision leads directly to implementation, note which skill should run ne
 ## Guidelines
 
 - **Same starting point, different lenses**: All three agents get identical problem statements. The ONLY difference is their optimization goal.
+- **Adaptive lenses create relevant tension**: Select lenses based on the problem type and constraints. Security decisions need security-vs-velocity lenses, not simplicity-vs-performance.
+- **Never pick lenses that agree**: Follow meeting's principle -- never select two lenses that optimize for the same underlying value. Tension is productive.
+- **Default to classic trio when unclear**: If the problem doesn't strongly suggest specific lenses, use Simplicity/Performance/Maintainability.
 - **Fresh agents prevent contamination**: Using separate background agents ensures one perspective doesn't influence another.
 - **Agreements are gold**: Where all three converge, that's a high-confidence decision. Do it.
 - **Tensions are the point**: Disagreements surface actual trade-offs the user might not have considered. Make them explicit.
@@ -361,10 +386,11 @@ If the decision leads directly to implementation, note which skill should run ne
 ## Key Principles
 
 1. **Same input, different optimization**: Identical problem statement ensures apples-to-apples comparison
-2. **Isolation prevents anchoring**: Fresh background agents can't see each other's reasoning
-3. **Agreement = high confidence**: Convergence from independent optimizations is a strong signal
-4. **Tension = real trade-off**: Disagreement reveals what you're actually choosing between
-5. **Human decides ties**: When no approach dominates, the user must weigh constraints and priorities
-6. **Decision before implementation**: This workflow produces a choice, not a solution. Follow with /spec or direct implementation.
-7. **Quality over speed**: Three agents reading the codebase is slow. That's the price of multi-perspective synthesis.
-8. **Record the decision**: Future sessions need to know not just what was chosen, but why and what was rejected.
+2. **Adaptive lenses surface relevant tensions**: Problem-specific lens selection ensures disagreements reveal actual trade-offs, not artificial ones
+3. **Isolation prevents anchoring**: Fresh background agents can't see each other's reasoning
+4. **Agreement = high confidence**: Convergence from independent optimizations is a strong signal
+5. **Tension = real trade-off**: Disagreement reveals what you're actually choosing between
+6. **Human decides ties**: When no approach dominates, the user must weigh constraints and priorities
+7. **Decision before implementation**: This workflow produces a choice, not a solution. Follow with /spec or direct implementation.
+8. **Quality over speed**: Three agents reading the codebase is slow. That's the price of multi-perspective synthesis.
+9. **Record the decision**: Future sessions need to know not just what was chosen, but why and what was rejected.

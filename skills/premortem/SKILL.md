@@ -93,24 +93,11 @@ Task({
 >
 > **Feature**: [feature summary from Phase 1]
 >
-> **Your job**: Generate 3-5 concrete failure scenarios where this feature is exploited or causes a security breach. Focus on OWASP Top 10 risks:
+> **Your job**: Generate 3-5 concrete failure scenarios where this feature is exploited or causes a security breach.
 >
-> - **Injection**: Could an attacker inject SQL, commands, or code through this feature?
-> - **Auth bypass**: Could this be used to access resources without proper authorization?
-> - **Data leakage**: Could sensitive data be exposed through this feature?
-> - **Privilege escalation**: Could this be exploited to gain higher privileges?
-> - **SSRF**: Could this be manipulated to make requests to internal systems?
-> - **XSS/XXE**: Could this inject malicious content into outputs?
-> - **Deserialization**: Could untrusted data be deserialized unsafely?
-> - **Misconfiguration**: Are defaults insecure?
+> **Your perspective**: You think in terms of attack surfaces, trust boundaries, and data flows. You assume breach and look for what an attacker would exploit first — injection points, authentication bypasses, privilege escalation paths. You consider both technical vulnerabilities (OWASP Top 10) and process gaps (insecure defaults, missing validation, unsafe deserialization). You ask: "Where does untrusted data enter the system, and what can I do with it?"
 >
-> **Investigation protocol:**
->
-> 1. Read the actual codebase areas identified in the feature summary
-> 2. Trace data flows from user input to storage/output
-> 3. Identify trust boundaries this feature crosses
-> 4. Check existing auth/validation patterns -- are they applied here?
-> 5. Look for similar code that has been exploited before (check git history for security fixes)
+> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
 >
 > **Report format:**
 >
@@ -144,24 +131,11 @@ Task({
 >
 > **Feature**: [feature summary from Phase 1]
 >
-> **Your job**: Generate 3-5 concrete failure scenarios where this feature breaks in production. Focus on operational failures:
+> **Your job**: Generate 3-5 concrete failure scenarios where this feature breaks in production.
 >
-> - **Race conditions**: Could concurrent access cause corruption or inconsistency?
-> - **Data corruption**: Could partial writes, crashes, or retries leave data in a bad state?
-> - **Cascade failures**: Could this failure propagate to other systems?
-> - **Resource exhaustion**: Could this consume unbounded memory, disk, connections, or CPU?
-> - **Timeout chains**: Could slow dependencies cause this to timeout, triggering retries that make it worse?
-> - **State drift**: Could cached state become stale or inconsistent with source of truth?
-> - **Idempotency**: Is retry-safety guaranteed where needed?
-> - **Dependency failures**: What happens if downstream systems are unavailable?
+> **Your perspective**: You think in terms of load, concurrency, and failure propagation. You assume things will run at 10x expected scale with dependencies flaking at the worst possible time. You look for race conditions, resource exhaustion, timeout chains, and state drift — anything that works in testing but fails under production chaos. You ask: "What happens when this runs with 1000 concurrent requests while the database is slow and the cache is stale?"
 >
-> **Investigation protocol:**
->
-> 1. Read the actual codebase areas identified in the feature summary
-> 2. Trace the execution path under load (many concurrent requests)
-> 3. Identify shared mutable state and check locking/synchronization
-> 4. Check error handling -- are all failure paths covered?
-> 5. Look for similar code that has caused outages (check git history for reliability fixes)
+> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
 >
 > **Report format:**
 >
@@ -195,24 +169,11 @@ Task({
 >
 > **Feature**: [feature summary from Phase 1]
 >
-> **Your job**: Generate 3-5 concrete failure scenarios where this feature harms users or the business. Focus on user-facing and business risks:
+> **Your job**: Generate 3-5 concrete failure scenarios where this feature harms users or the business.
 >
-> - **Data loss**: Could users lose work, content, or important data?
-> - **Wrong results**: Could this produce incorrect calculations, reports, or decisions?
-> - **Confusing UX**: Could the behavior be unexpected or misleading?
-> - **Compliance violations**: Does this touch regulated data (GDPR, HIPAA, PCI, SOC2)?
-> - **Cost explosions**: Could this trigger runaway spend on cloud resources or external APIs?
-> - **Irreversible actions**: Are destructive operations safely guarded?
-> - **Migration/rollback**: Can this be safely rolled out and rolled back?
-> - **Accessibility**: Could this exclude users with disabilities?
+> **Your perspective**: You think from the user's chair and the CFO's spreadsheet. You look for data loss, wrong results, confusing UX, and irreversible actions that break user trust. You consider compliance landmines (GDPR, HIPAA, PCI) and cost explosions (runaway cloud spend, cascading API charges). You ask: "What failure would show up in a user complaint, a compliance audit, or next quarter's financials — and can we roll this back if it goes wrong?"
 >
-> **Investigation protocol:**
->
-> 1. Read the actual codebase areas identified in the feature summary
-> 2. Trace user-facing flows and outputs
-> 3. Identify irreversible or high-consequence actions
-> 4. Check if this feature handles regulated data types
-> 5. Look for similar code that has caused user complaints (check git history, issue trackers)
+> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
 >
 > **Report format:**
 >

@@ -172,17 +172,17 @@ Each spike agent (whether background Task or team teammate) receives these instr
 >
 > **Your job:** Thoroughly investigate this area and produce a structured report. Do NOT implement fixes -- only discover and document.
 >
-> **Investigation protocol (CRITICAL -- follow this exactly):**
+> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+>
+> **Spike-specific requirements:**
 >
 > 1. Use Glob to find all relevant files in the area
-> 2. **READ the actual implementation** -- do not just grep for patterns. Open files, read functions, trace call chains. Understand what the code actually does.
-> 3. When you find something that looks like an issue, **VERIFY by reading surrounding code**:
+> 2. When you find something that looks like an issue, verify by reading surrounding code:
 >    - Check who calls this code (callers)
 >    - Check if tests cover it
 >    - Check if it's wired in bootstrap/DI
 >    - Check if the interface layer exposes it
-> 4. **Never flag something as uncertain if you can verify it by reading one more file.**
-> 5. For each finding, state your **confidence level**:
+> 3. For each finding, state your confidence level:
 >    - **CONFIRMED**: You read the code and verified the issue exists
 >    - **LIKELY**: Strong evidence from multiple signals but couldn't fully trace the chain
 >    - **POSSIBLE**: Suspicious pattern that needs a deeper spike to verify
@@ -229,7 +229,35 @@ Each spike agent (whether background Task or team teammate) receives these instr
    - Are findings CONFIRMED with evidence, or just hedged guesses?
    - Did the agent actually read code, or just grep for patterns?
    - Does the report follow pipe format (`## ... / **Source**: /blossom (spike)`)?
-   - If quality is poor, note it in the spike's closing notes for future tuning
+   - Does the report have an Items section with at least one CONFIRMED finding?
+   - Are there file path citations with line numbers (not just directory names)?
+
+   **Quality gate with pushback:**
+
+   If the report lacks an Items section, has zero CONFIRMED findings, or consists mostly of vague/generic text without specific file citations:
+
+   - **For team mode (if using teams):** Send ONE pushback message to the teammate demanding concrete output:
+
+     ```
+     SendMessage({
+       type: "message",
+       recipient: "<spike-teammate-name>",
+       content: "Your spike report lacks concrete findings. Respond NOW with your actual investigation results. Required: (1) Items section with numbered findings, (2) at least one CONFIRMED finding with file:line citation, (3) evidence from reading actual code (not just grep results). Do not acknowledge this message — respond with the substantive spike report.",
+       summary: "Pushback: provide concrete findings"
+     })
+     ```
+
+     Allow the teammate to respond once. If the second attempt is still inadequate, log the failure and move on.
+
+   - **For background mode (if using background Task agents):** Background tasks cannot be re-prompted after completion. Flag the spike in its closing notes:
+
+     ```bash
+     bd update <spike-id> --notes="QUALITY ISSUE: Report lacked [specific problem: no Items section / no CONFIRMED findings / no file citations]. Needs re-dispatch if findings are critical. Original report archived in bead history."
+     ```
+
+     Do not create firm task beads from low-quality background spike reports. Mark the spike area as needing re-investigation in Phase 3 consolidation if it's still relevant.
+
+   **One retry only.** If the second attempt (for team mode) is still poor quality, close the spike with a note about the quality issue and move on. Do not send a third pushback — the teammate cannot recover at that point
 
 2. **Create firm task beads** from the Items section:
 

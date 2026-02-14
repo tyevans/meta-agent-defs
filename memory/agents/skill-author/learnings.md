@@ -8,6 +8,10 @@
 - `$ARGUMENTS` is how skills receive user input from the slash command
 - 6 fully compliant reference templates: consensus, premortem, retro, review, spec, tracer (added: 2026-02-13)
 - Skills that dispatch agents (blossom, consensus, premortem, spec) correctly follow fan-out-protocol.md (added: 2026-02-13)
+- Fan-out-protocol.md has Agent Preamble section — skills reference it instead of repeating investigation boilerplate (added: 2026-02-14)
+- Characterization-over-procedure pattern: 2-3 sentence "You think like..." characterization outperforms procedural step lists for agent prompts (added: 2026-02-14)
+- Consensus uses adaptive 8-lens palette with selection logic; parameterized agent template instead of hardcoded 3 agents (added: 2026-02-14)
+- Blossom has pushback protocol in quality gate — re-prompts teammates (team mode) or flags for re-dispatch (background mode) (added: 2026-02-14)
 
 ## Gotchas
 - Skills cannot be invoked by subagents (Skill tool not available to them)

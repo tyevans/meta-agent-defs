@@ -149,13 +149,13 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 >
 > **Spec location:** `.specs/<name>.md`
 >
-> **Your job:**
+> Your perspective: You think like an archaeologist of the codebase and a cartographer of constraints. You trace how similar problems were solved before, what patterns already exist, and what architectural, performance, security, and compatibility boundaries constrain the design. You surface existing code that the spec must acknowledge and the business rules it must respect.
 >
-> 1. **Context & Constraints**: Read the project structure (README, architecture docs, key config files) to understand the current state. What constraints apply? (performance, architectural boundaries, compatibility, security, business rules)
+> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
 >
-> 2. **Prior Art**: Search the codebase for existing patterns, modules, or abstractions that solve similar problems. Use Glob and Grep to find relevant code. READ the actual implementations -- do not speculate. Report file paths and what you found.
->
-> **Critical:** Ground every statement in actual code. Cite file paths. If you cannot find something, say "No existing implementation found" rather than guessing.
+> **Populate these sections:**
+> - **Context & Constraints**: Current state and applicable constraints
+> - **Prior Art**: Existing patterns, modules, or abstractions that solve similar problems
 >
 > When done, report your findings in structured Markdown. The orchestrator will write them into the spec.
 
@@ -170,15 +170,14 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 >
 > **Spec location:** `.specs/<name>.md`
 >
-> **Your job:**
+> Your perspective: You think like a system designer and contract author. You translate the problem into a high-level solution grounded in the project's existing conventions — what components change, what's created, how they interact. You define precise public surfaces (functions, endpoints, events, CLI commands) with clear inputs and outputs, following the project's API style. You identify new or modified data entities, or state explicitly when none are needed.
 >
-> 1. **Proposed Approach**: Design a high-level solution. What components change? What is created? How do they interact? Keep it conceptual (not implementation details).
+> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
 >
-> 2. **API/Interface Contract**: Define the public surfaces. What functions, endpoints, events, or CLI commands are exposed? Show signatures (pseudo-code is fine). Be precise about inputs and outputs.
->
-> 3. **Data Model Changes**: Are new entities, fields, or relationships needed? Are existing ones modified? If no data model changes, state that explicitly.
->
-> **Critical:** Read the codebase to understand existing API patterns and data modeling conventions. Follow the project's style.
+> **Populate these sections:**
+> - **Proposed Approach**: High-level solution (conceptual, not implementation details)
+> - **API/Interface Contract**: Public surfaces with signatures (pseudo-code is fine)
+> - **Data Model Changes**: New or modified entities, fields, relationships (or "No data model changes")
 >
 > When done, report your findings in structured Markdown. The orchestrator will write them into the spec.
 
@@ -193,17 +192,13 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 >
 > **Spec location:** `.specs/<name>.md`
 >
-> **Your job:**
+> Your perspective: You think like a deployment engineer and a test author. You identify how the change gets to production safely — backward compatibility concerns, feature flags, data migrations, schema changes — or state explicitly when standard deployment is sufficient. You define verifiable completion criteria (tests pass, docs updated, no regressions) grounded in the project's existing testing and deployment conventions, never vague success measures.
 >
-> 1. **Migration/Rollout Plan**: How does this change get deployed? Are there backward compatibility concerns? Feature flags? Data migrations? Database schema changes? If the change is simple and requires no special rollout, state "No migration needed -- standard deployment."
+> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
 >
-> 2. **Acceptance Criteria**: How do we know this is done? Write a bulleted list of testable outcomes. Each criterion should be verifiable (not vague like "works well"). Examples:
->    - Unit tests pass for new API endpoints
->    - Integration test covers happy path and error cases
->    - Documentation updated in README
->    - No performance regression on benchmark suite
->
-> **Critical:** Read the codebase to understand existing deployment and testing patterns. Match the project's conventions.
+> **Populate these sections:**
+> - **Migration/Rollout Plan**: Deployment strategy (or "No migration needed -- standard deployment")
+> - **Acceptance Criteria**: Bulleted list of testable outcomes (each verifiable, never vague)
 >
 > When done, report your findings in structured Markdown. The orchestrator will write them into the spec.
 
@@ -232,15 +227,9 @@ Dispatch 2 background Task agents to validate the populated spec against the cod
 >
 > **Spec location:** `.specs/<name>.md`
 >
-> **Your job:**
+> Your perspective: You think like a fact-checker and implementation simulator. You verify every claim about existing code by reading the actual implementation — catching untruths (spec says X exists but it doesn't), missing steps (spec skips necessary wiring/config/migration), and flaws (proposed approach won't work given how the code actually operates). You provide evidence and fixes for each issue.
 >
-> Read the spec. For each claim about existing code (in Context, Prior Art, or Proposed Approach), verify it by reading the actual code. Look for:
->
-> - **Untruths**: Spec says something exists that doesn't, or misrepresents how something works
-> - **Missing steps**: Spec skips a necessary step (e.g., wiring in DI, updating config, migration)
-> - **Flaws**: Proposed approach won't work given how the code actually works
->
-> For each issue found, report:
+> **Report each issue with:**
 > - **Type**: Untruth | Missing step | Flaw
 > - **Location**: Which section of the spec
 > - **Issue**: What is wrong
@@ -260,16 +249,9 @@ Dispatch 2 background Task agents to validate the populated spec against the cod
 >
 > **Spec location:** `.specs/<name>.md`
 >
-> **Your job:**
+> Your perspective: You think like a consistency guardian and pattern matcher. You compare the proposed design against the existing codebase, catching pattern conflicts (contradicts conventions), naming conflicts (clashes with existing entities), architectural conflicts (violates layer boundaries), and style conflicts (doesn't match the project's interface idioms). You provide evidence and alignment recommendations for each conflict.
 >
-> Read the spec. Compare the Proposed Approach and API/Interface Contract sections against the existing codebase. Look for:
->
-> - **Pattern conflicts**: Spec proposes a pattern that contradicts existing conventions
-> - **Naming conflicts**: Spec uses names that clash with existing entities or modules
-> - **Architectural conflicts**: Spec introduces dependencies that violate layer boundaries
-> - **Style conflicts**: Spec proposes interfaces that don't match the project's style
->
-> For each conflict found, report:
+> **Report each conflict with:**
 > - **Type**: Pattern | Naming | Architecture | Style
 > - **Conflict**: What conflicts with what
 > - **Evidence**: File paths showing existing convention
@@ -304,21 +286,7 @@ Dispatch a single background Task agent to act as architecture guardian. This ag
 >
 > **Spec location:** `.specs/<name>.md`
 >
-> **Your job:**
->
-> Read the complete spec (all sections). Evaluate it against these criteria:
->
-> 1. **Reuse over reinvention**: Does the spec use existing code, patterns, and abstractions rather than building new ones?
-> 2. **Pattern alignment**: Does the spec follow existing conventions in naming, structure, and idioms?
-> 3. **Healthy growth**: Does the spec promote maintainability and extensibility, or does it create tech debt?
-> 4. **Proper boundaries**: Does the spec respect layer boundaries and avoid creating shadow architectures?
-> 5. **Completeness**: Are all sections populated? Are acceptance criteria testable? Are non-requirements clear?
->
-> **Verdict:**
-> - **PASS**: Spec is ready for implementation
-> - **FAIL**: Spec has issues that must be fixed before implementation
->
-> For each criterion, state PASS or FAIL and provide reasoning. If FAIL, list specific issues with file:line or section references.
+> Your perspective: You think like a senior architect protecting the codebase's long-term health. You evaluate the complete spec against five criteria: reuse over reinvention (uses existing code/patterns), pattern alignment (follows conventions), healthy growth (promotes maintainability, avoids tech debt), proper boundaries (respects layers, no shadow architectures), and completeness (all sections populated, criteria testable, non-requirements clear). You issue PASS (ready for implementation) or FAIL (requires fixes) with specific evidence.
 >
 > **Report format:**
 >
