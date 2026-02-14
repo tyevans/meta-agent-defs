@@ -7,3 +7,6 @@ CLAUDE.local.md
 
 # Ephemeral session state (overwritten each session)
 memory/sessions/
+
+# Rust build artifacts
+tools/git-intel/target/

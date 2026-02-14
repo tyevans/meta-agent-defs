@@ -21,3 +21,9 @@ members:
     role: "Installer, settings, hooks, MCP config, ensuring symlinks work and hooks fire correctly"
     tools: [Read, Write, Edit, Grep, Glob, "Bash(git:*)", "Bash(./install.sh:*)", "Bash(ls:*)"]
     owns: ["install.sh", "settings.json", "mcp-servers.json", ".claude/settings.json"]
+
+  - name: rust-dev
+    role: "Building and maintaining the git-intel Rust CLI tool — cargo project setup, git2-rs integration, JSON output, subcommand implementation"
+    model: opus
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(cargo:*)", "Bash(rustc:*)", "Bash(git:*)", "Bash(ls:*)", "Bash(mkdir:*)"]
+    owns: ["tools/git-intel/**"]
