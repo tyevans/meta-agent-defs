@@ -39,6 +39,8 @@ Based on the topic, select **2 roles** that provide the most opposed perspective
 | Historian | Precedent, what's been tried before | Avoiding past mistakes |
 | Innovator | Novel approaches, challenge assumptions | Breaking out of ruts |
 
+Select the two roles whose perspectives would produce the most productive disagreement on this specific topic. Never select two roles that optimize for the same underlying value.
+
 ### 1b. Create the Team
 
 ```
@@ -63,20 +65,11 @@ Task({
 
 > You are the **[Role]** in a meeting about: [topic]
 >
-> Your perspective: [1-2 sentences describing what this role cares about and how they think]
->
-> **IMPORTANT: When you receive a message, respond IMMEDIATELY with your substantive perspective.** Do NOT say "ready", "standing by", or "waiting for the opening question." Every message you receive IS the prompt — respond to it with 2-4 paragraphs of concrete analysis from your role's perspective.
+> Your perspective: [2-3 sentences describing what this role cares about and how they think — be rich and specific with genuine characterization]
 >
 > **CRITICAL: You MUST use the SendMessage tool to communicate.** Your plain text output is NOT visible to anyone. Every response you give must be sent via `SendMessage({ type: "message", recipient: "team-lead", content: "...", summary: "..." })`. Always send to **team-lead** (the facilitator) — never send directly to other panelists. If you do not call SendMessage, nobody will see what you said.
 >
-> You are in a live discussion. When the facilitator sends you a message:
-> 1. Read the message carefully, then respond with substance using SendMessage to "team-lead".
-> 2. Respond from your role's perspective. Be direct and specific.
-> 3. If you disagree with another panelist's position (relayed by the facilitator), say so and explain why.
-> 4. If you have a question that would sharpen the discussion, ask it.
-> 5. Keep responses to 2-4 paragraphs. This is a conversation, not a monograph.
->
-> Before starting, check for prior learnings: if a file-based learnings file exists at `memory/agents/<role-name>/learnings.md`, read it for accumulated context.
+> Always respond from your role's specific perspective, never as a generic assistant. When the facilitator sends you a message, respond with 2-4 paragraphs of concrete, specific analysis. If you disagree with another panelist's position, say so and explain why.
 
 ### 1d. Opening Round
 
@@ -102,7 +95,7 @@ After Phase 1 opening responses arrive, run this cycle for every panelist respon
 **Step 1. Read and extract.** What is this panelist's key claim? Does it introduce tension — a disagreement, counterargument, or novel angle — that another panelist has not yet addressed?
 
 **Step 2. Relay or skip.**
-- **Tension exists →** Summarize the tension in 1-2 sentences. Send it via direct message to the panelist(s) whose position is most directly challenged by the tension, tagged `[Exchange N of LIMIT]`. Increment exchange counter. When their responses arrive, return to Step 1.
+- **Tension exists →** Summarize the tension in 1-2 sentences. When relaying to a panelist, address them by role name to re-anchor their perspective (e.g., "Skeptic, the Pragmatist argues X..."). When relaying a panelist's position, preserve their core argument faithfully before posing the next question. If a panelist makes a specific factual claim central to the disagreement, briefly verify it using available tools before relaying. Send it via direct message to the panelist(s) whose position is most directly challenged by the tension, tagged `[Exchange N of LIMIT]`. Increment exchange counter. When their responses arrive, return to Step 1.
 - **No tension →** Proceed to Step 3.
 
 If the exchange counter has reached the depth limit, skip relay regardless and proceed to Step 3.
