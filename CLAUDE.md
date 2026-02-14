@@ -64,11 +64,14 @@ meta-agent-defs/
 │   ├── review/SKILL.md          # Code review (context: fork)
 │   ├── retro/SKILL.md           # Session retrospective (inline)
 │   └── <12 composable primitives>  # gather, distill, rank, etc. (inline)
-├── docs/                        # Documentation (cookbook, recipes, team guide, demos)
+├── docs/                        # Documentation (cookbook, recipes, team guide, INDEX)
+│   └── INDEX.md                 # Skill & agent navigator (decision tree, categories)
 ├── demos/                       # Demo projects for primitive walkthroughs
 ├── rules/                       # Global rules (symlinked to ~/.claude/rules/)
 │   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
-│   └── pipe-format.md           # Composable primitive output contract
+│   ├── pipe-format.md           # Composable primitive output contract
+│   ├── information-architecture.md  # IA principles for knowledge organization
+│   └── memory-layout.md         # Path registry for persistent state
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)

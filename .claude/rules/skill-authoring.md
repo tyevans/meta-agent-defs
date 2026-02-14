@@ -51,6 +51,7 @@ Every skill MUST include:
 - Include keywords at the end of the description for auto-discovery
 - Restrict `allowed-tools` to the minimum needed -- read-only skills should not have Write/Edit
 - Use `context: fork` for skills that do heavy exploration to avoid polluting the main context
+- Reference `rules/information-architecture.md` for placement decisions when choosing between passive (rules/), discoverable (docs/), or on-demand locations
 - Reference `$ARGUMENTS` to accept user input
 - Include a visual workflow diagram showing phase progression (ASCII flowchart)
 

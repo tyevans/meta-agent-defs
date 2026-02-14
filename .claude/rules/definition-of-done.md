@@ -19,6 +19,7 @@ What "done" means for each type of change in this repo.
 - [ ] Has clear phase structure with numbered steps
 - [ ] Tested by running the slash command in a live session
 - [ ] `install.sh` re-run to verify symlink creation
+- [ ] `docs/INDEX.md` updated with new skill entry
 
 ## Settings Change (`settings.json`)
 
@@ -37,3 +38,4 @@ What "done" means for each type of change in this repo.
 - [ ] CLAUDE.md stays under 200 lines
 - [ ] README.md reflects current file structure
 - [ ] No stale references to removed files or renamed fields
+- [ ] `docs/INDEX.md` reflects current skill/agent inventory
