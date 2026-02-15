@@ -13,6 +13,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Assess risk** -> /premortem (failure analysis) or /critique (adversarial review)
 - **Build something** -> /tracer (iterative end-to-end) or /sketch (skeleton only)
 - **Review code** -> /review (structured code review)
+- **Understand a definition's history** -> /evolution (file change history and stability) or /drift (cross-definition convergence/divergence)
 - **Manage a team** -> /assemble (create) -> /standup (sync) -> /sprint (dispatch)
 - **Run a session** -> /status (orient) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
@@ -38,7 +39,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (12)
+### Workflow Skills (14)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -56,6 +57,8 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /session-health | Context load and drift diagnostic | inline |
 | /retro | Session retrospective with persistent learnings | inline |
 | /handoff | Session transition capture | inline |
+| /evolution | File change history, churn, stability analysis | inline |
+| /drift | Cross-definition convergence/divergence detection | inline |
 
 ### Team Skills (3)
 
@@ -75,7 +78,7 @@ Manage persistent learning teams across sessions.
 
 ## Skills by Context Type
 
-**Inline (21):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, session-health, retro, handoff, assemble, standup, sprint, status
+**Inline (23):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, session-health, retro, handoff, assemble, standup, sprint, status, evolution, drift
 
 **Fork (7):** blossom, consensus, consolidate, premortem, review, spec, tracer
 
@@ -92,6 +95,7 @@ Common composition sequences (each step's output feeds the next via context):
 /gather -> /critique -> /rank         # Research -> stress-test -> prioritize
 /gather -> /diff-ideas                # Research -> compare two approaches
 /gather -> /distill -> /sketch        # Research -> condense -> prototype
+/drift -> /rank -> /sprint            # Compare definitions -> prioritize fixes -> execute
 ```
 
 **Note**: Multi-step chains (3+ primitives) are best run in the main session. If dispatching to a subagent, set `max_turns: 40` to avoid turn limits.

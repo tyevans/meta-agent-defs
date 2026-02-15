@@ -4,7 +4,7 @@ description: "Show unified system status: backlog, recent activity, team health,
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(bin/git-pulse.sh:*)"]
+allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(bin/git-pulse.sh:*)", "Bash(tools/git-intel/target/debug/git-intel:*)"]
 context: inline
 ---
 
@@ -71,7 +71,17 @@ git status --short
 
 ### 1e. Hotspots (Churn Heatmap)
 
-**If `bin/git-pulse.sh` exists**, run:
+Prefer git-intel when available, fall back to git-pulse.sh:
+
+**If `tools/git-intel/target/debug/git-intel` exists**, run:
+
+```bash
+tools/git-intel/target/debug/git-intel churn --repo . --limit 10
+```
+
+Parse the JSON output to extract files sorted by `total_churn` (additions + deletions).
+
+**Else if `bin/git-pulse.sh` exists**, run:
 
 ```bash
 bin/git-pulse.sh --since="7 days ago"
@@ -79,7 +89,7 @@ bin/git-pulse.sh --since="7 days ago"
 
 Extract the `churn_N` lines from the output. These show files with highest modification frequency.
 
-**If `bin/git-pulse.sh` does not exist**, skip this section.
+**If neither tool exists**, skip this section.
 
 ---
 
@@ -109,7 +119,16 @@ Present all collected data in this structure. Do not add commentary or analysis 
 [If dirty, show git status --short output]
 
 ### Hotspots
-[If git-pulse.sh data collected:]
+[If git-intel data collected:]
+| File | Edits | +/- | Churn |
+|------|-------|-----|-------|
+| [path] | [commit_count] | +[additions]/-[deletions] | [total_churn] |
+| [path] | [commit_count] | +[additions]/-[deletions] | [total_churn] |
+...
+
+Show top 5-10 files by total_churn.
+
+[Else if git-pulse.sh data collected:]
 | File | Edits (7d) |
 |------|------------|
 | [path] | [N] |
@@ -118,7 +137,7 @@ Present all collected data in this structure. Do not add commentary or analysis 
 
 Show top 5-10 churning files from the `churn_N` lines.
 
-[If git-pulse.sh not available or no churn data, omit this section entirely.]
+[If no churn data available, omit this section entirely.]
 
 ### Team
 [Team name and member table:]

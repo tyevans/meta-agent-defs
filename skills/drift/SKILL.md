@@ -95,6 +95,34 @@ Compare frontmatter fields across files in the same category:
 - Is `context: fork` used consistently?
 - Are descriptions following the same pattern?
 
+### 2e. Convergence Alerts
+
+Detect when recent commits to one file should trigger cross-pollination to sibling files.
+
+**Check for recent changes:**
+```bash
+git log --since="7 days ago" --name-only --pretty=format:"%H|%ad|%s" --date=short -- <files-from-target-set>
+```
+
+For each recent commit that modified files in the target set:
+
+1. **Extract changed sections** from the commit:
+   ```bash
+   git show <commit-hash> -- <file> | grep "^+##\|^-##"
+   ```
+
+2. **Check if changed sections exist in sibling files**: For each section header that was added or modified, check if the same section (fuzzy match on first 3 words) exists in other files in the target set.
+
+3. **Flag cross-pollination candidates**: If a changed section appears in >50% of sibling files but was NOT updated in those siblings, flag it as a cross-pollination candidate.
+
+4. **Format each alert**:
+   - Commit hash and date
+   - Section that was changed
+   - File where the change happened
+   - Sibling files that have the same section but weren't updated
+
+**Scope**: Only check `feat:` and `fix:` commits (filter by commit message prefix). Ignore `chore:`, `docs:`, and `refactor:` commits as these are less likely to need cross-pollination.
+
 ---
 
 ## Phase 3: Git Analysis
@@ -147,7 +175,11 @@ Emit pipe-format output:
    - source: git history showing parallel evolution
    - confidence: LIKELY
 
-4. **Frontmatter inconsistency: <field>** — Different values across similar files
+4. **Cross-pollination needed: <section>** — Updated in <file1> (<commit>) but not in <file2, file3>
+   - source: <commit-hash>, <date>
+   - confidence: LIKELY
+
+5. **Frontmatter inconsistency: <field>** — Different values across similar files
    - source: <file1:value1, file2:value2>
    - confidence: CONFIRMED
 
@@ -167,3 +199,4 @@ Emit pipe-format output:
 5. **No false positives on intentional differences.** If files have legitimately different structures (e.g., composable primitives vs workflow skills), don't flag as divergence.
 6. **Cite specific examples.** Every finding should reference actual file paths and section names, not abstract claims.
 7. **Actionable output.** The summary should suggest concrete next steps: "Consider factoring <pattern> into <rule-file>" or "Cross-pollinate <section> from <file1> to <file2>."
+8. **Cross-pollination alerts are LIKELY confidence (not CONFIRMED).** Section-name matching is fuzzy and the change may be intentionally file-specific. Manual review is required to determine if cross-pollination is warranted.
