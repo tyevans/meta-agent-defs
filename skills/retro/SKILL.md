@@ -4,7 +4,7 @@ description: "Run an automated session retrospective to evaluate velocity, quali
 argument-hint: "[focus area or session topic]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(bin/git-pulse.sh:*), Bash(wc:*), Bash(tools/git-intel/target/release/git-intel:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(bin/git-pulse.sh:*), "Bash($HOME/.claude/bin/git-pulse.sh:*)", Bash(wc:*), Bash(tools/git-intel/target/release/git-intel:*), Write, Edit
 ---
 
 # Retro: Automated Session Retrospective
@@ -38,10 +38,10 @@ Gather session data (git + backlog + conversation context)
 
 ### 1a. Git Activity
 
-**If `bin/git-pulse.sh` exists**, run the session stats script:
+**If `git-pulse.sh` is available** (check `bin/git-pulse.sh` or `$HOME/.claude/bin/git-pulse.sh`), run:
 
 ```bash
-bin/git-pulse.sh --since="8 hours ago"
+"$HOME/.claude/bin/git-pulse.sh" --since="8 hours ago" 2>/dev/null || bin/git-pulse.sh --since="8 hours ago" 2>/dev/null
 ```
 
 This provides structured metrics:
