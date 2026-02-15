@@ -17,3 +17,14 @@ __pycache__/
 
 # Research repos (cloned for analysis, not committed)
 research/
+tools/repos/
+
+# Training data and model artifacts
+tools/data/
+
+# Scratch files (ephemeral per-session)
+memory/scratch/
+
+# ML experiment results and checkpoints
+tools/commit-labeler/results/
+tools/commit-labeler/memory/
