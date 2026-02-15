@@ -1648,3 +1648,183 @@ fn trends_captures_fixture_commits() {
         assert!(w.velocity >= 0.0);
     }
 }
+
+// ---- signal detection tests ----
+
+/// Create a fixture with fix-after-feat and fix-after-refactor patterns
+///
+/// Commits (newest to oldest):
+///   5. "docs: update README"        -- modifies README.md (no signal)
+///   4. "fix: fix refactor bug"      -- modifies src/utils.rs (signals fix-after-refactor)
+///   3. "refactor: improve utils"    -- modifies src/utils.rs
+///   2. "fix: handle null input"     -- modifies src/lib.rs (signals fix-after-feat)
+///   1. "feat: initial commit"       -- creates src/lib.rs, README.md
+fn create_signal_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Commit 1: feat: initial commit (README.md + src/lib.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("README.md", "# Signal Test\n"),
+        ("src/lib.rs", "pub fn hello() {}\n"),
+    ]);
+    let s = make_sig(base_epoch);
+    let c1 = do_commit(&repo, tree_oid, &[], &s, "feat: initial commit");
+
+    // Commit 2: fix: handle null input (modifies src/lib.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("src/lib.rs", "pub fn hello() {}\npub fn safe_hello() {}\n"),
+    ]);
+    let s = make_sig(base_epoch + day);
+    let c2 = do_commit(&repo, tree_oid, &[c1], &s, "fix: handle null input");
+
+    // Commit 3: refactor: improve utils (creates src/utils.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("src/utils.rs", "pub fn add(a: i32, b: i32) -> i32 { a + b }\n"),
+    ]);
+    let s = make_sig(base_epoch + 2 * day);
+    let c3 = do_commit(&repo, tree_oid, &[c2], &s, "refactor: improve utils");
+
+    // Commit 4: fix: fix refactor bug (modifies src/utils.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("src/utils.rs", "pub fn add(a: i32, b: i32) -> i32 {\n    a.checked_add(b).unwrap_or(0)\n}\n"),
+    ]);
+    let s = make_sig(base_epoch + 3 * day);
+    let c4 = do_commit(&repo, tree_oid, &[c3], &s, "fix: fix refactor bug");
+
+    // Commit 5: docs: update README (modifies README.md - no signal expected)
+    let tree_oid = stage_files(&repo, &[
+        ("README.md", "# Signal Test\n\n## Usage\n\nSee src/lib.rs\n"),
+    ]);
+    let s = make_sig(base_epoch + 4 * day);
+    let _c5 = do_commit(&repo, tree_oid, &[c4], &s, "docs: update README");
+
+    (dir, repo)
+}
+
+#[test]
+fn signals_fix_after_feat_detected() {
+    let (_dir, repo) = create_signal_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // Should detect fix-after-feat signal
+    let feat_signals: Vec<_> = result.signals.iter()
+        .filter(|s| matches!(s.kind, git_intel::signals::SignalKind::FixAfterFeat))
+        .collect();
+
+    assert!(!feat_signals.is_empty(), "Should detect at least one fix-after-feat signal");
+
+    let signal = feat_signals[0];
+    assert_eq!(signal.commits.len(), 2);
+    assert!(signal.files.contains(&"src/lib.rs".to_string()));
+    assert!(signal.message.contains("Fix"));
+    assert!(signal.message.contains("feat"));
+}
+
+#[test]
+fn signals_fix_after_refactor_detected() {
+    let (_dir, repo) = create_signal_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // Should detect fix-after-refactor signal
+    let refactor_signals: Vec<_> = result.signals.iter()
+        .filter(|s| matches!(s.kind, git_intel::signals::SignalKind::FixAfterRefactor))
+        .collect();
+
+    assert!(!refactor_signals.is_empty(), "Should detect at least one fix-after-refactor signal");
+
+    let signal = refactor_signals[0];
+    assert_eq!(signal.commits.len(), 2);
+    assert!(signal.files.contains(&"src/utils.rs".to_string()));
+    assert!(signal.message.contains("Fix"));
+    assert!(signal.message.contains("refactor"));
+}
+
+#[test]
+fn signals_severity_calculation_adjacent() {
+    let (_dir, repo) = create_signal_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // Fix at commit 4, refactor at commit 3 (gap=1, adjacent)
+    let refactor_signals: Vec<_> = result.signals.iter()
+        .filter(|s| matches!(s.kind, git_intel::signals::SignalKind::FixAfterRefactor))
+        .collect();
+
+    assert!(!refactor_signals.is_empty());
+
+    let signal = refactor_signals[0];
+    // gap=1 (adjacent), shared_files=1
+    // severity = 1.0 / (1 + 1) * (1.min(5) / 5) = 0.5 * 0.2 = 0.1
+    let expected_severity = 0.1;
+    assert!((signal.severity - expected_severity).abs() < 0.001,
+        "Expected severity ~{}, got {}", expected_severity, signal.severity);
+}
+
+#[test]
+fn signals_no_signal_without_shared_files() {
+    // Use the standard fixture where docs commit doesn't share files with feat/refactor
+    let (_dir, repo) = create_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // The docs commit at the top doesn't trigger signals (no shared files with feat commits)
+    // But the fix commit DOES share files with feat, so we should have at least one signal
+    assert!(!result.signals.is_empty(), "Should have fix-after-feat signal from standard fixture");
+
+    // Verify all signals have non-empty file lists
+    for signal in &result.signals {
+        assert!(!signal.files.is_empty(), "All signals should have shared files");
+    }
+}
+
+#[test]
+fn signals_backward_compatibility_fix_after_feat() {
+    let (_dir, repo) = create_signal_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // The existing fix_after_feat Vec should still work for backward compatibility
+    assert!(!result.fix_after_feat.is_empty(), "fix_after_feat backward compatibility maintained");
+
+    // It should only contain feat pairs, not refactor pairs
+    for pair in &result.fix_after_feat {
+        assert!(pair.feat_message.starts_with("feat:"),
+            "fix_after_feat should only contain feat commits, got: {}", pair.feat_message);
+    }
+}

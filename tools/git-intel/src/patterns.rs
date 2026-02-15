@@ -4,6 +4,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 use crate::common;
+use crate::signals::{Signal, SignalKind};
 
 #[derive(Serialize)]
 pub struct PatternsOutput {
@@ -11,6 +12,7 @@ pub struct PatternsOutput {
     pub multi_edit_chains: Vec<MultiEditChain>,
     pub temporal_clusters: Vec<TemporalCluster>,
     pub total_commits_analyzed: usize,
+    pub signals: Vec<Signal>,
 }
 
 #[derive(Serialize)]
@@ -153,6 +155,7 @@ fn run_impl(
     // 1. Fix-after-feat: find fix commits that follow feat commits within 5 commits
     //    Requires file overlap: at least one file must be touched by both the feat and fix.
     let mut fix_after_feat = Vec::new();
+    let mut signals = Vec::new();
     for (i, ci) in commits_info.iter().enumerate() {
         if ci.commit_type == "fix" {
             let fix_files: std::collections::HashSet<&String> = ci.files_touched.iter().collect();
@@ -161,7 +164,7 @@ fn run_impl(
                     break;
                 }
                 let older = &commits_info[i + gap];
-                if older.commit_type == "feat" {
+                if older.commit_type == "feat" || older.commit_type == "refactor" {
                     let shared: Vec<String> = older
                         .files_touched
                         .iter()
@@ -169,15 +172,38 @@ fn run_impl(
                         .cloned()
                         .collect();
                     if !shared.is_empty() {
-                        fix_after_feat.push(FixAfterFeat {
-                            feat_commit: older.oid.clone(),
-                            feat_date: older.date.clone(),
-                            feat_message: older.message.clone(),
-                            fix_commit: ci.oid.clone(),
-                            fix_date: ci.date.clone(),
-                            fix_message: ci.message.clone(),
-                            gap_commits: gap - 1,
-                            shared_files: shared,
+                        // Backward compatibility: only add to fix_after_feat for "feat" type
+                        if older.commit_type == "feat" {
+                            fix_after_feat.push(FixAfterFeat {
+                                feat_commit: older.oid.clone(),
+                                feat_date: older.date.clone(),
+                                feat_message: older.message.clone(),
+                                fix_commit: ci.oid.clone(),
+                                fix_date: ci.date.clone(),
+                                fix_message: ci.message.clone(),
+                                gap_commits: gap - 1,
+                                shared_files: shared.clone(),
+                            });
+                        }
+
+                        // Generate signal for both feat and refactor
+                        let kind = if older.commit_type == "feat" {
+                            SignalKind::FixAfterFeat
+                        } else {
+                            SignalKind::FixAfterRefactor
+                        };
+
+                        let severity = 1.0 / (gap as f64 + 1.0) * (shared.len().min(5) as f64 / 5.0);
+
+                        signals.push(Signal {
+                            kind,
+                            severity,
+                            message: format!(
+                                "Fix {} likely caused by {} {} ({} shared files, {} commits apart)",
+                                ci.oid, older.commit_type, older.oid, shared.len(), gap - 1
+                            ),
+                            commits: vec![older.oid.clone(), ci.oid.clone()],
+                            files: shared,
                         });
                         break;
                     }
@@ -319,5 +345,6 @@ fn run_impl(
         multi_edit_chains,
         temporal_clusters,
         total_commits_analyzed,
+        signals,
     })
 }

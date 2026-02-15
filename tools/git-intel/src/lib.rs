@@ -11,6 +11,7 @@ pub mod metrics;
 #[cfg(feature = "ml")]
 pub mod ml;
 pub mod patterns;
+pub mod signals;
 pub mod trends;
 
 use anyhow::Result;
