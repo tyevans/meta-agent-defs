@@ -8,3 +8,5 @@ When processing a numbered collection of items (audit findings, files to review,
 4. **Never silently continue past item 12** without having written prior results to a file.
 
 The goal is to prevent context compaction from destroying completed work in long batch operations. Intermediate files make progress recoverable.
+
+See also: /decompose (break large collections into bounded sub-parts before processing).

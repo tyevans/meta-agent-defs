@@ -243,3 +243,5 @@ git status
 6. **Show your reasoning.** The assess-style evaluation table makes pruning decisions visible and auditable.
 7. **No beads during exploration.** Fractal produces understanding. Beads are an optional output, not the workflow.
 8. **Density over length.** Handler reports under 500 words. Pipe format, not prose.
+
+See also: /meeting (when exploration reveals trade-offs needing multi-perspective debate), /review (when findings suggest code quality concerns).

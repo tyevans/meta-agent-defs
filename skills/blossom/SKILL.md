@@ -43,16 +43,9 @@ Save the returned epic ID. All subsequent beads will be wired as dependencies of
 
 ### 1c. Identify Initial Spike Areas
 
-Decompose the goal into 3-6 bounded spike areas (this is a **/decompose** — splitting one large goal into MECE sub-parts). Each spike should target a specific, bounded area of the codebase or architecture. Good spike scoping examples:
+Decompose the goal into 3-6 bounded spike areas (a **/decompose** — MECE sub-parts). Each spike targets a specific codebase area or architectural concern (e.g., "Audit domain/agents/ for dead code", "Map trust system integration points").
 
-- "Audit domain/agents/ for dead code and unused events"
-- "Map all trust system integration points"
-- "Inventory sandbox execution pipeline gaps"
-- "Survey frontend components for accessibility issues"
-
-**Count the spike areas.** This determines the dispatch mode:
-- **5 or fewer** initial spikes: use background Task agents (simpler, lower overhead)
-- **6 or more** initial spikes: use agent teams (parallel coordination, teammate reuse)
+**Count determines dispatch mode:** 5 or fewer spikes → background Task agents; 6+ spikes → agent teams.
 
 ### 1d. Create Spike Beads
 
@@ -101,18 +94,7 @@ Spawn up to 4 spike teammates initially. Number them sequentially: `spike-1`, `s
 
 ### Teammate Reuse
 
-When a spike teammate finishes its investigation and sends its report, the teammate goes idle. Instead of spawning a new teammate for the next spike, **reuse the idle one** by sending it a new investigation prompt via SendMessage:
-
-```
-SendMessage({
-  type: "message",
-  recipient: "spike-1",
-  content: "<new spike instructions>",
-  summary: "New spike assignment: [area]"
-})
-```
-
-Only spawn a new teammate if all existing teammates are busy AND more spikes need dispatch AND total teammate count is under 6.
+When a spike teammate finishes and goes idle, **reuse it** by sending new spike instructions via SendMessage rather than spawning fresh. Only spawn new teammates if all existing ones are busy AND total count is under 6.
 
 ### Fallback
 
@@ -120,23 +102,7 @@ If team creation fails (teams not enabled, API error, or other failure), fall ba
 
 ### Shutdown and Cleanup
 
-After the consolidation teammate completes (Phase 3), shut down all teammates:
-
-1. Send `shutdown_request` to each teammate:
-
-```
-SendMessage({
-  type: "shutdown_request",
-  recipient: "spike-1",
-  content: "All spikes complete, shutting down"
-})
-```
-
-2. Repeat for each active teammate (spike-N and consolidator).
-
-3. If a teammate does not respond to the shutdown request, send it again once. Teammates sometimes go idle before processing the request.
-
-4. Proceed with Phases 4-6 without the team.
+After consolidation (Phase 3), send `shutdown_request` via SendMessage to each active teammate (spike-N and consolidator). Retry once if no response. Proceed with Phases 4-6 without the team.
 
 ---
 
@@ -172,7 +138,7 @@ Each spike agent (whether background Task or team teammate) receives these instr
 >
 > **Your job:** Thoroughly investigate this area and produce a structured report. Do NOT implement fixes -- only discover and document.
 >
-> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+> Follow the investigation protocol and report requirements from the Agent Preamble (fan-out-protocol rule).
 >
 > **Spike-specific requirements:**
 >
@@ -225,39 +191,11 @@ Each spike agent (whether background Task or team teammate) receives these instr
 
 ### After Each Spike Completes
 
-1. **Review the spike report** for quality:
-   - Are findings CONFIRMED with evidence, or just hedged guesses?
-   - Did the agent actually read code, or just grep for patterns?
-   - Does the report follow pipe format (`## ... / **Source**: /blossom (spike)`)?
-   - Does the report have an Items section with at least one CONFIRMED finding?
-   - Are there file path citations with line numbers (not just directory names)?
+1. **Review the spike report** for quality. A passing report has: pipe format structure, an Items section with at least one CONFIRMED finding, and file:line citations from actual code reading.
 
-   **Quality gate with pushback:**
-
-   If the report lacks an Items section, has zero CONFIRMED findings, or consists mostly of vague/generic text without specific file citations:
-
-   - **For team mode (if using teams):** Send ONE pushback message to the teammate demanding concrete output:
-
-     ```
-     SendMessage({
-       type: "message",
-       recipient: "<spike-teammate-name>",
-       content: "Your spike report lacks concrete findings. Respond NOW with your actual investigation results. Required: (1) Items section with numbered findings, (2) at least one CONFIRMED finding with file:line citation, (3) evidence from reading actual code (not just grep results). Do not acknowledge this message — respond with the substantive spike report.",
-       summary: "Pushback: provide concrete findings"
-     })
-     ```
-
-     Allow the teammate to respond once. If the second attempt is still inadequate, log the failure and move on.
-
-   - **For background mode (if using background Task agents):** Background tasks cannot be re-prompted after completion. Flag the spike in its closing notes:
-
-     ```bash
-     bd update <spike-id> --notes="QUALITY ISSUE: Report lacked [specific problem: no Items section / no CONFIRMED findings / no file citations]. Needs re-dispatch if findings are critical. Original report archived in bead history."
-     ```
-
-     Do not create firm task beads from low-quality background spike reports. Mark the spike area as needing re-investigation in Phase 3 consolidation if it's still relevant.
-
-   **One retry only.** If the second attempt (for team mode) is still poor quality, close the spike with a note about the quality issue and move on. Do not send a third pushback — the teammate cannot recover at that point
+   **Quality gate:** If the report fails these checks:
+   - **Team mode:** Send ONE pushback message demanding concrete output (Items section, CONFIRMED findings with file:line citations, evidence from code reading). One retry only -- if still inadequate, log failure and move on.
+   - **Background mode:** Cannot re-prompt. Flag via `bd update <spike-id> --notes="QUALITY ISSUE: [problem]"`. Do not create firm tasks from low-quality reports.
 
 2. **Create firm task beads** from the Items section:
 
@@ -363,49 +301,17 @@ After consolidation completes and agent hints are assigned, shut down all teamma
 
 ### Cross-Task Dependencies
 
-Review the firm tasks and add dependencies between them where order matters:
-
-```bash
-# If task B requires task A to be done first
-bd dep add <task-B-id> <task-A-id>
-```
-
-Look for:
-- Core/model changes that must precede integration or infrastructure changes
-- Interface definitions that must precede implementations
-- Data access layers before the services that consume them
-- Backend logic before the UI or API surfaces that expose it
-- Tasks that modify the same files (sequence them)
+Wire dependencies (`bd dep add <downstream> <upstream>`) where order matters: inner layers before outer layers, interfaces before implementations, shared files sequenced. Think bottom-up through the dependency graph.
 
 ### Priority Review
 
-Scan all created tasks and adjust priorities if the full picture reveals:
-- A seemingly-P3 task that actually blocks several others (upgrade to P1)
-- Multiple P1 tasks that could reasonably be P2
-- Quick wins (small scope + high value) that deserve priority bumps
-- Critical path tasks that should be P0
+Adjust priorities now that the full picture is visible. Upgrade tasks that block many others, downgrade inflated P1s, and bump quick wins (small scope + high value).
 
 ---
 
 ## Phase 5: Verify
 
-Run these checks on the backlog before presenting it:
-
-### 5a. DAG Check
-
-Verify no dependency cycles exist. If A depends on B and B depends on A, one dependency is wrong -- fix it.
-
-### 5b. Priority Consistency
-
-P0/P1 tasks should not depend on P3/P4 tasks. If they do, upgrade the blocker's priority.
-
-### 5c. Acceptance Criteria Audit
-
-Every firm task should have at least one testable criterion in its description. If a task description is just "fix X", flesh it out with what "fixed" looks like.
-
-### 5d. Critical Path Identification
-
-Trace the longest dependency chain. This is the minimum time to epic completion. Flag it in the report.
+Validate the backlog before presenting it: check for dependency cycles (fix any A↔B loops), verify priority consistency (P0/P1 tasks must not depend on P3/P4 -- upgrade blockers), ensure every task has testable acceptance criteria, and trace the critical path (longest dependency chain = minimum time to completion).
 
 ---
 
@@ -468,3 +374,5 @@ Present the final blossom report in **pipe format** so downstream primitives (/r
 9. **Depth limit.** Stop at 20 total spikes (including reused teammates) and reassess with the user if the goal is too broad.
 10. **Confidence levels.** Every finding is CONFIRMED, LIKELY, or POSSIBLE. Possible triggers a deeper spike.
 11. **Clean shutdown.** After consolidation, shut down all teammates before proceeding to final phases. The orchestrator works solo for prioritization, verification, and reporting.
+
+See also: /meeting (discuss blossom findings with multiple perspectives before committing to a direction).

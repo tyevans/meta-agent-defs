@@ -371,3 +371,5 @@ Present a structured retrospective report:
 - **Keep it concise.** A retro should take less than 2 minutes. Do not over-analyze.
 - **Distinguish root causes from symptoms.** "Agent output was low quality" is a symptom. "Agent was given a vague spike description without specific files to investigate" is a root cause.
 - **Credit what worked.** Retros that only focus on problems train you to ignore successes. Capture positive patterns too.
+
+See also: /evolution (track how definitions changed over time — feeds retro analysis with concrete edit history).

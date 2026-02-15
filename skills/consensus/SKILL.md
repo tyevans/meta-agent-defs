@@ -46,14 +46,7 @@ Otherwise, proceed immediately.
 
 ### 1b. Explore Context
 
-Use Glob and Read to explore the relevant codebase areas:
-
-- What files/modules are relevant to this decision?
-- What is the current implementation (if any)?
-- What constraints exist (tech stack, existing patterns, performance requirements, compatibility)?
-- What similar decisions have been made elsewhere in this codebase?
-
-Do not spend more than 5 minutes on exploration. The goal is enough context to write a clear problem statement, not exhaustive analysis.
+Use Glob and Read to understand the relevant codebase areas -- what exists today, what constraints apply, and what similar decisions look like. Spend just enough time to write a clear problem statement, not exhaustive analysis.
 
 ### 1c. Write the Problem Statement
 
@@ -95,18 +88,7 @@ Choose the 3 lenses that will produce the most productive tension for this speci
 - **Resilience**: Handle failures gracefully, degrade predictably, recover automatically
 - **Usability**: Optimize developer/user experience, reduce cognitive load, minimize friction
 
-**Selection criteria:**
-
-1. Analyze the problem statement and constraints to identify which lenses are most relevant
-2. Pick 3 lenses that will **disagree productively** -- never select two lenses that optimize for the same underlying value
-3. Default to **Simplicity/Performance/Maintainability** if the problem doesn't strongly suggest specific alternatives
-4. Consider constraint-driven selection:
-   - Performance requirements in constraints → include Performance
-   - Security/compliance requirements → include Security
-   - Team velocity pressure → include Velocity
-   - Large existing codebase → include Consistency
-   - User-facing features → include Usability
-   - Distributed systems / failure scenarios → include Resilience
+**Selection criteria:** Pick 3 lenses that will **disagree productively** -- never select two that optimize for the same underlying value. Match lenses to the problem's constraints (e.g., performance requirements → include Performance, security concerns → include Security). Default to **Simplicity/Performance/Maintainability** when the problem doesn't strongly suggest alternatives.
 
 **Present the selection** to the user in one line per lens:
 
@@ -135,7 +117,7 @@ Use the Task tool to spawn three background agents with `subagent_type: "general
 >
 > [Problem Statement from Phase 1]
 >
-> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+> Follow the investigation protocol and report requirements from the Agent Preamble (fan-out-protocol rule).
 >
 > **Your deliverables**:
 > 1. **Proposed approach** (concrete, not abstract -- describe exactly what you would do)
@@ -181,26 +163,7 @@ If the user approves:
 
 ### 2.5a. Anonymize Proposals
 
-Create a summary of each proposal that removes lens-identifying language:
-
-```markdown
-**Proposal A**:
-- Approach: [1-2 sentence summary, neutral language]
-- Complexity: [simple/moderate/complex]
-- Key decisions: [bullet list]
-
-**Proposal B**:
-- Approach: [1-2 sentence summary, neutral language]
-- Complexity: [simple/moderate/complex]
-- Key decisions: [bullet list]
-
-**Proposal C**:
-- Approach: [1-2 sentence summary, neutral language]
-- Complexity: [simple/moderate/complex]
-- Key decisions: [bullet list]
-```
-
-**Critical**: Do not reveal which lens generated which proposal. Use neutral labels (A/B/C) and remove any lens-specific language ("to maximize simplicity", "for better performance", etc.). The goal is to let advocates respond to the IDEAS, not to known biases.
+Summarize each proposal using neutral labels (A/B/C) with approach, complexity, and key decisions. Strip all lens-identifying language ("to maximize simplicity", "for better performance", etc.) so advocates respond to IDEAS, not known biases.
 
 ### 2.5b. Dispatch Debate Agents
 
@@ -240,32 +203,13 @@ Allow all three debate agents to complete. Do not proceed until all three have r
 
 ### 3a. Review Proposals
 
-Read all three initial agent reports thoroughly. For each agent, extract:
-- Core approach (what they're proposing)
-- Key decisions (why they chose this approach)
-- Trade-offs (what they're sacrificing)
-- Files touched
-- Complexity estimate
-
-**If debate round ran**: Also review the debate responses to identify:
-- Revisions each advocate made to their approach
-- Cross-proposal critiques and concerns raised
-- Potential hybrid approaches suggested
-- Points of convergence revealed through dialogue
+Read all three agent reports, extracting each proposal's core approach, key decisions, trade-offs, files touched, and complexity. If the debate round ran, also note revisions, cross-proposal critiques, hybrid suggestions, and points of convergence.
 
 ### 3b. Identify Agreements
 
-Compare the three proposals (including debate revisions if available) to find areas where **all three agents agree**. These are high-confidence recommendations.
+Find areas where **all three agents agree** -- these are high-confidence recommendations. Look for convergence on data structures, core files, integration points, or approaches to avoid. If the debate round ran, convergence that emerged during debate (not present in initial proposals) is particularly strong signal.
 
-Examples of agreements:
-- All three suggest using the same data structure
-- All three recommend touching the same core files
-- All three agree a certain abstraction is unnecessary
-- All three converge on the same integration point
-- **If debate ran**: Advocates revised toward a common approach
-- **If debate ran**: All three identified the same weakness in a competing idea
-
-Create an **Agreements** list with each point of consensus and what it tells you:
+List each agreement with its implication:
 
 ```markdown
 ### Agreements (HIGH CONFIDENCE)
@@ -274,8 +218,6 @@ Create an **Agreements** list with each point of consensus and what it tells you
 - **All three avoid [Y]**: Strong signal that [Y] is the wrong approach.
 - **All three touch [file path]**: This file is central to the solution.
 ```
-
-**If debate ran**: Note any convergence that emerged during the debate round that wasn't present in initial proposals. This is particularly strong signal.
 
 ### 3c. Identify Tensions
 
@@ -301,44 +243,11 @@ For each tension, articulate what the trade-off is. **If debate ran**, incorpora
 **The actual trade-off**: [what you gain and lose with each choice, incorporating debate insights]
 ```
 
-Example (using Simplicity/Performance/Maintainability lenses, with debate):
-
-```markdown
-### Tension: In-memory cache vs. database query
-
-**Simplicity says**: Query the database every time because it requires no cache management code or invalidation logic
-  - **After debate**: Acknowledged staleness isn't a concern for this use case, but still prefers no cache
-  - **Critiques raised**: Performance approach adds complexity for marginal gains given query frequency
-
-**Performance says**: Pre-load all data into an in-memory map on startup because database round-trips add 50-100ms per request
-  - **After debate**: Revised to lazy-load with TTL after seeing Maintainability's invalidation concerns
-  - **Critiques raised**: Simplicity's no-cache approach will bottleneck at scale
-
-**Maintainability says**: Use a TTL-based cache with automatic invalidation because it handles updates gracefully and is testable
-  - **After debate**: Stood firm; both alternatives have documented downsides
-  - **Critiques raised**: Simplicity's approach ignores performance constraints, Performance's approach ignores update patterns
-
-**The actual trade-off**: Simplicity minimizes code but sacrifices performance. Performance maximizes speed but adds staleness risk (now mitigated by TTL). Maintainability balances both but adds a dependency and configuration complexity. **Debate revealed**: All three agree updates are infrequent enough that staleness is manageable, narrowing the actual choice to code complexity vs. performance headroom.
-```
-
-**If debate ran**: Pay attention to revisions that narrow the design space -- when advocates adjust their positions after seeing alternatives, the remaining disagreement is more precisely defined.
+**If debate ran**: Pay attention to revisions that narrow the design space -- when advocates adjust their positions, the remaining disagreement is more precisely defined.
 
 ### 3d. Identify Majority Positions
 
-Find cases where **2 of 3 agents agree**. These are likely good choices, but note the dissenting opinion.
-
-**If debate ran**: Check whether majority positions strengthened (dissenter revised toward majority) or weakened (majority advocate(s) acknowledged dissenter's concerns).
-
-```markdown
-### Majority: [Brief title]
-
-**2 agents ([Lens A] + [Lens B]) propose**: [approach]
-**1 agent ([Lens C]) dissents**: [concern or alternative]
-
-**Interpretation**: [what this tells you]
-
-**If debate ran**: [convergence/divergence observed]
-```
+Find cases where **2 of 3 agents agree** and note the dissenting opinion. If debate ran, check whether the majority strengthened or weakened.
 
 ---
 
@@ -346,12 +255,7 @@ Find cases where **2 of 3 agents agree**. These are likely good choices, but not
 
 ### 4a. Synthesize Recommendation
 
-Based on agreements, tensions, and the problem constraints, propose which approach best fits the situation.
-
-**Decision rubric**:
-- Weight advocates according to how strongly the constraints align with their lens (e.g., if constraints include performance requirements, weight the Performance advocate more heavily)
-- Agreements override individual preferences -- if all three converge, that's the answer
-- When lenses conflict, the constraint hierarchy determines priority (explicit requirements trump aspirational qualities)
+Propose which approach best fits the situation. Weight advocates by how strongly constraints align with their lens. Agreements override individual preferences. When lenses conflict, explicit requirements trump aspirational qualities.
 
 ### 4b. Structure the Report
 
@@ -467,11 +371,7 @@ bd create --title="DECISION: [brief description of what was decided]" --type=tas
 
 ### 5b. Note Follow-Up Work
 
-If the decision leads directly to implementation, note which skill should run next:
-
-- **If implementation is straightforward**: Create task(s) for the work and assign to appropriate agent
-- **If implementation needs detailed planning**: Recommend `/spec [chosen approach]`
-- **If implementation needs incremental exploration**: Recommend `/tracer [starting point]`
+Recommend the appropriate next skill based on complexity: direct task creation for straightforward work, `/spec` for detailed planning, or `/tracer` for incremental exploration.
 
 ---
 
@@ -491,16 +391,3 @@ If the decision leads directly to implementation, note which skill should run ne
 - **Concrete over abstract**: Reject agent proposals that are too high-level. Demand specific files, specific changes, specific trade-offs.
 - **Verify agents read code**: If an agent's proposal doesn't reference actual file contents, challenge it. Speculation is not useful here.
 
----
-
-## Key Principles
-
-1. **Same input, different optimization**: Identical problem statement ensures apples-to-apples comparison
-2. **Adaptive lenses surface relevant tensions**: Problem-specific lens selection ensures disagreements reveal actual trade-offs, not artificial ones
-3. **Isolation prevents anchoring**: Fresh background agents can't see each other's reasoning
-4. **Agreement = high confidence**: Convergence from independent optimizations is a strong signal
-5. **Tension = real trade-off**: Disagreement reveals what you're actually choosing between
-6. **Human decides ties**: When no approach dominates, the user must weigh constraints and priorities
-7. **Decision before implementation**: This workflow produces a choice, not a solution. Follow with /spec or direct implementation.
-8. **Quality over speed**: Three agents reading the codebase is slow. That's the price of multi-perspective synthesis.
-9. **Record the decision**: Future sessions need to know not just what was chosen, but why and what was rejected.

@@ -96,3 +96,8 @@ Report back to orchestrator:
 bd show <your-bead-id>
 bd update <downstream-id> --notes="[Installer updated during <your-id>: specific change]"
 ```
+
+## Related Skills
+
+- `/gather` — Find installation patterns in other projects
+- `/verify` — Check symlink correctness after changes

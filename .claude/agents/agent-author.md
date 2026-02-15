@@ -129,3 +129,9 @@ When writing or editing agent definitions:
 **Update downstream:**
 - If your agent introduces new patterns, note them for the effectiveness-auditor to evaluate later
 - If the definition-tester should review this agent, create or note the bead
+
+## Related Skills
+
+- `/gather` — Research agent definition patterns across projects
+- `/critique` — Test draft definitions adversarially
+- `/diff-ideas` — Compare alternative design approaches

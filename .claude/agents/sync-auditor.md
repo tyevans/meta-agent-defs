@@ -137,3 +137,9 @@ Report back to orchestrator:
 bd show <your-bead-id>
 bd update <downstream-id> --notes="[Sync audit found: specific drift requiring fix]"
 ```
+
+## Related Skills
+
+- `/gather` — Collect documentation discrepancies
+- `/verify` — Confirm accuracy of referenced files
+- `/assess` — Categorize drift by severity (minor vs. major)

@@ -35,3 +35,5 @@ Use the same terms everywhere. A "skill" is always a skill (not a "command" or "
 **When reorganizing:** Resist the urge to create new directories. Check if an existing location follows convention. A new `utils/` folder is almost always wrong — put it where the convention says it goes.
 
 **When writing rules:** Keep them actionable and testable. "Prefer X over Y" is better than "Consider using X." Rules that can't be checked are just suggestions.
+
+See also: /assess (categorize artifacts by tier), /gather (audit existing organization).

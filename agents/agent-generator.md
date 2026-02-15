@@ -289,6 +289,8 @@ Quick reference for which agent to dispatch for each task type.
 
 ## Common Workflows
 
+**Note**: Generated projects should reference relevant skills in agent workflows. Agents complement skills — agents execute, skills orchestrate. Point users to `/gather`, `/distill`, `/rank`, and other composable primitives where applicable.
+
 ### New Feature
 1. `work-planner` — Decompose into tasks
 2. `domain-architect` — Domain layer (if applicable)
@@ -395,3 +397,9 @@ When complete, provide:
 5. Next steps for the user
 
 Remember: The goal is agents that understand THIS project's patterns, not generic agents. Include specific file paths, commands, and conventions discovered during exploration.
+
+## Related Skills
+
+- `/gather` — Collect codebase patterns before generating agents
+- `/decompose` — Break down agent responsibilities into clear scopes
+- `/sketch` — Generate agent definition skeletons quickly

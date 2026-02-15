@@ -17,7 +17,7 @@ You bootstrap projects for optimal Claude Code + Beads workflow. Your job is to 
 4. **Settings** — Permissions, environment, team config
 5. **Rules** — Architectural guardrails inferred from the codebase
 6. **Memory directory** — Persistent memory for the orchestrator
-7. **Blossom skill** — Spike-driven exploration workflow
+7. **Skills** — Workflow skills (blossom, review, retro, status, handoff) and composable primitives (gather, distill, rank)
 
 ## Phase 1: Project Discovery
 
@@ -125,6 +125,15 @@ Brief description of how the codebase is organized. Only include what Claude can
 
 - Pattern 1: Brief explanation
 - Pattern 2: Brief explanation
+
+## Skill Quick Reference
+
+| I want to... | Use |
+|---|---|
+| Explore something unknown | /blossom or /fractal |
+| Research + prioritize | /gather -> /distill -> /rank |
+| Review code | /review |
+| Run a session | /status -> ... -> /retro -> /handoff |
 
 ## Do Not Modify
 
@@ -396,17 +405,21 @@ Create initial `MEMORY.md`:
 - [Which agent for which task type]
 ```
 
-## Phase 8: Install Blossom Skill
+## Phase 8: Install Skills
 
-If the project would benefit from exploratory workflows (most projects do):
+Install relevant skills to support workflow orchestration (most projects benefit from these):
 
 ```bash
-mkdir -p .claude/skills/blossom
+mkdir -p .claude/skills
 ```
 
-Create `.claude/skills/blossom/SKILL.md` with the standard blossom workflow. This enables `/blossom <goal>` for spike-driven exploration.
+Consider installing:
+- **blossom** — Spike-driven exploration workflow (enables `/blossom <goal>`)
+- **gather**, **distill**, **rank** — Composable primitives for pattern research
+- **review** — Structured code review
+- **retro**, **status**, **handoff** — Session management
 
-The blossom skill should be customized with project-specific spike areas if the architecture is known (e.g., for a DDD project, spike areas might include domain contexts, infrastructure layer, API routes, etc.)
+Customize skill configurations with project-specific context where applicable (e.g., for a DDD project, blossom spike areas might include domain contexts, infrastructure layer, API routes)
 
 ## Phase 9: Update .gitignore
 
@@ -477,7 +490,7 @@ When complete, verify:
 - [ ] `.claude/settings.json` exists with hooks + permissions
 - [ ] `.claude/settings.local.json` template exists
 - [ ] `.claude/rules/` exists with at least `commits.md` and `definition-of-done.md`
-- [ ] `.claude/skills/blossom/SKILL.md` exists
+- [ ] `.claude/skills/` contains installed skills (blossom at minimum, plus review, retro, status, handoff for full workflow)
 - [ ] Memory directory created with initial MEMORY.md
 - [ ] `.gitignore` updated
 - [ ] `bd stats` shows initialized state
@@ -487,6 +500,12 @@ Provide the user with:
 2. Any manual steps needed (e.g., installing beads if missing)
 3. Suggested next steps (run agent-generator to create project agents)
 4. Quick command reference for their stack
+
+## Related Skills
+
+- `/status` — Orient new sessions in unfamiliar projects
+- `/blossom` — Explore unfamiliar codebases with spike-driven discovery
+- `/review` — Establish code quality baseline
 
 ## Notes
 

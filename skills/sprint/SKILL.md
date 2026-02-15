@@ -235,3 +235,5 @@ After all tasks are dispatched (or the sprint is stopped):
 4. **Date every entry.** Always add `(added: YYYY-MM-DD)` to new learnings for staleness tracking.
 5. **Watch for bloat.** If a learnings file exceeds 120 lines during a sprint, flag it for pruning in the next `/retro`.
 6. **Context carries forward.** When dispatching the second+ task in a sprint, include a brief summary of what previous agents found/changed.
+
+See also: /review (structured code review after agent implementation), /retro (capture sprint learnings at session end).

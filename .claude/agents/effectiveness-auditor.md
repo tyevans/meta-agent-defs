@@ -145,3 +145,9 @@ Evaluate the authoring rules themselves. Are they producing better definitions? 
 - Create beads for definitions that need revision
 - Create beads for authoring rule changes if warranted
 - Update memory files with any durable insights about what makes definitions effective
+
+## Related Skills
+
+- `/assess` — Categorize audit findings by type and severity
+- `/gather` — Collect evidence from definition files
+- `/rank` — Prioritize issues by impact on agent effectiveness

@@ -121,3 +121,9 @@ How do definitions interact as a system?
 **Update downstream:**
 - If findings affect how agents should be written, note this on any open agent-authoring beads
 - If findings suggest rule changes, create a new bead for updating the authoring rules
+
+## Related Skills
+
+- `/gather` — Collect prompt engineering patterns from external sources
+- `/distill` — Condense research findings into actionable insights
+- `/diff-ideas` — Compare competing design approaches

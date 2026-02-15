@@ -43,6 +43,22 @@ bd create --title="..." --type=task
 bd sync --flush-only            # Save state before session end
 ```
 
+## Skill Quick Reference
+
+| I want to... | Use |
+|---|---|
+| Explore something unknown | /blossom or /fractal |
+| Research + prioritize | /gather -> /distill -> /rank |
+| Compare approaches | /diff-ideas or /consensus |
+| Plan before building | /decompose -> /plan -> /spec |
+| Review code | /review |
+| Track definition changes | /evolution or /drift |
+| Run a session | /status -> ... -> /retro -> /handoff |
+| Manage a team | /assemble -> /standup -> /sprint |
+| Discuss with panels | /meeting |
+
+All 30 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
+
 ## Project Structure
 
 ```

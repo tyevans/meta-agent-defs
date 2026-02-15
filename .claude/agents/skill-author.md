@@ -160,3 +160,9 @@ skills/<name>/SKILL.md
 **Update downstream:**
 - If the sync-auditor should verify the new skill is reflected in docs, note the bead
 - If the definition-tester should review this skill, create or note the bead
+
+## Related Skills
+
+- `/gather` — Research skill workflow patterns
+- `/critique` — Test draft skill definitions adversarially
+- `/evolution` — Track skill changes over time

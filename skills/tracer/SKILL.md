@@ -39,29 +39,11 @@ Map the path (identify all layers/boundaries)
 
 ### 1a. Clarify the Feature
 
-If `$ARGUMENTS` is empty or too vague, ask the user one clarifying question to understand:
-- What user action triggers this feature?
-- What is the expected outcome?
-- What data flows through the system?
-
-Do not over-question -- the point of tracer is to discover details through implementation, not upfront specification.
+If `$ARGUMENTS` is empty or too vague, ask one clarifying question about the trigger, expected outcome, or data flow. Do not over-question -- tracer discovers details through implementation, not upfront specification.
 
 ### 1b. Identify Layers and Boundaries
 
-Read the project structure to understand the architecture. Identify every layer or boundary the feature must cross:
-
-**Common layers:**
-- **UI/Interface**: Component, screen, CLI command, or API endpoint
-- **Controller/Handler**: Request routing, input parsing, response formatting
-- **Service/Application**: Business logic, orchestration, domain operations
-- **Data Access**: Repository, ORM, database queries
-- **External Systems**: Third-party APIs, message queues, file storage
-- **Infrastructure**: Configuration, logging, monitoring
-
-Use Glob and Read to discover:
-- Where similar features are implemented
-- What patterns the codebase follows at each layer
-- What dependencies exist between layers
+Read the project structure to identify every layer or boundary the feature must cross (UI, controller, service, data access, external systems, infrastructure). Use Glob and Read to discover where similar features are implemented and what patterns each layer follows.
 
 ### 1c. Create the Path Map
 
@@ -105,34 +87,15 @@ Produce a visual map showing each layer and what the tracer will touch:
 
 ### 2a. Implementation Strategy
 
-Implement the absolute minimum at each layer to make **one successful end-to-end request** work. This is the tracer bullet.
-
-**Rules for Phase 2:**
-- No error handling (let it crash if something goes wrong)
-- No edge case handling (only the happy path)
-- No input validation beyond preventing null pointer errors
-- Hard-code where it simplifies (test user ID, sample filters, mock data)
-- Stub external systems with hard-coded responses
-- Skip non-critical features (auth, logging, rate limiting)
-
-**Goal:** Prove the path exists and works end-to-end.
+Implement the absolute minimum at each layer to make **one successful end-to-end request** work. You think like a tunneler cutting through rock -- no error handling, no edge cases, no validation beyond null safety. Hard-code freely (test IDs, sample data, stubbed externals). Skip auth, logging, rate limiting. The only goal is proving the path exists.
 
 ### 2b. Implement Bottom-Up
 
-Start at the deepest layer (database/external system) and work up to the UI. This ensures each layer has a working foundation when you implement it.
-
-For each layer:
-1. Read existing implementations in that layer to match patterns
-2. Implement the minimal viable code
-3. Verify it compiles/runs (fix syntax errors immediately)
+Start at the deepest layer (database/external system) and work up to the UI so each layer has a working foundation. At each layer: match existing patterns, implement minimal code, verify it compiles.
 
 ### 2c. Verify End-to-End
 
-Once all layers are wired:
-1. Run the application (start server, launch UI, etc.)
-2. Execute the feature's happy path manually
-3. Verify the expected outcome occurs
-4. If it fails, debug and fix before proceeding
+Run the application and execute the happy path manually. If it fails, debug and fix before proceeding.
 
 ### 2d. Commit the Tracer
 
@@ -160,36 +123,15 @@ EOF
 
 ### 3a. Enumerate Failure Modes
 
-For each layer, identify what can fail:
-
-**Common failure modes:**
-- Database connection lost
-- External API timeout or error response
-- Invalid input (malformed, missing fields)
-- Resource not found (user, record, file)
-- Permission denied
-- Network failure
-- Disk full / resource exhaustion
+For each layer, identify what can fail: connection loss, timeouts, invalid input, missing resources, permission denied, network failures, resource exhaustion.
 
 ### 3b. Implement Error Handling
 
-For each failure mode:
-1. **Detect**: Add checks or try-catch blocks to detect the failure
-2. **Recover or Report**: Either recover gracefully (retry, fallback) or report a clear error to the caller
-3. **Propagate**: Ensure errors bubble up through layers appropriately (don't swallow errors silently)
-
-**Follow project conventions:**
-- Does the codebase use exceptions, error codes, or Result types?
-- Where are errors logged?
-- What format does the UI expect for error messages?
+You think like a defensive programmer adding safety nets to a working path. For each failure mode: detect it, recover or report clearly to the caller, and propagate appropriately (never swallow silently). Follow the project's existing error conventions (exceptions vs. Result types, logging patterns, error response format).
 
 ### 3c. Verify Error Paths
 
-Test each error scenario:
-1. Simulate the failure (disconnect DB, mock failing API, send invalid input)
-2. Verify the error is handled correctly
-3. Verify the user sees an appropriate error message
-4. Verify the system recovers or fails gracefully (no crashes, no corrupt state)
+Simulate each failure (disconnect DB, mock failing API, send invalid input) and verify correct handling, appropriate user-facing messages, and graceful degradation (no crashes, no corrupt state).
 
 ### 3d. Commit Error Handling
 
@@ -216,38 +158,19 @@ EOF
 
 ### 4a. Identify Edge Cases
 
-For each layer, identify boundary conditions and edge cases:
-
-**Common edge cases:**
-- Empty input (empty string, empty array, null)
-- Boundary values (zero, negative numbers, max int, empty result set)
-- Duplicate operations (retry, double-submit)
-- Concurrent operations (race conditions)
-- Large input (pagination, memory limits)
-- Special characters (unicode, SQL injection, XSS)
+You think like a tester probing boundaries: empty inputs, boundary values (zero, max, empty sets), duplicate/concurrent operations, large inputs, and special characters (unicode, injection vectors).
 
 ### 4b. Add Input Validation
 
-At each layer's entry point, add validation:
-1. Check required fields are present
-2. Validate types and formats (email, URL, date, etc.)
-3. Validate ranges and boundaries
-4. Sanitize input (escape special characters, trim whitespace)
-
-Return clear validation errors to the caller.
+At each layer's entry point, validate required fields, types/formats, ranges, and sanitize input. Return clear validation errors.
 
 ### 4c. Replace Hard-Coded Values
 
-Find all hard-coded values from Phase 2 (test user IDs, sample filters, mock data) and replace them with real implementations:
-- Accept values as parameters
-- Fetch values from configuration
-- Generate values dynamically
+Replace all Phase 2 hard-coded values (test IDs, sample data, stubs) with real implementations -- parameters, configuration, or dynamic generation.
 
 ### 4d. Handle Edge Cases
 
-For each identified edge case:
-1. Implement logic to handle it correctly
-2. Verify the behavior (manually or with a quick test)
+Implement handling for each identified edge case and verify the behavior.
 
 ### 4e. Commit Edge Cases & Validation
 
@@ -275,30 +198,11 @@ EOF
 
 ### 5a. Determine Test Coverage
 
-Decide what level of testing is appropriate for this feature:
-
-**Test levels:**
-- **Unit tests**: Individual functions, pure logic, edge cases
-- **Integration tests**: Layer interactions, database queries, external API calls
-- **End-to-end tests**: Full user workflow, UI interactions
-
-Follow project conventions. If the project has no tests, create at least basic integration tests for the core path.
+Choose test levels appropriate for this feature (unit, integration, e2e). Follow project conventions. If the project has no tests, create at least basic integration tests for the core path.
 
 ### 5b. Write Tests
 
-For each test level:
-1. Read existing tests to match project style and tooling
-2. Write tests covering:
-   - Happy path (Phase 2)
-   - Error scenarios (Phase 3)
-   - Edge cases (Phase 4)
-3. Run tests, verify they pass
-4. If tests fail, fix the implementation (not the tests)
-
-**Prioritize:**
-- Critical path tests first (happy path, most common errors)
-- Edge case tests second
-- Exhaustive coverage third (only if time permits)
+Match existing test style. Cover happy path (Phase 2), error scenarios (Phase 3), and edge cases (Phase 4) in priority order. Run tests, and if they fail, fix the implementation (not the tests).
 
 ### 5c. Commit Tests
 

@@ -38,19 +38,11 @@ Seed spec doc with skeleton headings
 
 ### 1a. Clarify the Goal
 
-If `$ARGUMENTS` is empty or too vague, ask the user one clarifying question about what they want to build or change. Otherwise, proceed immediately.
-
-The goal should fit in 2-3 sentences. If it's longer, you're mixing problem and solution -- extract just the problem.
+If `$ARGUMENTS` is empty or too vague, ask one clarifying question. The goal should fit in 2-3 sentences -- if longer, extract just the problem.
 
 ### 1b. Create the Spec File
 
-Create a new spec document at `.specs/<name>.md` where `<name>` is a short kebab-case identifier derived from the goal (e.g., "trust-delegation-api" for a trust delegation feature).
-
-If the `.specs/` directory does not exist, create it:
-
-```bash
-mkdir -p .specs
-```
+Create `.specs/<name>.md` where `<name>` is a short kebab-case identifier from the goal. Create `.specs/` if needed.
 
 ### 1c. Write the Skeleton
 
@@ -130,7 +122,7 @@ Write this skeleton to `.specs/<name>.md` now.
 
 ### 1d. Report the Spec Path
 
-Tell the user where the spec document lives (absolute path) and confirm the goal you extracted from `$ARGUMENTS`.
+Tell the user the absolute path and confirm the extracted goal.
 
 ---
 
@@ -138,12 +130,9 @@ Tell the user where the spec document lives (absolute path) and confirm the goal
 
 Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh context and specific sections to fill. All agents MUST read the actual codebase to ground their answers.
 
-### Agent 1: Context & Prior Art
+### Agent 1: Context & Prior Art (Explore)
 
-**Agent type:** Explore
-**Sections to populate:** Context & Constraints, Prior Art
-
-**Instructions for Agent 1:**
+**Instructions:**
 
 > You are populating the Context & Constraints and Prior Art sections of a specification document.
 >
@@ -151,7 +140,7 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 >
 > Your perspective: You think like an archaeologist of the codebase and a cartographer of constraints. You trace how similar problems were solved before, what patterns already exist, and what architectural, performance, security, and compatibility boundaries constrain the design. You surface existing code that the spec must acknowledge and the business rules it must respect.
 >
-> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+> Follow the investigation protocol and report requirements from the Agent Preamble (fan-out-protocol rule).
 >
 > **Populate these sections:**
 > - **Context & Constraints**: Current state and applicable constraints
@@ -159,12 +148,9 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 >
 > When done, report your findings in structured Markdown. The orchestrator will write them into the spec.
 
-### Agent 2: Proposed Approach & API Contract
+### Agent 2: Proposed Approach & API Contract (Explore)
 
-**Agent type:** Explore
-**Sections to populate:** Proposed Approach, API/Interface Contract, Data Model Changes
-
-**Instructions for Agent 2:**
+**Instructions:**
 
 > You are populating the Proposed Approach, API/Interface Contract, and Data Model Changes sections of a specification document.
 >
@@ -172,7 +158,7 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 >
 > Your perspective: You think like a system designer and contract author. You translate the problem into a high-level solution grounded in the project's existing conventions — what components change, what's created, how they interact. You define precise public surfaces (functions, endpoints, events, CLI commands) with clear inputs and outputs, following the project's API style. You identify new or modified data entities, or state explicitly when none are needed.
 >
-> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+> Follow the investigation protocol and report requirements from the Agent Preamble (fan-out-protocol rule).
 >
 > **Populate these sections:**
 > - **Proposed Approach**: High-level solution (conceptual, not implementation details)
@@ -181,12 +167,9 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 >
 > When done, report your findings in structured Markdown. The orchestrator will write them into the spec.
 
-### Agent 3: Migration & Acceptance Criteria
+### Agent 3: Migration & Acceptance Criteria (Explore)
 
-**Agent type:** Explore
-**Sections to populate:** Migration/Rollout Plan, Acceptance Criteria
-
-**Instructions for Agent 3:**
+**Instructions:**
 
 > You are populating the Migration/Rollout Plan and Acceptance Criteria sections of a specification document.
 >
@@ -194,7 +177,7 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 >
 > Your perspective: You think like a deployment engineer and a test author. You identify how the change gets to production safely — backward compatibility concerns, feature flags, data migrations, schema changes — or state explicitly when standard deployment is sufficient. You define verifiable completion criteria (tests pass, docs updated, no regressions) grounded in the project's existing testing and deployment conventions, never vague success measures.
 >
-> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+> Follow the investigation protocol and report requirements from the Agent Preamble (fan-out-protocol rule).
 >
 > **Populate these sections:**
 > - **Migration/Rollout Plan**: Deployment strategy (or "No migration needed -- standard deployment")
@@ -204,46 +187,29 @@ Dispatch 3 background Task agents to populate the spec. Each agent gets a fresh 
 
 ### Dispatch and Wait
 
-Launch all 3 agents with `run_in_background=true` via the Task tool. Wait for all 3 to complete before proceeding to Phase 3.
-
-### Write Findings into Spec
-
-As each agent completes, read its report and write the findings into the appropriate sections of `.specs/<name>.md` using the Edit tool.
+Launch all 3 agents with `run_in_background=true`. Wait for completion, then write each agent's findings into the spec using Edit.
 
 ---
 
 ## Phase 3: Refine and Validate
 
-Dispatch 2 background Task agents to validate the populated spec against the codebase. They look for errors, omissions, and conflicts.
+Dispatch 2 agents to validate the spec against the codebase -- one checks truth, one checks consistency.
 
-### Agent 4: Truth Validation
+### Agent 4: Truth Validation (Explore)
 
-**Agent type:** Explore
-**Task:** Validate spec claims against actual code
-
-**Instructions for Agent 4:**
+**Instructions:**
 
 > You are validating a specification document against the actual codebase.
 >
 > **Spec location:** `.specs/<name>.md`
 >
-> Your perspective: You think like a fact-checker and implementation simulator. You verify every claim about existing code by reading the actual implementation — catching untruths (spec says X exists but it doesn't), missing steps (spec skips necessary wiring/config/migration), and flaws (proposed approach won't work given how the code actually operates). You provide evidence and fixes for each issue.
+> Your perspective: You think like a fact-checker and implementation simulator. You verify every claim about existing code by reading the actual implementation -- catching untruths (spec says X exists but it doesn't), missing steps (spec skips necessary wiring/config/migration), and flaws (proposed approach won't work given how the code actually operates). You provide evidence and fixes for each issue.
 >
-> **Report each issue with:**
-> - **Type**: Untruth | Missing step | Flaw
-> - **Location**: Which section of the spec
-> - **Issue**: What is wrong
-> - **Evidence**: File path + what you found (or didn't find)
-> - **Fix**: What should the spec say instead
->
-> If the spec is accurate, report "No validation issues found."
+> **Report each issue with:** Type (Untruth | Missing step | Flaw), Location (spec section), Issue, Evidence (file path), Fix. If accurate, report "No validation issues found."
 
-### Agent 5: Conflict Detection
+### Agent 5: Conflict Detection (Explore)
 
-**Agent type:** Explore
-**Task:** Check spec against existing patterns and conventions
-
-**Instructions for Agent 5:**
+**Instructions:**
 
 > You are checking a specification document for conflicts with existing patterns.
 >
@@ -251,36 +217,21 @@ Dispatch 2 background Task agents to validate the populated spec against the cod
 >
 > Your perspective: You think like a consistency guardian and pattern matcher. You compare the proposed design against the existing codebase, catching pattern conflicts (contradicts conventions), naming conflicts (clashes with existing entities), architectural conflicts (violates layer boundaries), and style conflicts (doesn't match the project's interface idioms). You provide evidence and alignment recommendations for each conflict.
 >
-> **Report each conflict with:**
-> - **Type**: Pattern | Naming | Architecture | Style
-> - **Conflict**: What conflicts with what
-> - **Evidence**: File paths showing existing convention
-> - **Recommendation**: How to align the spec with existing patterns
->
-> If no conflicts exist, report "No conflicts found."
+> **Report each conflict with:** Type (Pattern | Naming | Architecture | Style), Conflict, Evidence (file paths), Recommendation. If none, report "No conflicts found."
 
 ### Dispatch and Wait
 
-Launch both agents with `run_in_background=true`. Wait for both to complete.
-
-### Apply Corrections
-
-Read the reports from Agents 4 and 5. For each issue or conflict found, update the spec document using the Edit tool to fix the problem.
-
-If no issues are found, proceed to Phase 4.
+Launch both agents with `run_in_background=true`. Apply corrections from their reports using Edit. If no issues, proceed to Phase 4.
 
 ---
 
 ## Phase 4: Architecture Guardian Review
 
-Dispatch a single background Task agent to act as architecture guardian. This agent reviews the complete spec and produces a PASS/FAIL verdict.
+Dispatch a single agent as architecture guardian to review the complete spec and produce a PASS/FAIL verdict.
 
-### Agent 6: Architecture Guardian
+### Agent 6: Architecture Guardian (Explore)
 
-**Agent type:** Explore
-**Task:** Final architecture alignment review
-
-**Instructions for Agent 6:**
+**Instructions:**
 
 > You are the architecture guardian for a specification document.
 >
@@ -310,43 +261,19 @@ Dispatch a single background Task agent to act as architecture guardian. This ag
 
 ### Dispatch and Wait
 
-Launch the guardian agent with `run_in_background=true`. Wait for its report.
-
-### Handle Verdict
-
-**If PASS:** Proceed to Phase 5.
-
-**If FAIL:** Apply fixes to the spec based on the guardian's issues. After fixing, re-run the guardian (dispatch Agent 6 again with the same instructions). Iterate until PASS.
+Launch with `run_in_background=true`. If PASS, proceed to Phase 5. If FAIL, apply fixes and re-run the guardian. Iterate until PASS.
 
 ---
 
 ## Phase 5: Present the Spec
 
-### 5a. Read the Final Spec
+### 5a. Finalize
 
-Read the complete `.specs/<name>.md` file to prepare the summary.
+Read the final spec, change status from `DRAFT` to `READY FOR REVIEW`.
 
-### 5b. Update Spec Status
+### 5b. Present to User
 
-Change the status line at the top of the spec from `DRAFT` to `READY FOR REVIEW`:
-
-```markdown
-**Status:** READY FOR REVIEW
-```
-
-### 5c. Present to User
-
-Show the user:
-
-1. **Spec location** (absolute path)
-2. **Quality summary**:
-   - Sections populated: N/N
-   - Validation issues found and fixed: N
-   - Guardian verdict: PASS (after N iterations)
-3. **Next steps**:
-   - Review the spec (share the file path)
-   - If approved, create implementation tasks (suggest using `/blossom` to generate the backlog)
-   - If changes needed, the user can edit `.specs/<name>.md` directly
+Show: spec location (absolute path), quality summary (sections populated, issues fixed, guardian iterations), and next steps (review, revise, or `/blossom` to generate implementation backlog).
 
 ### Example Output
 

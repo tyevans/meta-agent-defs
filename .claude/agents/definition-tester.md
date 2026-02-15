@@ -127,3 +127,9 @@ For skill definitions:
 **Update downstream:**
 - If critical issues are found, create or update beads for the definition's author to address
 - If systemic issues are found, create a bead for updating the authoring rules
+
+## Related Skills
+
+- `/critique` — Adversarial review of definitions
+- `/verify` — Check factual claims in instructions
+- `/assess` — Categorize test results by severity

@@ -47,11 +47,7 @@ Otherwise proceed immediately.
 
 ### 1b. Explore the Codebase
 
-Use Grep, Glob, and Read to understand:
-- **What will change**: Files and modules affected by this feature
-- **What it touches**: Downstream systems, external APIs, data stores, queues
-- **Who uses it**: Callers, consumers, UI surfaces that rely on this code
-- **Current behavior**: What happens today before this feature exists
+Use Grep, Glob, and Read to understand what will change, what downstream systems it touches, who consumes it, and what happens today.
 
 ### 1c. Produce Feature Summary
 
@@ -75,19 +71,9 @@ Write a brief summary (3-5 sentences):
 
 ## Phase 2: Generate Failure Scenarios
 
-Dispatch 3 background agents using the Task tool, each with a different failure lens. All agents run concurrently in the background.
+Dispatch 3 Explore agents with `run_in_background=true`, each with a different failure lens.
 
 ### Agent 1: Security Lens
-
-```
-Task({
-  subagent_type: "Explore",
-  run_in_background: true,
-  prompt: "<security lens instructions>"
-})
-```
-
-**Security lens instructions:**
 
 > You are running a pre-mortem security analysis.
 >
@@ -97,7 +83,7 @@ Task({
 >
 > **Your perspective**: You think in terms of attack surfaces, trust boundaries, and data flows. You assume breach and look for what an attacker would exploit first — injection points, authentication bypasses, privilege escalation paths. You consider both technical vulnerabilities (OWASP Top 10) and process gaps (insecure defaults, missing validation, unsafe deserialization). You ask: "Where does untrusted data enter the system, and what can I do with it?"
 >
-> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+> Follow the investigation protocol and report requirements from the Agent Preamble (fan-out-protocol rule).
 >
 > **Report format:**
 >
@@ -117,16 +103,6 @@ Task({
 
 ### Agent 2: Reliability Lens
 
-```
-Task({
-  subagent_type: "Explore",
-  run_in_background: true,
-  prompt: "<reliability lens instructions>"
-})
-```
-
-**Reliability lens instructions:**
-
 > You are running a pre-mortem reliability analysis.
 >
 > **Feature**: [feature summary from Phase 1]
@@ -135,7 +111,7 @@ Task({
 >
 > **Your perspective**: You think in terms of load, concurrency, and failure propagation. You assume things will run at 10x expected scale with dependencies flaking at the worst possible time. You look for race conditions, resource exhaustion, timeout chains, and state drift — anything that works in testing but fails under production chaos. You ask: "What happens when this runs with 1000 concurrent requests while the database is slow and the cache is stale?"
 >
-> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+> Follow the investigation protocol and report requirements from the Agent Preamble (fan-out-protocol rule).
 >
 > **Report format:**
 >
@@ -155,16 +131,6 @@ Task({
 
 ### Agent 3: User/Business Lens
 
-```
-Task({
-  subagent_type: "Explore",
-  run_in_background: true,
-  prompt: "<user/business lens instructions>"
-})
-```
-
-**User/business lens instructions:**
-
 > You are running a pre-mortem user impact and business risk analysis.
 >
 > **Feature**: [feature summary from Phase 1]
@@ -173,7 +139,7 @@ Task({
 >
 > **Your perspective**: You think from the user's chair and the CFO's spreadsheet. You look for data loss, wrong results, confusing UX, and irreversible actions that break user trust. You consider compliance landmines (GDPR, HIPAA, PCI) and cost explosions (runaway cloud spend, cascading API charges). You ask: "What failure would show up in a user complaint, a compliance audit, or next quarter's financials — and can we roll this back if it goes wrong?"
 >
-> Follow the Agent Preamble from fan-out-protocol for investigation protocol.
+> Follow the investigation protocol and report requirements from the Agent Preamble (fan-out-protocol rule).
 >
 > **Report format:**
 >
@@ -193,19 +159,15 @@ Task({
 
 ### 2b. Wait for Agent Reports
 
-All three agents run concurrently. Wait for each to complete and send back its report. Do not proceed to Phase 3 until all three reports are received.
+Wait for all three concurrent agents to complete before proceeding.
 
 ---
 
 ## Phase 3: Prioritize Failures
 
-### 3a. Aggregate All Scenarios
+### 3a. Rank and Present
 
-Combine all scenarios from the three agent reports into a single ranked table.
-
-### 3b. Rank and Present
-
-Create a table sorted by (severity × likelihood):
+Combine all scenarios into a single table sorted by (severity x likelihood):
 
 ```markdown
 ## Failure Scenario Rankings
@@ -218,15 +180,9 @@ Create a table sorted by (severity × likelihood):
 | ... | ... | ... | ... | ... | ... |
 ```
 
-Ranking priority:
-1. **catastrophic + high**: Top priority
-2. **catastrophic + medium**: High priority
-3. **major + high**: High priority
-4. **major + medium** or **catastrophic + low**: Medium priority
-5. **major + low** or **minor + high**: Lower priority
-6. **minor + medium/low**: Lowest priority
+Ranking priority: catastrophic+high > catastrophic+medium = major+high > major+medium = catastrophic+low > everything else.
 
-### 3c. Ask User to Prioritize
+### 3b. Ask User to Prioritize
 
 Use AskUserQuestion to let the user select which scenarios to mitigate:
 
@@ -281,16 +237,7 @@ For each scenario, produce:
 
 ### 4b. Grounding Check
 
-Before finalizing each mitigation, verify:
-1. Does the prevention actually block the failure path?
-2. Is the detection realistic given the current observability stack?
-3. Is the test scenario concrete enough to implement?
-
-If any answer is no, refine the mitigation until all three are yes.
-
-### 4c. Compile Mitigation Plan
-
-Produce a complete mitigation plan document covering all selected scenarios.
+Before finalizing, verify each mitigation: prevention actually blocks the failure, detection is realistic given the current observability stack, and the test scenario is concrete enough to implement. Refine until all three hold.
 
 ---
 
@@ -346,18 +293,7 @@ bd create --title="[MITIGATION]: [scenario title]" --type=task --priority=<0-for
   --description="Pre-mortem mitigation for [feature]. Failure scenario: [brief]. Prevention: [what to build]. Detection: [monitoring]. Test: [verification]. Effort: [S/M/L]."
 ```
 
-Wire dependencies so mitigations complete before the main feature task:
-
-```bash
-bd dep add <feature-task-id> <mitigation-task-id>
-```
-
-If the main feature task doesn't exist yet, create it:
-
-```bash
-bd create --title="Implement: [feature name]" --type=feature --priority=2 \
-  --description="[feature summary from Phase 1]. All pre-mortem mitigations must complete before implementation."
-```
+Wire dependencies so mitigations complete before the main feature task (`bd dep add <feature> <mitigation>`). Create the feature task if it doesn't exist yet.
 
 ---
 

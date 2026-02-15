@@ -195,3 +195,9 @@ Report back to the orchestrator:
 bd show <your-bead-id>  # Look at "BLOCKS" section
 bd update <downstream-id> --notes="[Review finding from <your-id>: specific issue]"
 ```
+
+## Related Skills
+
+- `/review` — Structured 5-dimension code review workflow
+- `/gather` — Collect code patterns before reviewing
+- `/critique` — Adversarial stress-test of review findings

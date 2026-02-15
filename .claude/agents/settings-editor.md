@@ -139,3 +139,8 @@ Report back to orchestrator:
 bd show <your-bead-id>
 bd update <downstream-id> --notes="[Settings changed during <your-id>: specific change]"
 ```
+
+## Related Skills
+
+- `/gather` — Find hook patterns in other projects
+- `/verify` — Check config correctness before committing
