@@ -25,7 +25,8 @@
 ## Preferences
 - bin/git-pulse.sh is the shared entry point for git session metrics — skills should call it instead of raw git log (added: 2026-02-14)
 - Bash parameter expansion `${VAR:+"$VAR"}` is essential for optional flags with spaces in git commands (added: 2026-02-14)
-- Optional tool delegation pattern: three-gate check (binary exists + deps like jq available + input compatible) before delegating, else fall back silently. Used in git-pulse.sh for git-intel. (added: 2026-02-14)
+- Optional tool delegation pattern: four-gate check — binary exists + deps (jq) + input compatible (ISO date) + runtime feature validation (for optional features like ML). Runtime test catches shared-lib-missing failures that build-time detection misses. (updated: 2026-02-15)
+- ONNX model canonical path: tools/data/onnx-model/model.onnx — git-pulse.sh auto-detects and passes --ml --model-dir to git-intel (added: 2026-02-15)
 - install.sh optional build features: use `--skip-*` flags for CI, interactive prompt for local, never block install on missing toolchain (added: 2026-02-14)
 
 ## Cross-Agent Notes

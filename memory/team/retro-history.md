@@ -1,5 +1,14 @@
 # Retrospective History
 
+## Retro: 2026-02-15 (overnight session)
+- Tasks completed: 5 (hpnx git-pulse ML auto-detect + 4 pattern improvements: ay3h, tj9y, 0su5, rvmh)
+- Epic closed: 7fjp (ONNX integration, 12/12 children)
+- Fix rate: 0% (6 feat commits, 0 fixes — clean sprint)
+- Meeting: 2-panelist (User Advocate + Architect) on pattern improvements. Produced 4 action items executed in same session
+- Key insight: meeting→sprint pipeline works for Rust tooling decisions. Panel tension produced clear go/no-go on each pattern
+- Pattern system v2: fix-after-feat with file overlap (3 pairs vs noise), multi-edit chains capped+filtered (10), temporal clusters (12 detected)
+- Learnings persisted: 4 rust-dev entries
+
 ## Retro: 2026-02-13
 - Tasks completed: 10 (8 implementation + 1 already-done + 1 epic)
 - Commits: 14 (5 recovering prior session + 9 new)
@@ -115,6 +124,21 @@
 - New learnings: 11 across 2 members (rust-dev +4, ml-eng +7)
 - Key insight: Superseded bead detection saved a wasted dispatch — 6a4j (train_transformer.py) was already covered by lwww (models/transformer.py) from a different planning session. ml-eng over-produced docs (5 extra files beyond benchmark.py); orchestrator cleanup needed. 4/4 first-attempt dispatch successes (streak: 64+). git-intel now at 75 tests with cache + hotspots. commit-labeler Phase 2 gate shipped (transformer model + embedding benchmark).
 - Backlog state: 232/263 closed, 31 open (23 ready, 8 blocked)
+
+## Retro: 2026-02-15 (session 18 — dual-track sprint: git-intel features + commit-labeler eval/loss)
+- Tasks completed: 6 (4 rust-dev git-intel features + 2 ml-eng commit-labeler enhancements)
+- Workflow: /sprint with 3 dispatch rounds (2 parallel cross-track + 1 serial rust-dev)
+- Commits: 0 (uncommitted — session end will commit)
+- New learnings: 14 across 2 members (rust-dev +6, ml-eng +8)
+- Key insight: Already-implemented features (hotspots --depth) caught by dispatch — agent found and fixed a depth=0 bug instead of reimplementing. This is the learning loop paying off: prior sprint shipped the feature, this sprint's agent read the code and found the edge case. 6/6 first-attempt successes (streak: 70+). git-intel at 118 tests. embed_mlp rewritten from sklearn to PyTorch for custom loss support — a significant but necessary architectural change.
+- Backlog state: 238/263 closed, 25 open (18 ready, 7 blocked)
+
+## Retro: 2026-02-15 (session 19 — commit-labeler training fix)
+- Tasks completed: 1 (data.py multi-label normalization fix)
+- Commits: 0 (uncommitted)
+- New learnings: 0 team (orchestrator-only fix)
+- Key insight: Schema drift between pipeline stages — labeling outputs "labels" (list) but training expected "label" (string). Normalizing in the canonical I/O module (data.py:load_labeled) was the right fix location. First baseline: tfidf-logreg 0.59 macro F1 on 1900 samples.
+- Backlog state: 238/263 closed, 25 open (18 ready, 7 blocked)
 
 ## Retro: 2026-02-14 (session 13 — git-intel integration audit)
 - Tasks completed: 4 (2 doc structure updates + install.sh optional build + git-pulse.sh delegation)

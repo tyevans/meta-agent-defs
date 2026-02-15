@@ -23,9 +23,22 @@ if [ -f "$GIT_INTEL_PATH" ] && command -v jq >/dev/null 2>&1; then
   fi
 fi
 if [ "$USE_GIT_INTEL" = true ]; then
+  # Check for ONNX model and ML-capable git-intel
+  ML_FLAGS=""
+  REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+  ONNX_MODEL_DIR="$REPO_ROOT/tools/data/onnx-model"
+  if [ -f "$ONNX_MODEL_DIR/model.onnx" ] && \
+     $GIT_INTEL_PATH --help 2>&1 | grep -q '\-\-ml'; then
+    # Runtime test: verify ML feature works (may fail if ONNX Runtime lib missing)
+    TEST_JSON=$($GIT_INTEL_PATH metrics --repo . --ml --model-dir "$ONNX_MODEL_DIR" --since 1970-01-01 2>/dev/null || echo "{}")
+    if echo "$TEST_JSON" | jq -e '.total_commits' >/dev/null 2>&1; then
+      ML_FLAGS="--ml --model-dir $ONNX_MODEL_DIR"
+    fi
+  fi
+
   # Use git-intel for metrics and churn
-  METRICS_JSON=$($GIT_INTEL_PATH metrics --repo . ${SINCE_VALUE:+--since "$SINCE_VALUE"} 2>/dev/null || echo "{}")
-  CHURN_JSON=$($GIT_INTEL_PATH churn --repo . --limit 5 ${SINCE_VALUE:+--since "$SINCE_VALUE"} 2>/dev/null || echo '{"files":[]}')
+  METRICS_JSON=$($GIT_INTEL_PATH metrics --repo . $ML_FLAGS ${SINCE_VALUE:+--since "$SINCE_VALUE"} 2>/dev/null || echo "{}")
+  CHURN_JSON=$($GIT_INTEL_PATH churn --repo . --limit 5 $ML_FLAGS ${SINCE_VALUE:+--since "$SINCE_VALUE"} 2>/dev/null || echo '{"files":[]}')
 
   # Extract metrics with jq
   TOTAL=$(echo "$METRICS_JSON" | jq -r '.total_commits // 0')

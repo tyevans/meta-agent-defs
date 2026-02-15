@@ -110,14 +110,14 @@ fn create_fixture() -> (TempDir, Repository) {
 #[test]
 fn metrics_total_commits() {
     let (_dir, repo) = create_fixture();
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
     assert_eq!(result.total_commits, 5);
 }
 
 #[test]
 fn metrics_commit_type_counts() {
     let (_dir, repo) = create_fixture();
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
 
     let find_type = |name: &str| -> usize {
         result
@@ -143,14 +143,14 @@ fn metrics_since_filter() {
     let base_epoch: i64 = 1736467200;
     let day: i64 = 86400;
     let since = Some(base_epoch + 2 * day);
-    let result = metrics::run(&repo, since, None).unwrap();
+    let result = metrics::run(&repo, since, None, None).unwrap();
     assert_eq!(result.total_commits, 3);
 }
 
 #[test]
 fn metrics_velocity_nonzero() {
     let (_dir, repo) = create_fixture();
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
     assert!(result.velocity.total_lines_changed > 0);
     assert!(result.velocity.avg_lines_per_commit > 0.0);
 }
@@ -158,7 +158,7 @@ fn metrics_velocity_nonzero() {
 #[test]
 fn metrics_activity_dates() {
     let (_dir, repo) = create_fixture();
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
     // 5 commits on 5 different days means 5 activity bursts
     assert_eq!(result.activity.len(), 5);
     for burst in &result.activity {
@@ -171,7 +171,7 @@ fn metrics_activity_dates() {
 #[test]
 fn churn_file_counts() {
     let (_dir, repo) = create_fixture();
-    let result = churn::run(&repo, None, None).unwrap();
+    let result = churn::run(&repo, None, None, None).unwrap();
     assert_eq!(result.total_commits_analyzed, 5);
     // Files: README.md, src/lib.rs, src/utils.rs, .gitignore
     assert_eq!(result.total_files, 4);
@@ -180,7 +180,7 @@ fn churn_file_counts() {
 #[test]
 fn churn_sorted_by_total() {
     let (_dir, repo) = create_fixture();
-    let result = churn::run(&repo, None, None).unwrap();
+    let result = churn::run(&repo, None, None, None).unwrap();
     // Verify sorted descending by total_churn
     for w in result.files.windows(2) {
         assert!(w[0].total_churn >= w[1].total_churn);
@@ -190,7 +190,7 @@ fn churn_sorted_by_total() {
 #[test]
 fn churn_limit() {
     let (_dir, repo) = create_fixture();
-    let result = churn::run(&repo, None, Some(2)).unwrap();
+    let result = churn::run(&repo, None, None, Some(2)).unwrap();
     assert!(result.files.len() <= 2);
     // total_files should still reflect the untruncated count
     assert_eq!(result.total_files, 4);
@@ -199,7 +199,7 @@ fn churn_limit() {
 #[test]
 fn churn_readme_touched_twice() {
     let (_dir, repo) = create_fixture();
-    let result = churn::run(&repo, None, None).unwrap();
+    let result = churn::run(&repo, None, None, None).unwrap();
     let readme = result.files.iter().find(|f| f.path == "README.md").unwrap();
     assert_eq!(readme.commit_count, 2);
     assert!(readme.additions > 0);
@@ -210,7 +210,7 @@ fn churn_readme_touched_twice() {
 #[test]
 fn lifecycle_existing_file() {
     let (_dir, repo) = create_fixture();
-    let result = lifecycle::run(&repo, None, &["README.md".to_string()]).unwrap();
+    let result = lifecycle::run(&repo, None, None, &["README.md".to_string()]).unwrap();
     assert_eq!(result.files.len(), 1);
     let f = &result.files[0];
     assert!(f.exists);
@@ -222,7 +222,7 @@ fn lifecycle_existing_file() {
 #[test]
 fn lifecycle_created_status() {
     let (_dir, repo) = create_fixture();
-    let result = lifecycle::run(&repo, None, &["src/utils.rs".to_string()]).unwrap();
+    let result = lifecycle::run(&repo, None, None, &["src/utils.rs".to_string()]).unwrap();
     let f = &result.files[0];
     assert_eq!(f.history.len(), 1);
     assert_eq!(f.history[0].status, "created");
@@ -231,7 +231,7 @@ fn lifecycle_created_status() {
 #[test]
 fn lifecycle_nonexistent_file() {
     let (_dir, repo) = create_fixture();
-    let result = lifecycle::run(&repo, None, &["nonexistent.txt".to_string()]).unwrap();
+    let result = lifecycle::run(&repo, None, None, &["nonexistent.txt".to_string()]).unwrap();
     let f = &result.files[0];
     assert!(!f.exists);
     assert!(f.current_lines.is_none());
@@ -241,7 +241,7 @@ fn lifecycle_nonexistent_file() {
 #[test]
 fn lifecycle_modified_file_history() {
     let (_dir, repo) = create_fixture();
-    let result = lifecycle::run(&repo, None, &["src/lib.rs".to_string()]).unwrap();
+    let result = lifecycle::run(&repo, None, None, &["src/lib.rs".to_string()]).unwrap();
     let f = &result.files[0];
     assert!(f.exists);
     // src/lib.rs was created in commit 1, modified in commit 4
@@ -260,53 +260,36 @@ fn lifecycle_modified_file_history() {
 #[test]
 fn patterns_fix_after_feat() {
     let (_dir, repo) = create_fixture();
-    let result = patterns::run(&repo, None, None).unwrap();
+    let result = patterns::run(&repo, None, None, None).unwrap();
     assert_eq!(result.total_commits_analyzed, 5);
 
     // Commit order (newest first): docs, fix, chore, feat, feat
-    // The fix at index 1 should find feat at index 3 (gap of 1 commit: chore)
+    // The fix at index 1 modifies src/lib.rs, feat at index 3 (initial commit) created src/lib.rs
+    // They share src/lib.rs, so fix-after-feat should detect the pair
     assert!(!result.fix_after_feat.is_empty());
     let pair = &result.fix_after_feat[0];
     assert_eq!(pair.fix_message, "fix: handle null input");
     assert!(pair.feat_message.starts_with("feat:"));
-    // gap_commits between fix (idx 1) and feat (idx 3) = 3 - 1 - 1 = 1
     assert!(pair.gap_commits <= 3);
+    assert!(pair.shared_files.contains(&"src/lib.rs".to_string()));
 }
 
 #[test]
 fn patterns_no_multi_edit_chains() {
     let (_dir, repo) = create_fixture();
-    let result = patterns::run(&repo, None, None).unwrap();
+    let result = patterns::run(&repo, None, None, None).unwrap();
     // No file is touched 3+ times in our 5-commit fixture
     // README.md: 2 times, src/lib.rs: 2 times -- not enough for multi-edit
     assert!(result.multi_edit_chains.is_empty());
 }
 
 #[test]
-fn patterns_convergence_well_formed() {
-    let (_dir, repo) = create_fixture();
-    let result = patterns::run(&repo, None, None).unwrap();
-    // Convergence pairs are files with similar byte sizes (within 10%, min 500 bytes)
-    // Our fixture has small files, all below 500 byte threshold
-    // So convergence should be empty
-    assert!(result.convergence.is_empty());
-    assert!(!result.convergence_truncated);
-    assert_eq!(result.convergence_limit, patterns::DEFAULT_CONVERGENCE_LIMIT);
-    for pair in &result.convergence {
-        assert!(pair.bytes_ratio >= 0.90);
-        assert!(pair.bytes_ratio <= 1.0);
-        assert!(pair.bytes_a >= patterns::MIN_CONVERGENCE_BYTES);
-        assert!(pair.bytes_b >= patterns::MIN_CONVERGENCE_BYTES);
-    }
-}
-
-#[test]
 fn patterns_limit_zero() {
     let (_dir, repo) = create_fixture();
-    let result = patterns::run(&repo, None, Some(0)).unwrap();
+    let result = patterns::run(&repo, None, None, Some(0)).unwrap();
     assert!(result.fix_after_feat.is_empty());
     assert!(result.multi_edit_chains.is_empty());
-    assert!(result.convergence.is_empty());
+    assert!(result.temporal_clusters.is_empty());
 }
 
 // ---- merge commit tests ----
@@ -420,7 +403,7 @@ fn create_merge_fixture() -> (TempDir, Repository) {
 #[test]
 fn metrics_merge_commit_detected() {
     let (_dir, repo) = create_merge_fixture();
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
 
     let find_type = |name: &str| -> usize {
         result
@@ -443,7 +426,7 @@ fn metrics_merge_overrides_message_type() {
     // The merge commit message doesn't start with a conventional type,
     // but even if it did, parent_count >= 2 should classify it as "merge"
     let (_dir, repo) = create_merge_fixture();
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
 
     let find_type = |name: &str| -> usize {
         result
@@ -534,7 +517,7 @@ fn create_revert_fixture() -> (TempDir, Repository) {
 #[test]
 fn metrics_revert_commit_detected() {
     let (_dir, repo) = create_revert_fixture();
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
 
     let find_type = |name: &str| -> usize {
         result
@@ -550,142 +533,6 @@ fn metrics_revert_commit_detected() {
     assert_eq!(find_type("revert"), 1);
     assert_eq!(find_type("feat"), 2);
     assert_eq!(find_type("other"), 0);
-}
-
-// ---- convergence limit tests ----
-
-/// Create a fixture with many similarly-sized files (>500 bytes each) to
-/// produce enough convergence pairs for truncation testing.
-/// Creates 15 files of ~510-520 bytes each (all within 10% of each other),
-/// which produces C(15,2) = 105 pairs.
-fn create_convergence_fixture() -> (TempDir, Repository) {
-    let dir = TempDir::new().expect("create temp dir");
-    let repo = Repository::init(dir.path()).expect("init repo");
-
-    let base_epoch: i64 = 1736467200;
-
-    let make_sig = |epoch: i64| -> Signature<'static> {
-        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
-            .expect("create signature")
-    };
-
-    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
-        let mut index = repo.index().expect("get index");
-        for (path, content) in files {
-            let full_path = dir.path().join(path);
-            if let Some(parent) = full_path.parent() {
-                fs::create_dir_all(parent).expect("create dirs");
-            }
-            fs::write(&full_path, content).expect("write file");
-            index.add_path(Path::new(path)).expect("add to index");
-        }
-        index.write().expect("write index");
-        index.write_tree().expect("write tree")
-    };
-
-    // Generate 15 files, each ~600+ bytes (all within 10% of each other).
-    // This produces C(15,2) = 105 convergence pairs.
-    let mut files: Vec<(String, String)> = Vec::new();
-    for i in 0..15 {
-        let name = format!("src/module_{:02}.rs", i);
-        // Pad base content to well over 500 bytes, with small per-file variation
-        let padding_line = format!("// padding line for module {} to ensure file exceeds minimum size threshold\n", i);
-        let content = format!(
-            "// Module {i} — auto-generated test fixture\n\
-             // This file exists to test convergence pair detection.\n\
-             {pad}\
-             {pad}\
-             pub struct Handler{i} {{\n\
-             {body}\
-             }}\n\
-             \n\
-             impl Handler{i} {{\n\
-             {methods}\
-             }}\n",
-            i = i,
-            pad = padding_line,
-            body = "    pub name: String,\n    pub value: i64,\n    pub enabled: bool,\n    pub description: String,\n    pub metadata: Vec<String>,\n    pub tags: Vec<String>,\n    pub priority: u32,\n",
-            methods = "    pub fn new() -> Self {\n\
-                        Self { name: String::new(), value: 0, enabled: false, description: String::new(), metadata: Vec::new(), tags: Vec::new(), priority: 0 }\n\
-                    }\n\
-                    \n\
-                    pub fn process(&self) -> Result<(), String> {\n\
-                        if self.enabled { Ok(()) } else { Err(\"disabled\".to_string()) }\n\
-                    }\n",
-        );
-        files.push((name, content));
-    }
-
-    // Also add a tiny file (<500 bytes) that should be excluded
-    files.push(("tiny.txt".to_string(), "hello\n".to_string()));
-
-    let file_refs: Vec<(&str, &str)> = files.iter().map(|(n, c)| (n.as_str(), c.as_str())).collect();
-    let tree_oid = stage_files(&repo, &file_refs);
-    let s = make_sig(base_epoch);
-    {
-        let tree = repo.find_tree(tree_oid).expect("find tree");
-        repo.commit(Some("HEAD"), &s, &s, "feat: initial commit", &tree, &[])
-            .expect("create commit");
-    }
-
-    (dir, repo)
-}
-
-#[test]
-fn convergence_default_limit() {
-    let (_dir, repo) = create_convergence_fixture();
-    let result = patterns::run(&repo, None, None).unwrap();
-
-    // 15 similar files produce C(15,2) = 105 pairs, default limit = 50
-    assert_eq!(result.convergence_limit, 50);
-    assert!(result.convergence.len() <= 50);
-    assert!(result.convergence_truncated);
-}
-
-#[test]
-fn convergence_custom_limit() {
-    let (_dir, repo) = create_convergence_fixture();
-    let result = patterns::run_with_convergence_limit(&repo, None, None, 10).unwrap();
-
-    assert_eq!(result.convergence_limit, 10);
-    assert!(result.convergence.len() <= 10);
-    assert!(result.convergence_truncated);
-}
-
-#[test]
-fn convergence_truncated_false_when_under_limit() {
-    let (_dir, repo) = create_convergence_fixture();
-    // Set limit higher than total possible pairs (105)
-    let result = patterns::run_with_convergence_limit(&repo, None, None, 200).unwrap();
-
-    assert_eq!(result.convergence_limit, 200);
-    assert!(!result.convergence_truncated);
-}
-
-#[test]
-fn convergence_min_file_size_excludes_small_files() {
-    let (_dir, repo) = create_convergence_fixture();
-    let result = patterns::run_with_convergence_limit(&repo, None, None, 200).unwrap();
-
-    // The tiny.txt file (6 bytes) should be excluded from all pairs
-    for pair in &result.convergence {
-        assert_ne!(pair.file_a, "tiny.txt");
-        assert_ne!(pair.file_b, "tiny.txt");
-        assert!(pair.bytes_a >= patterns::MIN_CONVERGENCE_BYTES);
-        assert!(pair.bytes_b >= patterns::MIN_CONVERGENCE_BYTES);
-    }
-}
-
-#[test]
-fn convergence_generic_limit_overrides_when_smaller() {
-    let (_dir, repo) = create_convergence_fixture();
-    // generic --limit=5 is smaller than convergence_limit=50
-    let result = patterns::run_with_convergence_limit(&repo, None, Some(5), 50).unwrap();
-
-    // convergence_limit field shows the configured value, but effective limit is 5
-    assert_eq!(result.convergence_limit, 50);
-    assert!(result.convergence.len() <= 5);
-    assert!(result.convergence_truncated);
 }
 
 // ---- natural-language heuristic integration tests ----
@@ -769,7 +616,7 @@ fn create_nl_heuristic_fixture() -> (TempDir, Repository) {
 #[test]
 fn metrics_nl_heuristic_classification() {
     let (_dir, repo) = create_nl_heuristic_fixture();
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
 
     let find_type = |name: &str| -> usize {
         result
@@ -792,13 +639,13 @@ fn metrics_nl_heuristic_classification() {
 #[test]
 fn cache_miss_then_hit() {
     let (_dir, repo) = create_fixture();
-    let key = cache::cache_key("metrics", None, None);
+    let key = cache::cache_key("metrics", None, None, None);
 
     // Cache should miss on first read
     assert!(cache::read_cache(&repo, &key).is_none());
 
     // Compute and write
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
     cache::write_cache(&repo, &key, &result).unwrap();
 
     // Cache should hit now
@@ -814,10 +661,10 @@ fn cache_miss_then_hit() {
 #[test]
 fn cache_invalidated_by_new_commit() {
     let (dir, repo) = create_fixture();
-    let key = cache::cache_key("metrics", None, None);
+    let key = cache::cache_key("metrics", None, None, None);
 
     // Write cache
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
     cache::write_cache(&repo, &key, &result).unwrap();
     assert!(cache::read_cache(&repo, &key).is_some());
 
@@ -845,12 +692,12 @@ fn cache_invalidated_by_new_commit() {
 #[test]
 fn cache_separate_keys_for_since() {
     let (_dir, repo) = create_fixture();
-    let key_all = cache::cache_key("metrics", None, None);
-    let key_since = cache::cache_key("metrics", Some(1736467200), None);
+    let key_all = cache::cache_key("metrics", None, None, None);
+    let key_since = cache::cache_key("metrics", Some(1736467200), None, None);
     assert_ne!(key_all, key_since);
 
     // Write cache for "all"
-    let result = metrics::run(&repo, None, None).unwrap();
+    let result = metrics::run(&repo, None, None, None).unwrap();
     cache::write_cache(&repo, &key_all, &result).unwrap();
 
     // "since" key should still miss
@@ -862,9 +709,22 @@ fn cache_separate_keys_for_since() {
 // ---- hotspots tests ----
 
 #[test]
+fn hotspots_depth_0_aggregates_to_root() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, None, 0, None).unwrap();
+    assert_eq!(result.depth, 0);
+    // depth=0 should aggregate everything into a single "." entry
+    assert_eq!(result.total_directories, 1);
+    assert_eq!(result.directories[0].path, ".");
+    // file_count should be the total number of distinct files
+    assert!(result.directories[0].file_count > 0);
+    assert!(result.directories[0].total_churn > 0);
+}
+
+#[test]
 fn hotspots_depth_1_groups_by_top_level() {
     let (_dir, repo) = create_fixture();
-    let result = hotspots::run(&repo, None, 1, None).unwrap();
+    let result = hotspots::run(&repo, None, None, 1, None).unwrap();
     assert_eq!(result.depth, 1);
     assert_eq!(result.total_commits_analyzed, 5);
 
@@ -886,7 +746,7 @@ fn hotspots_depth_1_groups_by_top_level() {
 #[test]
 fn hotspots_sorted_by_churn_descending() {
     let (_dir, repo) = create_fixture();
-    let result = hotspots::run(&repo, None, 1, None).unwrap();
+    let result = hotspots::run(&repo, None, None, 1, None).unwrap();
 
     for w in result.directories.windows(2) {
         assert!(w[0].total_churn >= w[1].total_churn);
@@ -896,7 +756,7 @@ fn hotspots_sorted_by_churn_descending() {
 #[test]
 fn hotspots_limit_truncates() {
     let (_dir, repo) = create_fixture();
-    let result = hotspots::run(&repo, None, 1, Some(1)).unwrap();
+    let result = hotspots::run(&repo, None, None, 1, Some(1)).unwrap();
 
     assert_eq!(result.directories.len(), 1);
     // total_directories still reflects the full count
@@ -908,15 +768,15 @@ fn hotspots_depth_2_preserves_nested() {
     let (_dir, repo) = create_fixture();
     // At depth 2, "src/lib.rs" -> "src" (only 1 level deep), root files -> "."
     // Same as depth 1 for this fixture since src/ has no subdirs
-    let result = hotspots::run(&repo, None, 2, None).unwrap();
+    let result = hotspots::run(&repo, None, None, 2, None).unwrap();
     assert_eq!(result.total_directories, 2);
 }
 
 #[test]
 fn hotspots_churn_sums_match() {
     let (_dir, repo) = create_fixture();
-    let hotspot_result = hotspots::run(&repo, None, 1, None).unwrap();
-    let churn_result = churn::run(&repo, None, None).unwrap();
+    let hotspot_result = hotspots::run(&repo, None, None, 1, None).unwrap();
+    let churn_result = churn::run(&repo, None, None, None).unwrap();
 
     // Total additions across all hotspot dirs should equal total across all churn files
     let hotspot_adds: usize = hotspot_result.directories.iter().map(|d| d.additions).sum();
@@ -935,14 +795,14 @@ fn hotspots_since_filter() {
     let day: i64 = 86400;
     // Only commits 3, 4, 5 (chore: gitignore, fix: lib.rs, docs: README)
     let since = Some(base_epoch + 2 * day);
-    let result = hotspots::run(&repo, since, 1, None).unwrap();
+    let result = hotspots::run(&repo, since, None, 1, None).unwrap();
     assert_eq!(result.total_commits_analyzed, 3);
 }
 
 #[test]
 fn hotspots_json_output_shape() {
     let (_dir, repo) = create_fixture();
-    let result = hotspots::run(&repo, None, 1, None).unwrap();
+    let result = hotspots::run(&repo, None, None, 1, None).unwrap();
     let json = serde_json::to_string_pretty(&result).unwrap();
     let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
 
@@ -959,4 +819,195 @@ fn hotspots_json_output_shape() {
     assert!(first["total_churn"].is_number());
     assert!(first["commit_count"].is_number());
     assert!(first["file_count"].is_number());
+}
+
+// ---- until filter tests ----
+
+#[test]
+fn metrics_until_filter() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Until end of day 2 (base + 2*day + 86399) should include commits 1, 2, 3
+    let until = Some(base_epoch + 2 * day + 86399);
+    let result = metrics::run(&repo, None, until, None).unwrap();
+    assert_eq!(result.total_commits, 3);
+}
+
+#[test]
+fn metrics_since_and_until_range() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Range: day 2 through day 3 (commits 2, 3, 4)
+    let since = Some(base_epoch + day);
+    let until = Some(base_epoch + 3 * day + 86399);
+    let result = metrics::run(&repo, since, until, None).unwrap();
+    assert_eq!(result.total_commits, 3);
+}
+
+#[test]
+fn metrics_until_before_all_commits() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    // Until before the first commit — should return 0 commits
+    let until = Some(base_epoch - 1);
+    let result = metrics::run(&repo, None, until, None).unwrap();
+    assert_eq!(result.total_commits, 0);
+}
+
+#[test]
+fn churn_until_filter() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Until end of day 1 — only commits 1 and 2
+    let until = Some(base_epoch + day + 86399);
+    let result = churn::run(&repo, None, until, None).unwrap();
+    assert_eq!(result.total_commits_analyzed, 2);
+}
+
+#[test]
+fn hotspots_until_filter() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Until end of day 2 — commits 1, 2, 3
+    let until = Some(base_epoch + 2 * day + 86399);
+    let result = hotspots::run(&repo, None, until, 1, None).unwrap();
+    assert_eq!(result.total_commits_analyzed, 3);
+}
+
+#[test]
+fn hotspots_depth_exceeds_path_depth() {
+    let (_dir, repo) = create_fixture();
+    // depth=10 is deeper than any path in the fixture — should still work,
+    // grouping files by their full parent directory
+    let result = hotspots::run(&repo, None, None, 10, None).unwrap();
+    assert_eq!(result.total_directories, 2); // "." for root files, "src" for src/lib.rs
+    let paths: Vec<&str> = result.directories.iter().map(|d| d.path.as_str()).collect();
+    assert!(paths.contains(&"."));
+    assert!(paths.contains(&"src"));
+}
+
+#[test]
+fn patterns_until_filter() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Until end of day 1 — only commits 1 and 2 (both feat, no fix)
+    let until = Some(base_epoch + day + 86399);
+    let result = patterns::run(&repo, None, until, None).unwrap();
+    assert_eq!(result.total_commits_analyzed, 2);
+    assert!(result.fix_after_feat.is_empty());
+}
+
+#[test]
+fn cache_separate_keys_for_until() {
+    let (_dir, _repo) = create_fixture();
+    let key_no_until = cache::cache_key("metrics", None, None, None);
+    let key_with_until = cache::cache_key("metrics", None, Some(1736553600), None);
+    assert_ne!(key_no_until, key_with_until);
+}
+
+#[test]
+fn cache_separate_keys_for_since_and_until() {
+    let (_dir, _repo) = create_fixture();
+    let key_since_only = cache::cache_key("metrics", Some(1736467200), None, None);
+    let key_both = cache::cache_key("metrics", Some(1736467200), Some(1736553600), None);
+    assert_ne!(key_since_only, key_both);
+}
+
+// ---- temporal cluster tests ----
+
+/// Create a fixture with 4 fix commits within 1 hour + 1 feat commit far apart.
+/// Used to test temporal cluster detection.
+fn create_temporal_cluster_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Commit 1: feat far in the past
+    let tree_oid = stage_files(&repo, &[("README.md", "# Temporal Test\n")]);
+    let s = make_sig(base_epoch);
+    let c1 = do_commit(&repo, tree_oid, &[], &s, "feat: initial commit");
+
+    // Commits 2-5: 4 fix commits within 1 hour (15 min apart)
+    let tree_oid = stage_files(&repo, &[("src/a.rs", "// fix 1\n")]);
+    let s = make_sig(base_epoch + day);
+    let c2 = do_commit(&repo, tree_oid, &[c1], &s, "fix: first bug");
+
+    let tree_oid = stage_files(&repo, &[("src/b.rs", "// fix 2\n")]);
+    let s = make_sig(base_epoch + day + 900); // +15 min
+    let c3 = do_commit(&repo, tree_oid, &[c2], &s, "fix: second bug");
+
+    let tree_oid = stage_files(&repo, &[("src/c.rs", "// fix 3\n")]);
+    let s = make_sig(base_epoch + day + 1800); // +30 min
+    let c4 = do_commit(&repo, tree_oid, &[c3], &s, "fix: third bug");
+
+    let tree_oid = stage_files(&repo, &[("src/d.rs", "// fix 4\n")]);
+    let s = make_sig(base_epoch + day + 2700); // +45 min
+    let _c5 = do_commit(&repo, tree_oid, &[c4], &s, "fix: fourth bug");
+
+    (dir, repo)
+}
+
+#[test]
+fn temporal_cluster_detected() {
+    let (_dir, repo) = create_temporal_cluster_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // Should detect a cluster of 4 fix commits within 1 hour
+    assert!(!result.temporal_clusters.is_empty());
+    let cluster = &result.temporal_clusters[0];
+    assert_eq!(cluster.cluster_type, "fix");
+    assert_eq!(cluster.commit_count, 4);
+    assert_eq!(cluster.commits.len(), 4);
+    // All 4 fix commits touch different files
+    assert!(cluster.affected_files.len() >= 4);
+}
+
+#[test]
+fn temporal_cluster_not_triggered_by_spread_commits() {
+    let (_dir, repo) = create_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+    // Standard fixture: commits are 1 day apart, no cluster possible
+    assert!(result.temporal_clusters.is_empty());
 }

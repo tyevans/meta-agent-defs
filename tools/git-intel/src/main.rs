@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
-use git_intel::{cache, churn, hotspots, lifecycle, metrics, parse_since, patterns};
+use git_intel::{cache, churn, hotspots, lifecycle, metrics, parse_since, parse_until, patterns, validate_range};
 
 #[derive(Parser)]
 #[command(name = "git-intel", about = "Git history analyzer — JSON output for hooks and skills")]
@@ -15,6 +15,10 @@ struct Cli {
     #[arg(long, global = true)]
     since: Option<String>,
 
+    /// Limit history to commits before this date (YYYY-MM-DD, inclusive)
+    #[arg(long, global = true)]
+    until: Option<String>,
+
     /// Maximum number of output items (for churn, metrics)
     #[arg(long, global = true)]
     limit: Option<usize>,
@@ -22,6 +26,16 @@ struct Cli {
     /// Bypass cache and always recompute
     #[arg(long, global = true)]
     no_cache: bool,
+
+    /// Enable ML-based commit classification (requires --model-dir)
+    #[cfg(feature = "ml")]
+    #[arg(long, global = true)]
+    ml: bool,
+
+    /// Path to the ONNX model directory (must contain model.onnx, tokenizer.json, label_mapping.json)
+    #[cfg(feature = "ml")]
+    #[arg(long, global = true)]
+    model_dir: Option<PathBuf>,
 
     #[command(subcommand)]
     command: Commands,
@@ -45,80 +59,98 @@ enum Commands {
         #[arg(long, default_value_t = 1)]
         depth: usize,
     },
-    /// Detect fix-after-feat sequences, multi-edit chains, convergence
-    Patterns {
-        /// Maximum number of convergence pairs to output (default: 50)
-        #[arg(long, default_value_t = patterns::DEFAULT_CONVERGENCE_LIMIT)]
-        convergence_limit: usize,
-    },
+    /// Detect fix-after-feat sequences, multi-edit chains, temporal clusters
+    Patterns,
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
     let since_epoch = parse_since(&cli.since)?;
+    let until_epoch = parse_until(&cli.until)?;
+    validate_range(since_epoch, until_epoch)?;
 
     let repo = git2::Repository::discover(&cli.repo)
         .map_err(|e| anyhow::anyhow!("Could not open repo at {:?}: {}", cli.repo, e))?;
 
+    // Load ML classifier if requested
+    #[cfg(feature = "ml")]
+    let mut ml_classifier = if cli.ml {
+        let model_dir = cli.model_dir.as_ref().ok_or_else(|| {
+            anyhow::anyhow!("--ml requires --model-dir <path> pointing to a directory with model.onnx, tokenizer.json, and label_mapping.json")
+        })?;
+        Some(git_intel::ml::MlClassifier::load(model_dir)?)
+    } else {
+        None
+    };
+
+    #[cfg(feature = "ml")]
+    let ml_ref = ml_classifier.as_mut();
+
     match cli.command {
         Commands::Metrics => {
-            let key = cache::cache_key("metrics", since_epoch, None);
+            let key = cache::cache_key("metrics", since_epoch, until_epoch, None);
             if !cli.no_cache {
                 if let Some(cached) = cache::read_cache(&repo, &key) {
                     println!("{}", cached);
                     return Ok(());
                 }
             }
-            let result = metrics::run(&repo, since_epoch, cli.limit)?;
+            #[cfg(feature = "ml")]
+            let result = metrics::run_with_ml(&repo, since_epoch, until_epoch, cli.limit, ml_ref)?;
+            #[cfg(not(feature = "ml"))]
+            let result = metrics::run(&repo, since_epoch, until_epoch, cli.limit)?;
             let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
         Commands::Churn => {
-            let key = cache::cache_key("churn", since_epoch, None);
+            let key = cache::cache_key("churn", since_epoch, until_epoch, None);
             if !cli.no_cache {
                 if let Some(cached) = cache::read_cache(&repo, &key) {
                     println!("{}", cached);
                     return Ok(());
                 }
             }
-            let result = churn::run(&repo, since_epoch, cli.limit)?;
+            let result = churn::run(&repo, since_epoch, until_epoch, cli.limit)?;
             let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
         Commands::Lifecycle { files } => {
-            let key = cache::cache_key("lifecycle", since_epoch, Some(&files));
+            let key = cache::cache_key("lifecycle", since_epoch, until_epoch, Some(&files));
             if !cli.no_cache {
                 if let Some(cached) = cache::read_cache(&repo, &key) {
                     println!("{}", cached);
                     return Ok(());
                 }
             }
-            let result = lifecycle::run(&repo, since_epoch, &files)?;
+            let result = lifecycle::run(&repo, since_epoch, until_epoch, &files)?;
             let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
         Commands::Hotspots { depth } => {
             let extra = &[format!("{}", depth)];
-            let key = cache::cache_key("hotspots", since_epoch, Some(extra));
+            let key = cache::cache_key("hotspots", since_epoch, until_epoch, Some(extra));
             if !cli.no_cache {
                 if let Some(cached) = cache::read_cache(&repo, &key) {
                     println!("{}", cached);
                     return Ok(());
                 }
             }
-            let result = hotspots::run(&repo, since_epoch, depth, cli.limit)?;
+            let result = hotspots::run(&repo, since_epoch, until_epoch, depth, cli.limit)?;
             let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
-        Commands::Patterns { convergence_limit } => {
-            let key = cache::cache_key("patterns", since_epoch, None);
+        Commands::Patterns => {
+            let key = cache::cache_key("patterns", since_epoch, until_epoch, None);
             if !cli.no_cache {
                 if let Some(cached) = cache::read_cache(&repo, &key) {
                     println!("{}", cached);
                     return Ok(());
                 }
             }
-            let result = patterns::run_with_convergence_limit(&repo, since_epoch, cli.limit, convergence_limit)?;
+            #[cfg(feature = "ml")]
+            let result = patterns::run_with_ml(&repo, since_epoch, until_epoch, cli.limit, ml_ref)?;
+            #[cfg(not(feature = "ml"))]
+            let result = patterns::run(&repo, since_epoch, until_epoch, cli.limit)?;
             let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }

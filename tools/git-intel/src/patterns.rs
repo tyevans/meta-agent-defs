@@ -9,9 +9,7 @@ use crate::common;
 pub struct PatternsOutput {
     pub fix_after_feat: Vec<FixAfterFeat>,
     pub multi_edit_chains: Vec<MultiEditChain>,
-    pub convergence: Vec<ConvergencePair>,
-    pub convergence_truncated: bool,
-    pub convergence_limit: usize,
+    pub temporal_clusters: Vec<TemporalCluster>,
     pub total_commits_analyzed: usize,
 }
 
@@ -24,57 +22,74 @@ pub struct FixAfterFeat {
     pub fix_date: String,
     pub fix_message: String,
     pub gap_commits: usize,
+    pub shared_files: Vec<String>,
 }
 
 #[derive(Serialize)]
 pub struct MultiEditChain {
     pub path: String,
     pub edit_count: usize,
+    pub total_churn: usize,
+    pub type_distribution: HashMap<String, usize>,
     pub commits: Vec<ChainCommit>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct ChainCommit {
     pub commit: String,
     pub date: String,
     pub message: String,
+    pub commit_type: String,
 }
 
 #[derive(Serialize)]
-pub struct ConvergencePair {
-    pub file_a: String,
-    pub file_b: String,
-    pub bytes_a: usize,
-    pub bytes_b: usize,
-    pub bytes_diff: usize,
-    pub bytes_ratio: f64,
+pub struct TemporalCluster {
+    pub cluster_type: String,
+    pub start_time: String,
+    pub end_time: String,
+    pub commit_count: usize,
+    pub commits: Vec<ChainCommit>,
+    pub affected_files: Vec<String>,
 }
 
 struct CommitInfo {
     oid: String,
     date: String,
     message: String,
-    commit_type: &'static str,
+    commit_type: String,
+    timestamp: i64,
     files_touched: Vec<String>,
+    file_churn: HashMap<String, usize>,
 }
 
-/// Default cap for convergence pairs to prevent output explosion.
-pub const DEFAULT_CONVERGENCE_LIMIT: usize = 50;
-
-/// Minimum file size in bytes for convergence scanning.
-pub const MIN_CONVERGENCE_BYTES: usize = 500;
-
-pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Result<PatternsOutput> {
-    run_with_convergence_limit(repo, since, limit, DEFAULT_CONVERGENCE_LIMIT)
+pub fn run(repo: &Repository, since: Option<i64>, until: Option<i64>, limit: Option<usize>) -> Result<PatternsOutput> {
+    run_impl(repo, since, until, limit, &mut |msg, parents| {
+        common::classify_commit_with_parents(msg, parents).to_string()
+    })
 }
 
-pub fn run_with_convergence_limit(
+/// Run patterns with an optional ML classifier for enriched commit classification.
+#[cfg(feature = "ml")]
+pub fn run_with_ml(
     repo: &Repository,
     since: Option<i64>,
+    until: Option<i64>,
     limit: Option<usize>,
-    convergence_limit: usize,
+    mut ml: Option<&mut crate::ml::MlClassifier>,
 ) -> Result<PatternsOutput> {
-    let commits = common::walk_commits(repo, since)?;
+    run_impl(repo, since, until, limit, &mut |msg, parents| {
+        common::classify_commit_with_ml(msg, parents, ml.as_mut().map(|m| &mut **m))
+    })
+}
+
+fn run_impl(
+    repo: &Repository,
+    since: Option<i64>,
+    until: Option<i64>,
+    limit: Option<usize>,
+    classify: &mut dyn FnMut(&str, usize) -> String,
+) -> Result<PatternsOutput> {
+    let commits = common::walk_commits(repo, since, until)?;
 
     let mut commits_info: Vec<CommitInfo> = Vec::new();
 
@@ -99,6 +114,7 @@ pub fn run_with_convergence_limit(
         let diff = repo.diff_tree_to_tree(parent_tree.as_ref(), Some(&tree), None)?;
 
         let mut files = Vec::new();
+        let mut file_churn: HashMap<String, usize> = HashMap::new();
         diff.foreach(
             &mut |delta, _| {
                 if let Some(p) = delta.new_file().path().and_then(|p| p.to_str()) {
@@ -108,43 +124,63 @@ pub fn run_with_convergence_limit(
             },
             None,
             None,
-            None,
+            Some(&mut |delta, _hunk, line| {
+                if let Some(p) = delta.new_file().path().and_then(|p| p.to_str()) {
+                    match line.origin() {
+                        '+' | '-' => {
+                            *file_churn.entry(p.to_string()).or_insert(0) += 1;
+                        }
+                        _ => {}
+                    }
+                }
+                true
+            }),
         )?;
 
         commits_info.push(CommitInfo {
             oid: common::short_hash(&commit.id()),
             date: dt.format("%Y-%m-%d").to_string(),
             message: first_line,
-            commit_type: common::classify_commit_with_parents(&message, commit.parent_count()),
+            commit_type: classify(&message, commit.parent_count()),
+            timestamp: time,
             files_touched: files,
+            file_churn,
         });
     }
 
     let total_commits_analyzed = commits_info.len();
 
     // 1. Fix-after-feat: find fix commits that follow feat commits within 5 commits
+    //    Requires file overlap: at least one file must be touched by both the feat and fix.
     let mut fix_after_feat = Vec::new();
     for (i, ci) in commits_info.iter().enumerate() {
         if ci.commit_type == "fix" {
-            // Look at subsequent entries (older commits, since sorted TIME desc)
-            // Actually we want: feat happened recently, then fix came after
-            // In our list, index 0 is newest. So a fix at index i, look for feats at i+1..i+6
+            let fix_files: std::collections::HashSet<&String> = ci.files_touched.iter().collect();
             for gap in 1..=5 {
                 if i + gap >= commits_info.len() {
                     break;
                 }
                 let older = &commits_info[i + gap];
                 if older.commit_type == "feat" {
-                    fix_after_feat.push(FixAfterFeat {
-                        feat_commit: older.oid.clone(),
-                        feat_date: older.date.clone(),
-                        feat_message: older.message.clone(),
-                        fix_commit: ci.oid.clone(),
-                        fix_date: ci.date.clone(),
-                        fix_message: ci.message.clone(),
-                        gap_commits: gap - 1,
-                    });
-                    break;
+                    let shared: Vec<String> = older
+                        .files_touched
+                        .iter()
+                        .filter(|f| fix_files.contains(f))
+                        .cloned()
+                        .collect();
+                    if !shared.is_empty() {
+                        fix_after_feat.push(FixAfterFeat {
+                            feat_commit: older.oid.clone(),
+                            feat_date: older.date.clone(),
+                            feat_message: older.message.clone(),
+                            fix_commit: ci.oid.clone(),
+                            fix_date: ci.date.clone(),
+                            fix_message: ci.message.clone(),
+                            gap_commits: gap - 1,
+                            shared_files: shared,
+                        });
+                        break;
+                    }
                 }
             }
         }
@@ -154,8 +190,10 @@ pub fn run_with_convergence_limit(
         fix_after_feat.truncate(limit);
     }
 
-    // 2. Multi-edit chains: files touched 3+ times in the analyzed window
+    // 2. Multi-edit chains: files touched 3+ times with >100 total lines changed
     let mut file_history: HashMap<String, Vec<ChainCommit>> = HashMap::new();
+    let mut file_total_churn: HashMap<String, usize> = HashMap::new();
+    let mut file_type_dist: HashMap<String, HashMap<String, usize>> = HashMap::new();
     for ci in &commits_info {
         for f in &ci.files_touched {
             file_history
@@ -165,89 +203,121 @@ pub fn run_with_convergence_limit(
                     commit: ci.oid.clone(),
                     date: ci.date.clone(),
                     message: ci.message.clone(),
+                    commit_type: ci.commit_type.clone(),
                 });
+            *file_total_churn.entry(f.clone()).or_insert(0) +=
+                ci.file_churn.get(f).copied().unwrap_or(0);
+            *file_type_dist
+                .entry(f.clone())
+                .or_default()
+                .entry(ci.commit_type.clone())
+                .or_insert(0) += 1;
         }
     }
 
     let mut multi_edit_chains: Vec<MultiEditChain> = file_history
         .into_iter()
-        .filter(|(_, edits)| edits.len() >= 3)
-        .map(|(path, commits)| MultiEditChain {
-            path,
-            edit_count: commits.len(),
-            commits,
+        .filter(|(path, edits)| {
+            edits.len() >= 3
+                && file_total_churn.get(path).copied().unwrap_or(0) > 100
+        })
+        .map(|(path, commits)| {
+            let total_churn = file_total_churn.get(&path).copied().unwrap_or(0);
+            let type_distribution = file_type_dist.remove(&path).unwrap_or_default();
+            MultiEditChain {
+                edit_count: commits.len(),
+                total_churn,
+                type_distribution,
+                commits,
+                path,
+            }
         })
         .collect();
     multi_edit_chains.sort_by(|a, b| b.edit_count.cmp(&a.edit_count));
 
-    if let Some(limit) = limit {
-        multi_edit_chains.truncate(limit);
-    }
-
-    // 3. Convergence: files at HEAD with similar sizes (within 10%)
-    let mut convergence = Vec::new();
-    let head = repo.head()?.peel_to_commit()?;
-    let head_tree = head.tree()?;
-
-    // Get sizes of tracked files
-    let mut file_sizes: Vec<(String, usize)> = Vec::new();
-    head_tree.walk(git2::TreeWalkMode::PreOrder, |dir, entry| {
-        if entry.kind() == Some(git2::ObjectType::Blob) {
-            let path = if dir.is_empty() {
-                entry.name().unwrap_or("").to_string()
-            } else {
-                format!("{}{}", dir, entry.name().unwrap_or(""))
-            };
-            if let Ok(blob) = repo.find_blob(entry.id()) {
-                file_sizes.push((path, blob.size()));
-            }
-        }
-        git2::TreeWalkResult::Ok
-    })?;
-
-    // Find pairs with similar sizes (within 10% of each other, min 500 bytes).
-    // Sort by size then scan adjacent entries — O(n log n) instead of O(n^2).
-    file_sizes.retain(|&(_, size)| size >= MIN_CONVERGENCE_BYTES);
-    file_sizes.sort_by_key(|&(_, size)| size);
-
-    for i in 0..file_sizes.len() {
-        let (ref pa, sa) = file_sizes[i];
-        for j in (i + 1)..file_sizes.len() {
-            let (ref pb, sb) = file_sizes[j];
-            // Since the list is sorted, sb >= sa. Once the ratio drops below
-            // 0.90, all subsequent entries will also be too large.
-            let ratio = sa as f64 / sb as f64;
-            if ratio < 0.90 {
-                break;
-            }
-            let diff = sb - sa;
-            convergence.push(ConvergencePair {
-                file_a: pa.clone(),
-                file_b: pb.clone(),
-                bytes_a: sa,
-                bytes_b: sb,
-                bytes_diff: diff,
-                bytes_ratio: ratio,
-            });
-        }
-    }
-    convergence.sort_by(|a, b| b.bytes_ratio.partial_cmp(&a.bytes_ratio).unwrap());
-
-    // Apply convergence-specific limit (--convergence-limit flag, default 50).
-    // The generic --limit flag is applied first if present and smaller.
-    let effective_limit = match limit {
-        Some(l) if l < convergence_limit => l,
-        _ => convergence_limit,
+    // Cap at top 10 unless --limit is specified and smaller
+    let chain_cap = match limit {
+        Some(l) if l < 10 => l,
+        _ => 10,
     };
-    let convergence_truncated = convergence.len() > effective_limit;
-    convergence.truncate(effective_limit);
+    multi_edit_chains.truncate(chain_cap);
+
+    // 3. Temporal clusters: 3+ commits of the same type within a 1-hour window
+    let mut temporal_clusters = Vec::new();
+    {
+        // Group commits by type
+        let mut by_type: HashMap<String, Vec<&CommitInfo>> = HashMap::new();
+        for ci in &commits_info {
+            by_type.entry(ci.commit_type.clone()).or_default().push(ci);
+        }
+
+        for (ctype, mut type_commits) in by_type {
+            // Sort by timestamp ascending for clustering
+            type_commits.sort_by_key(|c| c.timestamp);
+
+            let mut i = 0;
+            while i < type_commits.len() {
+                let start_ts = type_commits[i].timestamp;
+                let mut j = i + 1;
+                while j < type_commits.len()
+                    && type_commits[j].timestamp - start_ts <= 3600
+                {
+                    j += 1;
+                }
+                let cluster_size = j - i;
+                if cluster_size >= 3 {
+                    let cluster_commits: Vec<&CommitInfo> =
+                        type_commits[i..j].to_vec();
+                    let start_dt =
+                        chrono::DateTime::from_timestamp(cluster_commits[0].timestamp, 0)
+                            .unwrap_or_default();
+                    let end_dt = chrono::DateTime::from_timestamp(
+                        cluster_commits.last().unwrap().timestamp,
+                        0,
+                    )
+                    .unwrap_or_default();
+
+                    let mut affected: Vec<String> = cluster_commits
+                        .iter()
+                        .flat_map(|c| c.files_touched.iter().cloned())
+                        .collect();
+                    affected.sort();
+                    affected.dedup();
+
+                    let commits_vec: Vec<ChainCommit> = cluster_commits
+                        .iter()
+                        .map(|c| ChainCommit {
+                            commit: c.oid.clone(),
+                            date: c.date.clone(),
+                            message: c.message.clone(),
+                            commit_type: c.commit_type.clone(),
+                        })
+                        .collect();
+
+                    temporal_clusters.push(TemporalCluster {
+                        cluster_type: ctype.clone(),
+                        start_time: start_dt.format("%Y-%m-%dT%H:%M:%SZ").to_string(),
+                        end_time: end_dt.format("%Y-%m-%dT%H:%M:%SZ").to_string(),
+                        commit_count: cluster_size,
+                        commits: commits_vec,
+                        affected_files: affected,
+                    });
+                }
+                // Move past this cluster (don't re-use commits)
+                i = j;
+            }
+        }
+    }
+    temporal_clusters.sort_by(|a, b| b.commit_count.cmp(&a.commit_count));
+
+    if let Some(limit) = limit {
+        temporal_clusters.truncate(limit);
+    }
 
     Ok(PatternsOutput {
         fix_after_feat,
         multi_edit_chains,
-        convergence,
-        convergence_truncated,
-        convergence_limit,
+        temporal_clusters,
         total_commits_analyzed,
     })
 }
