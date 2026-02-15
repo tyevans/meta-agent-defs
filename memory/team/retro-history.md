@@ -1,5 +1,13 @@
 # Retrospective History
 
+## Retro: 2026-02-15 (session 24 — cold-install audit + /advise skill)
+- Tasks completed: 2 beads (cold-install audit htnz, /advise skill 60c1)
+- Workflow: /meeting (Pragmatist vs Innovator) produced 3-sprint plan → cold-install audit on 4x4eva → fix 6 friction points → build /advise skill → update INDEX.md
+- Commits: 3 (1 fix, 1 feat, 1 chore). Fix rate: 0% (the fix commit was a portability improvement, not a bug correction)
+- New learnings: 0 team (orchestrator-only session — no subagent dispatches for implementation, only haiku for INDEX update)
+- Key insight: Cold-install on a real second project (4x4eva, Rust+WASM) found 6 friction points that internal testing missed. Top sources: hardcoded paths (3/6), shell one-liners (1/6), installer gaps (1/6), regex mismatches (1/6). BASH_SOURCE path derivation pattern is the universal fix for cross-project portability. Extracting complex hooks into proper scripts in bin/ is both a maintainability and portability win.
+- Backlog state: 315/317 closed, 2 open (1 ready P3 ML training comparison, 1 blocked epic)
+
 ## Retro: 2026-02-15 (session 23 — cross-project validation epic)
 - Tasks completed: 12 (epic + 8 children: harness, telemetry hook, repo recloning, precision study, cosmetic filter, gravity filter, sprint signal wiring, 1 superseded)
 - Workflow: /meeting (Pragmatist vs Innovator) → create epic + 5 beads → parallel dispatch (rust-dev + infra) → serial dispatch (3 more tasks) → close
