@@ -15,7 +15,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Review code** -> /review (structured code review)
 - **Understand a definition's history** -> /evolution (file change history and stability) or /drift (cross-definition convergence/divergence)
 - **Manage a team** -> /assemble (create) -> /standup (sync) -> /sprint (dispatch)
-- **Run a session** -> /status (orient) -> ... work ... -> /retro (reflect) -> /handoff (transition)
+- **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
 
 ## Skills by Category
@@ -70,15 +70,16 @@ Manage persistent learning teams across sessions.
 | /standup | Sync status, surface blockers | inline |
 | /sprint | Dispatch work with learning loop | inline |
 
-### Session Skills (1)
+### Session Skills (2)
 
 | Skill | Purpose | Context |
 |-------|---------|---------|
 | /status | Unified dashboard: backlog, activity, team, last session | inline |
+| /advise | Proactive recommendations by composing git state, session history, backlog, and signals. Degrades gracefully — works with just git, richer with each layer present. | inline |
 
 ## Skills by Context Type
 
-**Inline (23):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, session-health, retro, handoff, assemble, standup, sprint, status, evolution, drift
+**Inline (24):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift
 
 **Fork (7):** blossom, consensus, consolidate, premortem, review, spec, tracer
 
