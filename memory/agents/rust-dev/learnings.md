@@ -38,9 +38,7 @@
 - Merge commit fixture: create branch, divergent commits on main+feature, then merge — produces commit with 2 parents for testing (added: 2026-02-15)
 
 ## Cache
-- Cache write errors should always be silently ignored (`let _ =`) to avoid breaking the main path (added: 2026-02-15)
-- serde_json::Value for partial cache validation (check head_commit without deserializing result) avoids needing Deserialize on output structs (added: 2026-02-15)
-- Cache lives in .git/git-intel-cache/, keyed by {subcommand}-{since_epoch}.json, invalidated on HEAD change (added: 2026-02-15)
+- Cache in .git/git-intel-cache/, keyed by {subcommand}-{since_epoch}.json, invalidated on HEAD change. Write errors silently ignored (`let _ =`). serde_json::Value for partial validation (consolidated: 2026-02-15)
 
 ## Subcommand Composition
 - Reusing existing subcommand output (e.g. churn::run(), metrics::run()) for aggregation is cleaner than duplicating diff traversal — hotspots, trends both compose this way (updated: 2026-02-15)
@@ -53,10 +51,7 @@
 - ML feature flag: `#[cfg(feature = "ml")]` guards module + CLI flags + function variants. ort + tokenizers as optional deps, `load-dynamic` for system ONNX Runtime (consolidated: 2026-02-15)
 
 ## Precision Study Findings
-- Signal detector is highly conservative: well-maintained repos (ripgrep, tokio, serde, rayon) produce 0 signals in 6-month windows. Only clap produced 12 signals across 2 years (added: 2026-02-15)
-- True positives follow "incomplete feature rollout" pattern: same author, small gap, fix applies feature to missed cases. Not functional bugs (added: 2026-02-15)
-- False positives from: unrelated code paths in same file, opportunistic cleanup bundled with fixes, architectural refactors labeled "fix" (added: 2026-02-15)
-- Severity formula `1/(gap+1) * min(files,5)/5` is uncalibrated — 67% TP rate is above proceed threshold but not alerting-grade (added: 2026-02-15)
+- Signal detector highly conservative: 0 signals on ripgrep/tokio/serde/rayon, 12 on clap (2y). 67% TP rate — "incomplete feature rollout" pattern (same author, small gap). FPs from unrelated code paths in same file, opportunistic cleanup (consolidated: 2026-02-15)
 
 ## Cross-Agent Notes
 - (none yet)

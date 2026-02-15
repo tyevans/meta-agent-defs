@@ -1,5 +1,14 @@
 # Retrospective History
 
+## Retro: 2026-02-15 (session 21 — hardening + ML model sprint)
+- Tasks completed: 4 dispatched + 2 housekeeping (nh5v closed as done, 7pkx closed as superseded)
+- Workflow: /sprint with 2 parallel rounds (rust-dev x2, ml-eng x2)
+- Commits: 2 (1 feat, 1 chore sync)
+- New learnings: 6 across 2 members (rust-dev +2 updated, ml-eng +2 new sections)
+- Pruned: rust-dev from 62→57 lines (cache + precision study consolidated)
+- Key insight: Superseded bead detection caught 2 beads this sprint (nh5v already shipped, 7pkx=eobx duplicate) — saves wasted dispatch tokens. Parallel dispatch within same role (2 rust-dev tasks on different modules, 2 ml-eng tasks on independent models) continues to work cleanly. 4/4 first-attempt successes (streak: 79+). git-intel now at 175 tests with streaming iterator + relative dates. commit-labeler now has 4 model implementations.
+- Backlog state: 290/304 closed, 14 open (11 ready, 3 blocked)
+
 ## Retro: 2026-02-15 (signal system sprint)
 - Tasks completed: 4 (wwzo signal struct, qn62 fix-chaser detector, 66r6 git-pulse signals, rl34 precision study)
 - Commits: 7 (2 feat, 1 fix, 4 chore). Fix rate: 14%
