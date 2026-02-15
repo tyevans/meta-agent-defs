@@ -1,5 +1,14 @@
 # Retrospective History
 
+## Retro: 2026-02-15 (session 22 — final sprint, all epics closed)
+- Tasks completed: 4 (dormant files, directory chains, ensemble, registry)
+- Workflow: /sprint Round 2 with 4 parallel agents (2 rust-dev + 2 ml-eng)
+- Commits: 12 (4 feat, 1 fix, 7 chore). Fix rate: 8%
+- New learnings: 5 across 2 members (rust-dev +2 updated, ml-eng +5 new)
+- Superseded bead detection: pyp9/svha were duplicates of nccf/p403 from different planning session
+- Key insight: All 3 epics closed (304/304 beads). Parallel dispatch across ownership areas continues to be clean. ml-eng torch import limitation worked around with ast.parse/py_compile validation. Backlog exhausted — time for new planning.
+- Backlog state: 304/304 closed, 0 open
+
 ## Retro: 2026-02-15 (session 21 — hardening + ML model sprint)
 - Tasks completed: 4 dispatched + 2 housekeeping (nh5v closed as done, 7pkx closed as superseded)
 - Workflow: /sprint with 2 parallel rounds (rust-dev x2, ml-eng x2)
