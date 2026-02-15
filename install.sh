@@ -290,6 +290,21 @@ for skill_dir in "$SCRIPT_DIR"/skills/*/; do
     link_dir "$skill_dir" "$TARGET_DIR/skills/$name"
 done
 
+# --- Bin (scripts) ---
+if [ -z "$PROJECT_DIR" ]; then
+    if [ -d "$SCRIPT_DIR/bin" ]; then
+        info "Installing bin scripts..."
+        mkdir -p "$TARGET_DIR/bin"
+        for script in "$SCRIPT_DIR"/bin/*.sh; do
+            [ -f "$script" ] || continue
+            name="$(basename "$script")"
+            link_file "$script" "$TARGET_DIR/bin/$name"
+        done
+    fi
+else
+    info "Skipping bin scripts (project-local mode - global feature)"
+fi
+
 # --- Rules ---
 if [ -z "$PROJECT_DIR" ]; then
     if [ -d "$SCRIPT_DIR/rules" ]; then
@@ -418,6 +433,9 @@ if [ -z "$PROJECT_DIR" ]; then
     if [ -d "$SCRIPT_DIR/templates" ]; then
         echo "  Templates: $(find "$SCRIPT_DIR/templates" -type f -name "*.yaml" 2>/dev/null | wc -l) team templates"
     fi
+    if [ -d "$SCRIPT_DIR/bin" ]; then
+        echo "  Bin:      $(ls -1 "$SCRIPT_DIR"/bin/*.sh 2>/dev/null | wc -l) scripts"
+    fi
     echo "  Settings: settings.json (hooks + env)"
     MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
     if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
@@ -436,6 +454,9 @@ if [ -z "$PROJECT_DIR" ]; then
     fi
     if [ -d "$SCRIPT_DIR/templates" ]; then
         echo "  ls -la $TARGET_DIR/templates/"
+    fi
+    if [ -d "$SCRIPT_DIR/bin" ]; then
+        echo "  ls -la $TARGET_DIR/bin/"
     fi
     echo "  ls -la $TARGET_DIR/settings.json"
 fi
