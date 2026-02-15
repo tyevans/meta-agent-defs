@@ -21,7 +21,7 @@ import models.embed_mlp
 import models.tfidf_logreg
 import models.transformer
 from data import freeze_test_set, load_labeled, load_test_set
-from eval import evaluate, print_report
+from eval import run_eval
 from models import MODELS
 from models.embed_mlp import format_input
 
@@ -81,12 +81,58 @@ def main():
         default=0.15,
         help="Minimum probability for top-k (for embed-mlp)",
     )
+    parser.add_argument(
+        "--eval-output",
+        type=Path,
+        default=None,
+        help="Path to save evaluation results JSON for cross-model comparison",
+    )
+    # Class imbalance handling
+    parser.add_argument(
+        "--class-weight",
+        type=str,
+        default="none",
+        choices=["none", "balanced", "auto"],
+        help="Class weighting strategy: none (no weights), balanced (sklearn balanced), auto (inverse frequency)",
+    )
+    parser.add_argument(
+        "--focal-loss",
+        action="store_true",
+        help="Use focal loss instead of cross-entropy (for embed-mlp and transformer)",
+    )
+    parser.add_argument(
+        "--focal-gamma",
+        type=float,
+        default=2.0,
+        help="Focal loss gamma parameter (default 2.0, higher = more focus on hard examples)",
+    )
+    parser.add_argument(
+        "--export-onnx",
+        type=Path,
+        default=None,
+        help="Export transformer model to ONNX format at this path (transformer only)",
+    )
     args = parser.parse_args()
 
     if args.output is None:
         args.output = args.input.parent / "classifier.pkl"
 
     test_file = args.input.parent / "test-hashes.json"
+
+    # Handle standalone ONNX export (load existing model and export without training)
+    if args.export_onnx and args.model == "transformer":
+        # Check if saved model exists
+        save_dir = args.output.parent / "transformer-model"
+        if save_dir.exists():
+            print(f"Loading existing transformer model from {save_dir}...")
+            from models.transformer import TransformerClassifier
+            model = TransformerClassifier.load(save_dir)
+            print(f"Exporting to ONNX at {args.export_onnx}...")
+            model.export_onnx(args.export_onnx)
+            print("Standalone ONNX export complete. Exiting.")
+            return
+        else:
+            print(f"Warning: No saved model found at {save_dir}. Will train and export.")
 
     # Load data
     records = load_labeled(args.input, args.min_confidence)
@@ -135,10 +181,36 @@ def main():
 
     print(f"\nTrain: {len(X_train)}  Test: {len(X_test)} (frozen)")
 
-    # Instantiate model
+    # Instantiate model with class weighting parameters
     print(f"\nUsing model: {args.model}")
-    if args.model == "embed-mlp":
-        model = MODELS[args.model](model_name=args.embed_model)
+    print(f"  Class weight mode: {args.class_weight}")
+    if args.focal_loss:
+        print(f"  Focal loss: enabled (gamma={args.focal_gamma})")
+
+    if args.model == "tfidf-logreg":
+        # Map our CLI args to sklearn's class_weight parameter
+        if args.class_weight == "none":
+            cw = None
+        elif args.class_weight in ("balanced", "auto"):
+            cw = "balanced"  # sklearn only supports 'balanced' or None or dict
+        else:
+            cw = args.class_weight
+        model = MODELS[args.model](class_weight=cw)
+        if args.focal_loss:
+            print("  Warning: focal loss not supported for tfidf-logreg (ignored)")
+    elif args.model == "embed-mlp":
+        model = MODELS[args.model](
+            model_name=args.embed_model,
+            class_weight_mode=args.class_weight,
+            use_focal_loss=args.focal_loss,
+            focal_gamma=args.focal_gamma,
+        )
+    elif args.model == "transformer":
+        model = MODELS[args.model](
+            class_weight_mode=args.class_weight,
+            use_focal_loss=args.focal_loss,
+            focal_gamma=args.focal_gamma,
+        )
     else:
         model = MODELS[args.model]()
 
@@ -159,14 +231,27 @@ def main():
     print("Evaluating...")
     y_pred = model.predict(X_test)
 
-    # Evaluate
-    metrics = evaluate(y_test.tolist(), y_pred.tolist())
-    print_report(metrics)
-
-    # Model-specific outputs
+    # Get probabilities if available
+    probas = None
     if hasattr(model, "predict_proba"):
         probas = model.predict_proba(X_test)
 
+    # Get raw messages for confusion examples
+    test_messages = [r["message"] for r in test_records]
+
+    # Run standardized evaluation harness
+    metrics = run_eval(
+        y_test.tolist(),
+        y_pred.tolist(),
+        label_names=model.classes_.tolist(),
+        y_proba=probas,
+        output_path=args.eval_output,
+        model_name=args.model,
+        messages=test_messages,
+    )
+
+    # Model-specific outputs
+    if probas is not None:
         # Top-k accuracy for embed-mlp
         if args.model == "embed-mlp":
             print("\n" + "=" * 60)
@@ -199,11 +284,20 @@ def main():
         save_dir = args.output.parent / "transformer-model"
         model.save(save_dir)
         print(f"\nTransformer model saved to {save_dir}")
+
+        # Export to ONNX if requested
+        if args.export_onnx:
+            print(f"\nExporting to ONNX...")
+            model.export_onnx(args.export_onnx)
     else:
         # Other models use pickle
         with open(args.output, "wb") as f:
             pickle.dump(model, f)
         print(f"\nModel saved to {args.output}")
+
+        # Warn if ONNX export requested for non-transformer model
+        if args.export_onnx:
+            print(f"\nWarning: --export-onnx only supported for transformer models (ignored)")
 
     # Sanity check predictions
     test_samples = [

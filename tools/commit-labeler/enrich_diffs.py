@@ -20,62 +20,94 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from data import parse_commit_line
 
 
-def get_diff_stats(repo_dir: Path, commit_hash: str) -> dict | None:
-    """Extract diff stats from a bare git clone."""
+def parse_numstat_block(lines: list[str]) -> dict | None:
+    """Parse numstat lines for a single commit into diff stats."""
+    files = []
+    total_add = 0
+    total_del = 0
+    for line in lines:
+        parts = line.split("\t")
+        if len(parts) < 3:
+            continue
+        add = int(parts[0]) if parts[0] != "-" else 0
+        delete = int(parts[1]) if parts[1] != "-" else 0
+        filepath = parts[2]
+        files.append(filepath)
+        total_add += add
+        total_del += delete
+
+    if not files:
+        return None
+
+    extensions = []
+    for f in files:
+        if "." in f.split("/")[-1]:
+            ext = f.rsplit(".", 1)[-1].lower()
+            extensions.append(ext)
+
+    top_dirs = [f.split("/")[0] if "/" in f else "." for f in files]
+
+    return {
+        "files": files,
+        "file_count": len(files),
+        "insertions": total_add,
+        "deletions": total_del,
+        "extensions": extensions,
+        "top_dirs": top_dirs,
+    }
+
+
+def batch_diff_stats(repo_dir: Path, hashes: list[str]) -> dict[str, dict | None]:
+    """Get diff stats for many commits in one git call.
+
+    Uses git log --stdin --no-walk --numstat with a delimiter to split output
+    per commit. Returns a dict mapping hash -> stats.
+    """
+    if not hashes:
+        return {}
+
+    # Use a format that gives us hash + delimiter, then numstat follows
     try:
         result = subprocess.run(
-            ["git", "-C", str(repo_dir), "diff-tree", "--no-commit-id", "-r",
-             "--numstat", commit_hash],
-            capture_output=True, text=True, timeout=10,
+            ["git", "-C", str(repo_dir), "log", "--stdin", "--no-walk",
+             "--format=COMMIT_DELIM %H", "--numstat"],
+            input="\n".join(hashes) + "\n",
+            capture_output=True, text=True, timeout=120,
         )
-        if result.returncode != 0:
-            return None
+    except subprocess.TimeoutExpired:
+        return {}
 
-        files = []
-        total_add = 0
-        total_del = 0
-        for line in result.stdout.strip().split("\n"):
-            if not line:
-                continue
-            parts = line.split("\t")
-            if len(parts) < 3:
-                continue
-            add = int(parts[0]) if parts[0] != "-" else 0
-            delete = int(parts[1]) if parts[1] != "-" else 0
-            filepath = parts[2]
-            files.append(filepath)
-            total_add += add
-            total_del += delete
+    if result.returncode != 0:
+        return {}
 
-        if not files:
-            return None
+    # Parse output: split by COMMIT_DELIM lines
+    stats = {}
+    current_hash = None
+    current_lines: list[str] = []
 
-        # Extract file extensions
-        extensions = []
-        for f in files:
-            if "." in f.split("/")[-1]:
-                ext = f.rsplit(".", 1)[-1].lower()
-                extensions.append(ext)
+    for line in result.stdout.split("\n"):
+        if line.startswith("COMMIT_DELIM "):
+            # Flush previous commit
+            if current_hash is not None:
+                stats[current_hash] = parse_numstat_block(current_lines)
+            current_hash = line.split(" ", 1)[1].strip()
+            current_lines = []
+        elif line.strip():
+            current_lines.append(line)
 
-        # Extract directory paths (first component)
-        top_dirs = [f.split("/")[0] if "/" in f else "." for f in files]
+    # Flush last commit
+    if current_hash is not None:
+        stats[current_hash] = parse_numstat_block(current_lines)
 
-        return {
-            "files": files,
-            "file_count": len(files),
-            "insertions": total_add,
-            "deletions": total_del,
-            "extensions": extensions,
-            "top_dirs": top_dirs,
-        }
-    except (subprocess.TimeoutExpired, Exception):
-        return None
+    return stats
 
 
 def detect_format(path: Path) -> str:
@@ -111,48 +143,81 @@ def main():
     input_format = detect_format(args.input)
     print(f"Detected input format: {input_format}")
 
-    # Process commits
-    enriched = 0
-    skipped = 0
-    missing_repo = Counter()
-
-    with open(args.input) as fin, open(args.output, "w") as fout:
+    # Load all commits and group by repo
+    commits = []
+    parse_skipped = 0
+    with open(args.input) as fin:
         for line in fin:
             line = line.strip()
             if not line:
                 continue
-
-            # Parse based on format
             if input_format == "jsonl":
-                obj = json.loads(line)
-            else:  # pipe-delimited
-                obj = parse_commit_line(line)
-                if not obj:
-                    skipped += 1
-                    continue
-
-            repo = obj["repo"]
-            commit_hash = obj["hash"]
-
-            if repo not in repo_dirs:
-                missing_repo[repo] += 1
-                obj["diff"] = None
-                fout.write(json.dumps(obj) + "\n")
-                skipped += 1
-                continue
-
-            stats = get_diff_stats(repo_dirs[repo], commit_hash)
-            obj["diff"] = stats
-            fout.write(json.dumps(obj) + "\n")
-
-            if stats:
-                enriched += 1
+                commits.append(json.loads(line))
             else:
-                skipped += 1
+                obj = parse_commit_line(line)
+                if obj:
+                    commits.append(obj)
+                else:
+                    parse_skipped += 1
 
-            total = enriched + skipped
-            if total % 500 == 0:
-                print(f"  Processed {total}... ({enriched} enriched, {skipped} skipped)")
+    print(f"Loaded {len(commits)} commits ({parse_skipped} parse failures)")
+
+    # Group by repo
+    by_repo: dict[str, list[int]] = {}
+    for i, obj in enumerate(commits):
+        by_repo.setdefault(obj["repo"], []).append(i)
+
+    print(f"Repos to process: {len(by_repo)}")
+
+    # Batch fetch diff stats per repo (parallel)
+    enriched = 0
+    skipped = 0
+    missing_repo = Counter()
+
+    # Separate missing repos from processable ones
+    processable = {}
+    for repo, indices in by_repo.items():
+        if repo not in repo_dirs:
+            missing_repo[repo] += len(indices)
+            for i in indices:
+                commits[i]["diff"] = None
+            skipped += len(indices)
+        else:
+            processable[repo] = indices
+
+    def process_repo(repo: str, indices: list[int]) -> tuple[str, dict[str, dict | None], list[int]]:
+        hashes = [commits[i]["hash"] for i in indices]
+        stats = batch_diff_stats(repo_dirs[repo], hashes)
+        return repo, stats, indices
+
+    t0 = time.monotonic()
+    workers = min(6, len(processable))
+    print(f"  Processing {len(processable)} repos with {workers} workers")
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {
+            pool.submit(process_repo, repo, indices): repo
+            for repo, indices in processable.items()
+        }
+        done_count = 0
+        for future in as_completed(futures):
+            repo, stats, indices = future.result()
+            done_count += 1
+            elapsed = time.monotonic() - t0
+            print(f"  [{done_count}/{len(processable)}] {repo}: {len(stats)}/{len(indices)} enriched ({elapsed:.1f}s)")
+
+            for i in indices:
+                commit_stats = stats.get(commits[i]["hash"])
+                commits[i]["diff"] = commit_stats
+                if commit_stats:
+                    enriched += 1
+                else:
+                    skipped += 1
+
+    # Write output
+    with open(args.output, "w") as fout:
+        for obj in commits:
+            fout.write(json.dumps(obj) + "\n")
 
     total = enriched + skipped
     print(f"\nDone: {enriched}/{total} enriched ({100*enriched/total:.1f}%)")

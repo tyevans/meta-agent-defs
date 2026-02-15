@@ -21,6 +21,14 @@ def load_labeled(path: Path, min_confidence: float = 0.0) -> list[dict]:
             if obj.get("confidence", 1.0) < min_confidence:
                 skipped += 1
                 continue
+            # Normalize multi-label format to single primary label
+            if "labels" in obj and "label" not in obj:
+                labels = obj["labels"]
+                if labels:
+                    first = labels[0]
+                    obj["label"] = first["label"] if isinstance(first, dict) else first
+                else:
+                    continue  # skip unlabeled
             records.append(obj)
     if skipped:
         print(f"Skipped {skipped} low-confidence samples (< {min_confidence})")

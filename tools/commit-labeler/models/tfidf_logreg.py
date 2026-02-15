@@ -16,9 +16,12 @@ class TfidfLogReg:
     Implements ModelProtocol. Note: X for train/predict is an array
     of strings (commit messages), not numeric features — the TF-IDF
     vectorizer handles the conversion internally.
+
+    Args:
+        class_weight: 'balanced', 'balanced_subsample', None, or dict mapping class -> weight
     """
 
-    def __init__(self):
+    def __init__(self, class_weight: str | dict | None = "balanced"):
         self.pipeline = Pipeline([
             ("tfidf", TfidfVectorizer(
                 max_features=10000,
@@ -30,7 +33,7 @@ class TfidfLogReg:
             ("clf", LogisticRegression(
                 max_iter=1000,
                 C=1.0,
-                class_weight="balanced",
+                class_weight=class_weight,
                 solver="lbfgs",
             )),
         ])
