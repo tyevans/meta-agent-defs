@@ -10,3 +10,10 @@ memory/sessions/
 
 # Rust build artifacts
 tools/git-intel/target/
+
+# Python artifacts
+__pycache__/
+.venv/
+
+# Research repos (cloned for analysis, not committed)
+research/

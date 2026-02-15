@@ -1,0 +1,245 @@
+"""Train commit classifiers using the model registry.
+
+Usage:
+    uv run python train.py ../data/labeled-all.jsonl --model tfidf-logreg
+    uv run python train.py ../data/relabeled.jsonl --model embed-mlp
+    uv run python train.py ../data/labeled-all.jsonl --model tfidf-logreg --reset-test
+"""
+
+from __future__ import annotations
+
+import argparse
+import pickle
+from collections import Counter
+from pathlib import Path
+
+import numpy as np
+from sklearn.model_selection import cross_val_score
+
+# Import model modules to trigger registration
+import models.embed_mlp
+import models.tfidf_logreg
+from data import freeze_test_set, load_labeled, load_test_set
+from eval import evaluate, print_report
+from models import MODELS
+from models.embed_mlp import format_input
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Train commit message classifier")
+    parser.add_argument("input", type=Path, help="Labeled JSONL file")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="tfidf-logreg",
+        choices=list(MODELS.keys()),
+        help="Model to use for training",
+    )
+    parser.add_argument(
+        "--min-confidence",
+        type=float,
+        default=0.0,
+        help="Min confidence to include (0.0 = all)",
+    )
+    parser.add_argument(
+        "--test-size",
+        type=float,
+        default=0.2,
+        help="Fraction held out for test (default 0.2)",
+    )
+    parser.add_argument(
+        "--output", type=Path, default=None, help="Path to save pickled model"
+    )
+    parser.add_argument(
+        "--min-class-count",
+        type=int,
+        default=5,
+        help="Drop labels with fewer than N samples",
+    )
+    parser.add_argument(
+        "--reset-test",
+        action="store_true",
+        help="Re-freeze test set (discards previous)",
+    )
+    # Embed-MLP specific args
+    parser.add_argument(
+        "--embed-model",
+        type=str,
+        default="all-MiniLM-L6-v2",
+        help="Sentence transformer model name (for embed-mlp)",
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=3,
+        help="Number of top labels to show per prediction (for embed-mlp)",
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=0.15,
+        help="Minimum probability for top-k (for embed-mlp)",
+    )
+    args = parser.parse_args()
+
+    if args.output is None:
+        args.output = args.input.parent / "classifier.pkl"
+
+    test_file = args.input.parent / "test-hashes.json"
+
+    # Load data
+    records = load_labeled(args.input, args.min_confidence)
+    print(f"Loaded {len(records)} labeled commits")
+
+    # Filter rare labels
+    counts = Counter(r["label"] for r in records)
+    rare = {l for l, c in counts.items() if c < args.min_class_count}
+    if rare:
+        print(f"Dropping rare labels ({args.min_class_count}+ required): {rare}")
+        records = [r for r in records if r["label"] not in rare]
+
+    # Freeze or load test set
+    if args.reset_test or not test_file.exists():
+        test_hashes = freeze_test_set(records, args.test_size, test_file)
+    else:
+        test_hashes = load_test_set(test_file)
+        print(
+            f"Loaded frozen test set: {len(test_hashes)} hashes from {test_file}"
+        )
+
+    # Split using frozen hashes
+    test_records = [r for r in records if r["hash"] in test_hashes]
+    train_records = [r for r in records if r["hash"] not in test_hashes]
+
+    # Prepare X based on model type
+    if args.model == "embed-mlp":
+        X_train = np.array([format_input(r) for r in train_records])
+        X_test = np.array([format_input(r) for r in test_records])
+        print(f"\nExample enriched input (embed-mlp):")
+        print(f"  {X_train[0][:120]}")
+    else:
+        X_train = np.array([r["message"] for r in train_records])
+        X_test = np.array([r["message"] for r in test_records])
+
+    y_train = np.array([r["label"] for r in train_records])
+    y_test = np.array([r["label"] for r in test_records])
+
+    # Print class distribution
+    all_labels = [r["label"] for r in records]
+    print(
+        f"\nClass distribution ({len(set(all_labels))} classes, {len(records)} samples):"
+    )
+    for label, count in Counter(all_labels).most_common():
+        print(f"  {label:12s}: {count:4d}")
+
+    print(f"\nTrain: {len(X_train)}  Test: {len(X_test)} (frozen)")
+
+    # Instantiate model
+    print(f"\nUsing model: {args.model}")
+    if args.model == "embed-mlp":
+        model = MODELS[args.model](model_name=args.embed_model)
+    else:
+        model = MODELS[args.model]()
+
+    # Cross-validation on train set (for tfidf-logreg with sklearn pipeline)
+    if args.model == "tfidf-logreg" and hasattr(model, "pipeline"):
+        cv_scores = cross_val_score(
+            model.pipeline, X_train, y_train, cv=5, scoring="f1_macro"
+        )
+        print(
+            f"\n5-fold CV F1 (macro): {cv_scores.mean():.3f} +/- {cv_scores.std():.3f}"
+        )
+
+    # Train
+    print("\nTraining...")
+    model.train(X_train, y_train)
+
+    # Predict
+    print("Evaluating...")
+    y_pred = model.predict(X_test)
+
+    # Evaluate
+    metrics = evaluate(y_test.tolist(), y_pred.tolist())
+    print_report(metrics)
+
+    # Model-specific outputs
+    if hasattr(model, "predict_proba"):
+        probas = model.predict_proba(X_test)
+
+        # Top-k accuracy for embed-mlp
+        if args.model == "embed-mlp":
+            print("\n" + "=" * 60)
+            print("TOP-K ACCURACY")
+            print("=" * 60)
+            y_test_indices = np.array(
+                [np.where(model.classes_ == y)[0][0] for y in y_test]
+            )
+            for k in [1, 2, 3]:
+                top_k_indices = np.argsort(probas, axis=1)[:, -k:]
+                top_k_hit = [
+                    y_test_indices[i] in top_k_indices[i]
+                    for i in range(len(y_test))
+                ]
+                print(
+                    f"  Top-{k}: {sum(top_k_hit)}/{len(y_test)} ({100*sum(top_k_hit)/len(y_test):.1f}%)"
+                )
+
+    # Top features for tfidf-logreg
+    if args.model == "tfidf-logreg" and hasattr(model, "feature_names"):
+        print("\nTop 5 features per class:")
+        for i, label in enumerate(model.classes_):
+            top_idx = model.coef_[i].argsort()[-5:][::-1]
+            top_features = model.feature_names[top_idx]
+            print(f"  {label:12s}: {', '.join(top_features)}")
+
+    # Save model
+    with open(args.output, "wb") as f:
+        pickle.dump(model, f)
+    print(f"\nModel saved to {args.output}")
+
+    # Sanity check predictions
+    test_samples = [
+        {"message": "Fix null pointer in auth module"},
+        {"message": "Add support for dark mode"},
+        {"message": "Update dependencies"},
+        {"message": "Refactor database connection pool"},
+        {"message": "Add unit tests for parser"},
+        {"message": "Update README with new API docs"},
+        {"message": "Bump version to 2.0.0"},
+        {"message": "Improve query performance with index"},
+    ]
+
+    if args.model == "embed-mlp":
+        # Use enriched format for embed-mlp
+        test_inputs = np.array([format_input(s) for s in test_samples])
+    else:
+        test_inputs = np.array([s["message"] for s in test_samples])
+
+    print("\nSanity check predictions:")
+    preds = model.predict(test_inputs)
+
+    if hasattr(model, "predict_proba"):
+        probas = model.predict_proba(test_inputs)
+        if args.model == "embed-mlp":
+            # Show top-k for embed-mlp
+            for sample, proba in zip(test_samples, probas):
+                sorted_idx = np.argsort(proba)[::-1]
+                top_k = [
+                    (model.classes_[j], proba[j])
+                    for j in sorted_idx[: args.top_k]
+                    if proba[j] >= args.threshold
+                ]
+                labels_str = ", ".join(f"{l}:{p:.2f}" for l, p in top_k)
+                print(f"  [{labels_str}]  {sample['message']}")
+        else:
+            # Show single prediction with confidence for tfidf-logreg
+            for sample, pred, proba in zip(test_samples, preds, probas):
+                conf = max(proba)
+                print(f"  [{pred:8s} {conf:.2f}] {sample['message']}")
+    else:
+        for sample, pred in zip(test_samples, preds):
+            print(f"  [{pred:8s}] {sample['message']}")
+
+
+if __name__ == "__main__":
+    main()

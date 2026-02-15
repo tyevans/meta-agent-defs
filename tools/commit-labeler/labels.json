@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "labels": ["feat", "fix", "refactor", "chore", "docs", "test", "perf", "style", "ci", "build", "i18n", "revert", "other"]
+}
