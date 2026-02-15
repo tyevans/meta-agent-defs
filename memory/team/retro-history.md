@@ -1,5 +1,14 @@
 # Retrospective History
 
+## Retro: 2026-02-15 (signal system sprint)
+- Tasks completed: 4 (wwzo signal struct, qn62 fix-chaser detector, 66r6 git-pulse signals, rl34 precision study)
+- Commits: 7 (2 feat, 1 fix, 4 chore). Fix rate: 14%
+- Sprint: 4 tasks, 2 serial (dependency chain) + 2 parallel (independent). Clean — 0 rework
+- Precision study: 67% TP rate on 5 real repos, detector is conservative (0 signals on ripgrep/tokio/serde)
+- Cross-project fix: git-intel now accessible from any project via absolute fallback path
+- Learnings persisted: 7 new (6 rust-dev, 1 infra). rust-dev pruned from 63→60 lines (ML/ONNX consolidated)
+- Key insight: meeting→sprint pipeline effective for Rust feature work; precision study as sprint task gates further investment
+
 ## Retro: 2026-02-15 (overnight session)
 - Tasks completed: 5 (hpnx git-pulse ML auto-detect + 4 pattern improvements: ay3h, tj9y, 0su5, rvmh)
 - Epic closed: 7fjp (ONNX integration, 12/12 children)

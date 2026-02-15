@@ -47,11 +47,8 @@
 - Two-pass hotspots: churn for add/del stats + separate commit walk for type classification. Merging into one pass would require refactoring churn API — not worth it (added: 2026-02-15)
 
 ## ML/ONNX Integration
-- ort v2 API: `TensorRef::from_array_view(([1usize, N], &*vec))` for tensor creation, `session.run(ort::inputs![t1, t2])` returns directly (not Result), `try_extract_tensor::<f32>()` returns `(&Shape, &[f32])` tuple (added: 2026-02-15)
-- session.run() needs `&mut Session` — propagates `&mut` through classify → classify_commit_with_ml → closure callers. Closures become `FnMut`, callers pass `&mut |...|` (added: 2026-02-15)
-- Reborrow pattern for mutable Option in closure: `ml.as_mut().map(|m| &mut **m)` re-borrows without consuming the Option (added: 2026-02-15)
-- ML feature flag: `#[cfg(feature = "ml")]` guards ml module, CLI flags, and all ML-aware function variants. Zero behavior change when feature is off (added: 2026-02-15)
-- ort + tokenizers as optional deps behind `ml` feature in Cargo.toml. `load-dynamic` feature for ort links to system ONNX Runtime (added: 2026-02-15)
+- ort v2 API: TensorRef::from_array_view for tensors, session.run(ort::inputs![...]) returns directly, try_extract_tensor for output. session.run needs `&mut Session` — propagates mutability through all callers; reborrow with `ml.as_mut().map(|m| &mut **m)` (consolidated: 2026-02-15)
+- ML feature flag: `#[cfg(feature = "ml")]` guards module + CLI flags + function variants. ort + tokenizers as optional deps, `load-dynamic` for system ONNX Runtime (consolidated: 2026-02-15)
 
 ## Precision Study Findings
 - Signal detector is highly conservative: well-maintained repos (ripgrep, tokio, serde, rayon) produce 0 signals in 6-month windows. Only clap produced 12 signals across 2 years (added: 2026-02-15)
