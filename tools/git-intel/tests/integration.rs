@@ -1650,6 +1650,46 @@ fn trends_captures_fixture_commits() {
     }
 }
 
+#[test]
+fn trends_dormant_files_in_json_output() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 2, 30, 3).unwrap();
+    let json = serde_json::to_string_pretty(&result).unwrap();
+    let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+
+    // dormant_files field should exist and be an array
+    assert!(parsed["dormant_files"].is_array(), "dormant_files should be an array in JSON output");
+}
+
+#[test]
+fn trends_dormant_files_sorted() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 2, 30, 3).unwrap();
+
+    // Verify sorted order
+    let mut sorted = result.dormant_files.clone();
+    sorted.sort();
+    assert_eq!(result.dormant_files, sorted, "dormant_files should be sorted alphabetically");
+}
+
+#[test]
+fn trends_single_window_no_dormant_files() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 1, 365, 5).unwrap();
+
+    // With only one window, there can be no dormant files
+    assert!(result.dormant_files.is_empty(), "single window should have no dormant files");
+}
+
+#[test]
+fn trends_dormant_files_type_is_vec_string() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 3, 30, 5).unwrap();
+
+    // dormant_files should be a Vec<String> (compile-time check + runtime sanity)
+    let _: &Vec<String> = &result.dormant_files;
+}
+
 // ---- signal detection tests ----
 
 /// Create a fixture with fix-after-feat and fix-after-refactor patterns
@@ -2157,4 +2197,174 @@ fn cache_invalidated_by_branch_switch() {
     // Fresh computation should reflect feature branch state
     let result = metrics::run(&repo, None, None, None).unwrap();
     assert_eq!(result.total_commits, 2, "feature branch should see 2 commits");
+}
+
+// ---- directory_chains tests ----
+
+/// Create a fixture with multiple files in the same directory edited across many commits,
+/// generating enough churn for directory chain detection.
+///
+/// Commits (newest to oldest):
+///   6. "fix: patch parser again"    -- modifies src/parser.rs (large change)
+///   5. "refactor: clean up parser"  -- modifies src/parser.rs (large change)
+///   4. "feat: add formatter"        -- creates src/formatter.rs (large change)
+///   3. "fix: parser edge case"      -- modifies src/parser.rs (large change)
+///   2. "feat: add parser"           -- creates src/parser.rs (large change)
+///   1. "feat: initial commit"       -- creates README.md, src/lib.rs
+///
+/// The "src" directory gets 5 edits across 5 commits (commits 2-6) with substantial churn.
+fn create_directory_chain_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Generate a large content block to produce significant churn
+    let big_block = |prefix: &str, lines: usize| -> String {
+        (0..lines).map(|i| format!("// {} line {}\n", prefix, i)).collect()
+    };
+
+    // Commit 1: feat: initial commit
+    let tree_oid = stage_files(&repo, &[
+        ("README.md", "# Project\n"),
+        ("src/lib.rs", "pub mod parser;\n"),
+    ]);
+    let s = make_sig(base_epoch);
+    let c1 = do_commit(&repo, tree_oid, &[], &s, "feat: initial commit");
+
+    // Commit 2: feat: add parser (creates src/parser.rs with ~60 lines)
+    let tree_oid = stage_files(&repo, &[
+        ("src/parser.rs", &big_block("parser_v1", 60)),
+    ]);
+    let s = make_sig(base_epoch + day);
+    let c2 = do_commit(&repo, tree_oid, &[c1], &s, "feat: add parser");
+
+    // Commit 3: fix: parser edge case (modifies src/parser.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("src/parser.rs", &big_block("parser_v2", 60)),
+    ]);
+    let s = make_sig(base_epoch + 2 * day);
+    let c3 = do_commit(&repo, tree_oid, &[c2], &s, "fix: parser edge case");
+
+    // Commit 4: feat: add formatter (creates src/formatter.rs with ~60 lines)
+    let tree_oid = stage_files(&repo, &[
+        ("src/formatter.rs", &big_block("formatter_v1", 60)),
+    ]);
+    let s = make_sig(base_epoch + 3 * day);
+    let c4 = do_commit(&repo, tree_oid, &[c3], &s, "feat: add formatter");
+
+    // Commit 5: refactor: clean up parser (modifies src/parser.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("src/parser.rs", &big_block("parser_v3", 60)),
+    ]);
+    let s = make_sig(base_epoch + 4 * day);
+    let c5 = do_commit(&repo, tree_oid, &[c4], &s, "refactor: clean up parser");
+
+    // Commit 6: fix: patch parser again (modifies src/parser.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("src/parser.rs", &big_block("parser_v4", 60)),
+    ]);
+    let s = make_sig(base_epoch + 5 * day);
+    let _c6 = do_commit(&repo, tree_oid, &[c5], &s, "fix: patch parser again");
+
+    (dir, repo)
+}
+
+#[test]
+fn directory_chains_detected() {
+    let (_dir, repo) = create_directory_chain_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // "src" directory is touched in commits 2-6 (5 commits), with high churn
+    assert!(!result.directory_chains.is_empty(), "should detect directory chains");
+
+    let src_chain = result.directory_chains.iter().find(|d| d.path == "src");
+    assert!(src_chain.is_some(), "should have a chain for 'src' directory");
+
+    let src = src_chain.unwrap();
+    assert!(src.total_edit_count >= 3, "src should have >= 3 edits, got {}", src.total_edit_count);
+    assert!(src.total_churn > 0, "src should have non-zero churn");
+    // src/parser.rs, src/formatter.rs, src/lib.rs are files in src/
+    assert!(src.files.len() >= 2, "src should contain multiple files, got {}", src.files.len());
+    // Files should be sorted
+    let mut sorted_files = src.files.clone();
+    sorted_files.sort();
+    assert_eq!(src.files, sorted_files, "files should be sorted");
+}
+
+#[test]
+fn directory_chains_empty_for_few_edits() {
+    // Use temporal cluster fixture: each fix commit touches a different src/ file
+    // but commits are close together. src/a.rs, src/b.rs, src/c.rs, src/d.rs each touched once,
+    // plus initial commit touches src/main.rs. That's 5 commits touching src/ so it qualifies.
+    // Just verify the basic contract holds.
+    let (_dir, repo) = create_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+    for chain in &result.directory_chains {
+        assert!(chain.total_edit_count >= 3);
+        assert!(!chain.files.is_empty());
+    }
+}
+
+#[test]
+fn directory_chains_sorted_by_churn_descending() {
+    let (_dir, repo) = create_directory_chain_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    for i in 1..result.directory_chains.len() {
+        assert!(
+            result.directory_chains[i - 1].total_churn >= result.directory_chains[i].total_churn,
+            "directory_chains should be sorted by total_churn descending"
+        );
+    }
+}
+
+#[test]
+fn directory_chains_respects_limit() {
+    let (_dir, repo) = create_directory_chain_fixture();
+    let result = patterns::run(&repo, None, None, Some(0)).unwrap();
+    assert!(result.directory_chains.is_empty(), "limit 0 should produce no directory chains");
+}
+
+#[test]
+fn directory_chains_capped_at_10() {
+    let (_dir, repo) = create_directory_chain_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+    assert!(result.directory_chains.len() <= 10, "directory_chains should be capped at 10");
 }

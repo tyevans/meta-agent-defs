@@ -10,6 +10,7 @@ use crate::signals::{Signal, SignalKind};
 pub struct PatternsOutput {
     pub fix_after_feat: Vec<FixAfterFeat>,
     pub multi_edit_chains: Vec<MultiEditChain>,
+    pub directory_chains: Vec<DirectoryChain>,
     pub temporal_clusters: Vec<TemporalCluster>,
     pub total_commits_analyzed: usize,
     pub signals: Vec<Signal>,
@@ -42,6 +43,14 @@ pub struct ChainCommit {
     pub date: String,
     pub message: String,
     pub commit_type: String,
+}
+
+#[derive(Serialize)]
+pub struct DirectoryChain {
+    pub path: String,
+    pub total_edit_count: usize,
+    pub total_churn: usize,
+    pub files: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -269,6 +278,51 @@ fn run_impl(
     };
     multi_edit_chains.truncate(chain_cap);
 
+    // 2b. Directory chains: aggregate file edit counts by parent directory (depth 1)
+    let mut dir_edit_count: HashMap<String, usize> = HashMap::new();
+    let mut dir_churn: HashMap<String, usize> = HashMap::new();
+    let mut dir_files: HashMap<String, Vec<String>> = HashMap::new();
+    for ci in &commits_info {
+        // Track unique (dir, file) pairs per commit to count edits per directory correctly:
+        // each commit touching a file in that directory counts as one edit for the directory.
+        let mut seen_dirs: std::collections::HashSet<String> = std::collections::HashSet::new();
+        for f in &ci.files_touched {
+            let dir = common::dir_prefix(f, 1);
+            if seen_dirs.insert(dir.clone()) {
+                *dir_edit_count.entry(dir.clone()).or_insert(0) += 1;
+            }
+            *dir_churn.entry(dir.clone()).or_insert(0) +=
+                ci.file_churn.get(f).copied().unwrap_or(0);
+            let files = dir_files.entry(dir).or_default();
+            if !files.contains(f) {
+                files.push(f.clone());
+            }
+        }
+    }
+
+    let mut directory_chains: Vec<DirectoryChain> = dir_edit_count
+        .into_iter()
+        .filter(|(_dir, count)| *count >= 3)
+        .map(|(dir, count)| {
+            let total_churn = dir_churn.get(&dir).copied().unwrap_or(0);
+            let mut files = dir_files.remove(&dir).unwrap_or_default();
+            files.sort();
+            DirectoryChain {
+                path: dir,
+                total_edit_count: count,
+                total_churn,
+                files,
+            }
+        })
+        .collect();
+    directory_chains.sort_by(|a, b| b.total_churn.cmp(&a.total_churn));
+
+    let dir_chain_cap = match limit {
+        Some(l) if l < 10 => l,
+        _ => 10,
+    };
+    directory_chains.truncate(dir_chain_cap);
+
     // 3. Temporal clusters: 3+ commits of the same type within a 1-hour window
     let mut temporal_clusters = Vec::new();
     {
@@ -344,6 +398,7 @@ fn run_impl(
     Ok(PatternsOutput {
         fix_after_feat,
         multi_edit_chains,
+        directory_chains,
         temporal_clusters,
         total_commits_analyzed,
         signals,

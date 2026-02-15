@@ -56,5 +56,14 @@
 - Exported model outputs f32 logits (not probabilities) — Rust side must apply softmax. Expects i64 input tensors. Large models produce model.onnx + model.onnx.data (external weights) (added: 2026-02-15)
 - train.py --export-onnx supports standalone mode (load existing model + export) and train+export mode (added: 2026-02-15)
 
+## Ensemble
+- EnsembleClassifier in models/ensemble.py: 3 strategies (majority_vote, soft_vote, weighted_soft_vote), registered as "ensemble" in MODELS dict (added: 2026-02-15)
+- Ensemble train() loads pre-trained sub-models (no actual training); --ensemble-models paths, --ensemble-strategy, --ensemble-weights CLI flags (added: 2026-02-15)
+- Smart model type detection: transformer (tokenizer_config.json), setfit (label_mapping.json only), ensemble (config.json), else pickle. _align_probas() handles different class orderings (added: 2026-02-15)
+
+## Experiment Tracking
+- registry.py: file-based JSON registry in results/ dir. register_result(), list_results(), best_result(), compare_results() (added: 2026-02-15)
+- train.py --registry flag auto-registers eval results with metadata (timestamp, git commit, CLI args, sample counts) (added: 2026-02-15)
+
 ## Cross-Agent Notes
 - (none yet)

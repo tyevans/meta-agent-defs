@@ -33,7 +33,7 @@ MODELS: dict[str, type[ModelProtocol]] = {}
 # These imports happen after MODELS is defined so models can register themselves
 def _register_models():
     """Import all model modules to populate MODELS registry."""
-    from . import tfidf_logreg, embed_mlp, transformer, setfit
+    from . import tfidf_logreg, embed_mlp, transformer, setfit, ensemble
 
 
 _register_models()

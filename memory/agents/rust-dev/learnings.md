@@ -14,7 +14,7 @@
 - extract_ticket_ref(): manual parsing, priority: bracketed JIRA > unbracketed JIRA > Fixes/Closes #N > bare #N (added: 2026-02-15)
 - --until flag: end-of-day semantics (23:59:59 UTC), inverted ranges error immediately. Cache key includes both since+until (added: 2026-02-15)
 - dir_prefix() in common.rs (shared by hotspots + authors). depth=0 returns "." (updated: 2026-02-15)
-- Pattern detection: fix-after-feat uses HashSet file intersection (filters noise); temporal clusters scan for 3+ same-type within 1h window (non-overlapping); convergence pairs removed as noise (consolidated: 2026-02-15)
+- Pattern detection: fix-after-feat uses HashSet file intersection (filters noise); temporal clusters scan for 3+ same-type within 1h window (non-overlapping); directory chains aggregate file edits to dir level with per-commit dedup via HashSet (consolidated: 2026-02-15)
 - Signal system: signals.rs defines Signal struct + SignalKind enum; patterns.rs generates signals alongside existing fix_after_feat Vec (backward compatible). Signals cover both feat and refactor predecessors (added: 2026-02-15)
 
 ## Preferences
@@ -34,7 +34,7 @@
 ## Testing
 - git2 test fixtures: work with `Oid` values between commits, never hold `Commit<'repo>` across commit boundaries — avoids borrow conflicts (added: 2026-02-14)
 - Fixture builder pattern: `stage_files` + `do_commit` closures create reproducible repos with controlled dates and content (added: 2026-02-14)
-- 175 tests: 95 unit + 80 integration (updated: 2026-02-15, iterator refactor + relative date tests)
+- 196 tests: 107 unit + 89 integration (updated: 2026-02-15, dormant files + directory chains)
 - Merge commit fixture: create branch, divergent commits on main+feature, then merge — produces commit with 2 parents for testing (added: 2026-02-15)
 
 ## Cache

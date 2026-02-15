@@ -4,6 +4,11 @@ Usage:
     uv run python train.py ../data/labeled-all.jsonl --model tfidf-logreg
     uv run python train.py ../data/relabeled.jsonl --model embed-mlp
     uv run python train.py ../data/labeled-all.jsonl --model tfidf-logreg --reset-test
+    uv run python train.py ../data/labeled-all.jsonl --model ensemble --ensemble-models model1.pkl transformer-model/ --ensemble-strategy soft_vote
+
+    # Track experiments in results registry
+    uv run python train.py ../data/labeled-all.jsonl --model tfidf-logreg --eval-output results/eval.json --registry
+    python registry.py  # compare all registered experiments
 """
 
 from __future__ import annotations
@@ -18,6 +23,7 @@ from sklearn.model_selection import cross_val_score
 
 # Import model modules to trigger registration
 import models.embed_mlp
+import models.ensemble
 import models.setfit
 import models.tfidf_logreg
 import models.transformer
@@ -25,6 +31,7 @@ from data import freeze_test_set, load_labeled, load_test_set
 from eval import run_eval
 from models import MODELS
 from models.embed_mlp import format_input
+from registry import register_result
 
 
 def main():
@@ -138,6 +145,33 @@ def main():
         default=1,
         help="Number of epochs for SetFit classification head (default 1)",
     )
+    # Ensemble-specific args
+    parser.add_argument(
+        "--ensemble-models",
+        nargs="+",
+        type=Path,
+        default=None,
+        help="Paths to pre-trained sub-models for ensemble (pickle files or model directories)",
+    )
+    parser.add_argument(
+        "--ensemble-strategy",
+        type=str,
+        default="soft_vote",
+        choices=["majority_vote", "soft_vote", "weighted_soft_vote"],
+        help="Ensemble combination strategy (default: soft_vote)",
+    )
+    parser.add_argument(
+        "--ensemble-weights",
+        nargs="+",
+        type=float,
+        default=None,
+        help="Weights for weighted_soft_vote strategy (one per sub-model)",
+    )
+    parser.add_argument(
+        "--registry",
+        action="store_true",
+        help="Register experiment result in results registry (requires --eval-output)",
+    )
     args = parser.parse_args()
 
     if args.output is None:
@@ -244,6 +278,14 @@ def main():
             num_iterations=args.setfit_iterations,
             num_epochs=args.setfit_epochs,
         )
+    elif args.model == "ensemble":
+        if not args.ensemble_models:
+            parser.error("--ensemble-models is required when using --model ensemble")
+        model = MODELS[args.model](
+            model_paths=args.ensemble_models,
+            weights=args.ensemble_weights,
+            strategy=args.ensemble_strategy,
+        )
     else:
         model = MODELS[args.model]()
 
@@ -282,6 +324,49 @@ def main():
         model_name=args.model,
         messages=test_messages,
     )
+
+    # Register result in registry if requested
+    if args.registry:
+        if args.eval_output is None:
+            print("\nWarning: --registry requires --eval-output to be set (skipping registration)")
+        else:
+            # Build metadata from CLI args
+            cli_metadata = {
+                "model": args.model,
+                "cli_args": {
+                    "input": str(args.input),
+                    "test_size": args.test_size,
+                    "min_confidence": args.min_confidence,
+                    "min_class_count": args.min_class_count,
+                    "class_weight": args.class_weight,
+                    "focal_loss": args.focal_loss,
+                    "focal_gamma": args.focal_gamma if args.focal_loss else None,
+                },
+                "train_samples": len(X_train),
+                "test_samples": len(X_test),
+                "num_classes": len(model.classes_),
+            }
+
+            # Add model-specific args
+            if args.model == "embed-mlp":
+                cli_metadata["cli_args"]["embed_model"] = args.embed_model
+            elif args.model == "transformer":
+                cli_metadata["cli_args"]["export_onnx"] = str(args.export_onnx) if args.export_onnx else None
+            elif args.model == "setfit":
+                cli_metadata["cli_args"]["setfit_backbone"] = args.setfit_backbone
+                cli_metadata["cli_args"]["samples_per_class"] = args.samples_per_class
+                cli_metadata["cli_args"]["setfit_iterations"] = args.setfit_iterations
+            elif args.model == "ensemble":
+                cli_metadata["cli_args"]["ensemble_models"] = [str(p) for p in args.ensemble_models]
+                cli_metadata["cli_args"]["ensemble_strategy"] = args.ensemble_strategy
+                cli_metadata["cli_args"]["ensemble_weights"] = args.ensemble_weights
+
+            # Merge metrics into metadata
+            result_data = {**metrics, **cli_metadata}
+
+            # Register
+            registry_file = register_result(result_data, metadata=cli_metadata)
+            print(f"\nResult registered to {registry_file}")
 
     # Model-specific outputs
     if probas is not None:
@@ -330,6 +415,14 @@ def main():
 
         if args.export_onnx:
             print(f"\nWarning: --export-onnx not supported for SetFit models (ignored)")
+    elif args.model == "ensemble":
+        # Ensemble saves as directory with config.json
+        save_dir = args.output.parent / "ensemble-model"
+        model.save(save_dir)
+        print(f"\nEnsemble config saved to {save_dir}")
+
+        if args.export_onnx:
+            print(f"\nWarning: --export-onnx not supported for ensemble models (ignored)")
     else:
         # Other models use pickle
         with open(args.output, "wb") as f:
