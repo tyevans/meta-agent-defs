@@ -20,14 +20,16 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 # --- Argument parsing ---
 PROJECT_DIR=""
 USE_HARDLINKS=false
+SKIP_RUST=false
 
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--skip-rust] [--help]
 
 Options:
   project_dir   Install to project_dir/.claude/ instead of ~/.claude/
   --hardlink    Use hardlinks instead of symlinks
+  --skip-rust   Skip optional git-intel Rust CLI build
   --help, -h    Show this help message
 EOF
     exit 0
@@ -40,6 +42,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --hardlink)
             USE_HARDLINKS=true
+            shift
+            ;;
+        --skip-rust)
+            SKIP_RUST=true
             shift
             ;;
         -*)
@@ -364,6 +370,42 @@ info "Writing installation manifest..."
 log "Manifest written: $MANIFEST_FILE ($(wc -l < "$MANIFEST_FILE") entries)"
 
 echo ""
+
+# --- git-intel Rust CLI (optional) ---
+if [ "$SKIP_RUST" = false ]; then
+    GIT_INTEL_DIR="$SCRIPT_DIR/tools/git-intel"
+    if [ -d "$GIT_INTEL_DIR" ] && [ -f "$GIT_INTEL_DIR/Cargo.toml" ]; then
+        info "Checking for git-intel build prerequisites..."
+
+        if command -v cargo &>/dev/null; then
+            # cargo is available - offer to build
+            log "Found cargo — git-intel can be built"
+            info "git-intel provides: Rust CLI for churn analysis, pattern detection, and file lifecycle tracking"
+            echo ""
+            read -p "Build git-intel now? [y/N] " -n 1 -r
+            echo ""
+
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                info "Building git-intel in $GIT_INTEL_DIR..."
+                if (cd "$GIT_INTEL_DIR" && cargo build 2>&1); then
+                    log "git-intel built successfully"
+                    info "Binary available at: $GIT_INTEL_DIR/target/debug/git-intel"
+                else
+                    warn "git-intel build failed (see output above)"
+                    warn "Skills using git-intel will fall back gracefully"
+                fi
+            else
+                info "Skipping git-intel build (you can build later with: cd $GIT_INTEL_DIR && cargo build)"
+            fi
+        else
+            # cargo not available - print friendly skip message
+            warn "git-intel (optional Rust CLI for churn/pattern analysis) requires cargo"
+            info "Install rustup (https://rustup.rs) to enable it. All skills work without it."
+        fi
+        echo ""
+    fi
+fi
+
 log "Installation complete!"
 echo ""
 info "What was installed:"

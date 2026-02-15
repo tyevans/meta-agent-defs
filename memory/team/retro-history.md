@@ -92,3 +92,11 @@
 - Team member added: rust-dev (opus, owns tools/git-intel/**)
 - Key insight: Review→meeting→sprint pipeline emerged as a powerful code quality workflow. User's instinct to /assemble before dispatching Rust work created the right specialist. 10/10 first-attempt dispatch successes. Highest single-session bead throughput.
 - Backlog state: 178 total, 8 open (6 ready, 2 blocked). All P1 work complete.
+
+## Retro: 2026-02-14 (session 13 — git-intel integration audit)
+- Tasks completed: 4 (2 doc structure updates + install.sh optional build + git-pulse.sh delegation)
+- Workflow: /fractal (3 parallel handlers) → assess → /sprint (3 serial dispatches, all infra-owned)
+- Commits: 0 (uncommitted — session end will commit)
+- New learnings: 2 for infra (three-gate delegation pattern, --skip-* flag pattern)
+- Key insight: Fractal→sprint pipeline is effective for audit-then-fix workflows. Fractal identifies gaps with evidence, sprint fixes them. All 4 dispatches were first-attempt successes (streak continues). install.sh now handles optional Rust toolchain gracefully — never blocks users without cargo.
+- Backlog state: 183/183 closed, 0 open

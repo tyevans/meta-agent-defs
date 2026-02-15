@@ -25,6 +25,8 @@
 ## Preferences
 - bin/git-pulse.sh is the shared entry point for git session metrics — skills should call it instead of raw git log (added: 2026-02-14)
 - Bash parameter expansion `${VAR:+"$VAR"}` is essential for optional flags with spaces in git commands (added: 2026-02-14)
+- Optional tool delegation pattern: three-gate check (binary exists + deps like jq available + input compatible) before delegating, else fall back silently. Used in git-pulse.sh for git-intel. (added: 2026-02-14)
+- install.sh optional build features: use `--skip-*` flags for CI, interactive prompt for local, never block install on missing toolchain (added: 2026-02-14)
 
 ## Cross-Agent Notes
 - rules/ follows the global-portable symlink pattern (like agents/, skills/). Three-way symmetry: portable directory + install.sh symlink logic + .claude/ project override. Replicate this pattern when adding new global config categories. (triaged: 2026-02-14)

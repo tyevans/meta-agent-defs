@@ -51,6 +51,8 @@ meta-agent-defs/
 │   ├── agent-generator.md      # Generates project-specific agents
 │   ├── project-bootstrapper.md # Bootstraps projects with full Claude Code setup
 │   └── code-reviewer.md        # Read-only code review agent
+├── bin/
+│   └── git-pulse.sh            # Shared entry point for git session metrics
 ├── skills/                      # Skill definitions (symlinked to ~/.claude/skills/)
 │   ├── blossom/SKILL.md         # Spike-driven exploration (context: fork)
 │   ├── fractal/SKILL.md         # Goal-directed recursive exploration (inline)
@@ -74,6 +76,8 @@ meta-agent-defs/
 │   └── memory-layout.md         # Path registry for persistent state
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
+├── tools/
+│   └── git-intel/               # Rust CLI for git metrics (metrics, churn, lifecycle, patterns)
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
 ├── mcp-servers.json            # MCP server definitions (installed globally)
 ├── install.sh                  # Symlink installer (idempotent)
