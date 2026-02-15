@@ -292,6 +292,286 @@ fn patterns_limit_zero() {
     assert!(result.temporal_clusters.is_empty());
 }
 
+/// Create a fixture to test gravity file filtering.
+/// Creates 25 commits where:
+///   - gravity.txt is touched by 20 commits (80% > 15% threshold)
+///   - feature.rs is touched by 5 commits (20% > 15% threshold but close)
+///   - specific.rs is touched by only 2 commits (8% < 15% threshold)
+///
+/// Commit sequence:
+///   1-20: Various commits touching gravity.txt (making it a gravity file)
+///   21. feat: add specific (specific.rs)
+///   22. feat: initial feature (feature.rs, gravity.txt)
+///   23. feat: enhance feature (feature.rs, gravity.txt)
+///   24. fix: fix feature bug (feature.rs, gravity.txt) -- shares feature.rs with commits 22,23
+///   25. fix: fix specific bug (specific.rs) -- shares specific.rs with commit 21
+fn create_gravity_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Commits 1-20: touch gravity.txt repeatedly (making it a gravity file)
+    let tree_oid = stage_files(&repo, &[("gravity.txt", "v1\n")]);
+    let s = make_sig(base_epoch);
+    let mut prev = do_commit(&repo, tree_oid, &[], &s, "chore: init gravity");
+
+    for i in 2..=20 {
+        let tree_oid = stage_files(&repo, &[(
+            "gravity.txt",
+            &format!("v{}\n", i),
+        )]);
+        let s = make_sig(base_epoch + (i as i64 - 1) * day);
+        prev = do_commit(
+            &repo,
+            tree_oid,
+            &[prev],
+            &s,
+            &format!("chore: update gravity {}", i),
+        );
+    }
+
+    // Commit 21: feat: add specific (specific.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("specific.rs", "fn specific() {}\n"),
+    ]);
+    let s = make_sig(base_epoch + 20 * day);
+    let c21 = do_commit(&repo, tree_oid, &[prev], &s, "feat: add specific");
+
+    // Commit 22: feat: initial feature (feature.rs, gravity.txt)
+    let tree_oid = stage_files(&repo, &[
+        ("feature.rs", "fn feature() {}\n"),
+        ("gravity.txt", "v21\n"),
+    ]);
+    let s = make_sig(base_epoch + 21 * day);
+    let c22 = do_commit(&repo, tree_oid, &[c21], &s, "feat: initial feature");
+
+    // Commit 23: feat: enhance feature (feature.rs, gravity.txt)
+    let tree_oid = stage_files(&repo, &[
+        ("feature.rs", "fn feature() { println!(\"enhanced\"); }\n"),
+        ("gravity.txt", "v22\n"),
+    ]);
+    let s = make_sig(base_epoch + 22 * day);
+    let c23 = do_commit(&repo, tree_oid, &[c22], &s, "feat: enhance feature");
+
+    // Commit 24: fix: fix feature bug (feature.rs, gravity.txt)
+    let tree_oid = stage_files(&repo, &[
+        ("feature.rs", "fn feature() { println!(\"enhanced and fixed\"); }\n"),
+        ("gravity.txt", "v23\n"),
+    ]);
+    let s = make_sig(base_epoch + 23 * day);
+    let c24 = do_commit(&repo, tree_oid, &[c23], &s, "fix: fix feature bug");
+
+    // Commit 25: fix: fix specific bug (specific.rs)
+    let tree_oid = stage_files(&repo, &[
+        ("specific.rs", "fn specific() { /* fixed */ }\n"),
+    ]);
+    let s = make_sig(base_epoch + 24 * day);
+    let _c25 = do_commit(&repo, tree_oid, &[c24], &s, "fix: fix specific bug");
+
+    (dir, repo)
+}
+
+#[test]
+fn patterns_gravity_files_computed() {
+    let (_dir, repo) = create_gravity_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // With 25 commits, threshold is ceil(25 * 0.15) = 4
+    // gravity.txt appears in 23 commits (92%), so it should be a gravity file
+    // feature.rs appears in 3 commits (12%), so it should NOT be a gravity file
+    // specific.rs appears in 2 commits (8%), so it should NOT be a gravity file
+
+    assert_eq!(result.total_commits_analyzed, 25);
+    assert!(result.gravity_files.contains(&"gravity.txt".to_string()));
+    assert!(!result.gravity_files.contains(&"feature.rs".to_string()));
+    assert!(!result.gravity_files.contains(&"specific.rs".to_string()));
+}
+
+#[test]
+fn patterns_gravity_files_filter_signals() {
+    let (_dir, repo) = create_gravity_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // Commit 24 (fix) shares both gravity.txt and feature.rs with commit 23 (feat)
+    // gravity.txt is a gravity file and should be filtered out
+    // feature.rs is NOT a gravity file, so a signal SHOULD be generated with only feature.rs
+
+    // Commit 25 (fix) shares specific.rs with commit 21 (feat)
+    // specific.rs is NOT a gravity file, so another signal SHOULD be generated
+
+    assert_eq!(result.signals.len(), 2, "Expected two signals with non-gravity files");
+
+    // Check that one signal is for feature.rs
+    let feature_signal = result.signals.iter().find(|s| s.files.contains(&"feature.rs".to_string()));
+    assert!(feature_signal.is_some(), "Expected a signal for feature.rs");
+    assert!(!feature_signal.unwrap().files.contains(&"gravity.txt".to_string()), "gravity.txt should be filtered out");
+
+    // Check that one signal is for specific.rs
+    let specific_signal = result.signals.iter().find(|s| s.files.contains(&"specific.rs".to_string()));
+    assert!(specific_signal.is_some(), "Expected a signal for specific.rs");
+}
+
+/// Create a fixture where commits share only gravity files.
+/// This tests that NO signals are generated when all shared files are gravity files.
+///
+/// Commit sequence (25 commits to meet minimum threshold):
+///   1-20: Various commits touching gravity.txt (making it a gravity file)
+///   21-23: Three commits touching both gravity.txt and feature.rs (making both gravity files)
+///   24. feat: add feature (feature.rs, gravity.txt)
+///   25. fix: fix feature (feature.rs, gravity.txt)
+///
+/// The fix at commit 25 shares both gravity.txt and feature.rs with feat at commit 24,
+/// but BOTH files are gravity files, so NO signal should be generated.
+fn create_mixed_gravity_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Commits 1-20: touch gravity.txt to make it a gravity file
+    let tree_oid = stage_files(&repo, &[("gravity.txt", "v1\n")]);
+    let s = make_sig(base_epoch);
+    let mut prev = do_commit(&repo, tree_oid, &[], &s, "chore: init gravity");
+
+    for i in 2..=20 {
+        let tree_oid = stage_files(&repo, &[(
+            "gravity.txt",
+            &format!("v{}\n", i),
+        )]);
+        let s = make_sig(base_epoch + (i as i64 - 1) * day);
+        prev = do_commit(
+            &repo,
+            tree_oid,
+            &[prev],
+            &s,
+            &format!("chore: update gravity {}", i),
+        );
+    }
+
+    // Commits 21-23: touch both gravity.txt and feature.rs to make both gravity files
+    for i in 21..=23 {
+        let tree_oid = stage_files(&repo, &[
+            ("gravity.txt", &format!("v{}\n", i)),
+            ("feature.rs", &format!("fn feature() {{ /* v{} */ }}\n", i)),
+        ]);
+        let s = make_sig(base_epoch + (i as i64 - 1) * day);
+        prev = do_commit(
+            &repo,
+            tree_oid,
+            &[prev],
+            &s,
+            &format!("chore: update both {}", i),
+        );
+    }
+
+    // Commit 24: feat: add feature (feature.rs, gravity.txt)
+    let tree_oid = stage_files(&repo, &[
+        ("feature.rs", "fn feature() {}\n"),
+        ("gravity.txt", "v24\n"),
+    ]);
+    let s = make_sig(base_epoch + 23 * day);
+    let c24 = do_commit(&repo, tree_oid, &[prev], &s, "feat: add feature");
+
+    // Commit 25: fix: fix feature (feature.rs, gravity.txt)
+    let tree_oid = stage_files(&repo, &[
+        ("feature.rs", "fn feature() { /* fixed */ }\n"),
+        ("gravity.txt", "v25\n"),
+    ]);
+    let s = make_sig(base_epoch + 24 * day);
+    let _c25 = do_commit(&repo, tree_oid, &[c24], &s, "fix: fix feature");
+
+    (dir, repo)
+}
+
+#[test]
+fn patterns_mixed_gravity_generates_signal() {
+    let (_dir, repo) = create_mixed_gravity_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // With 25 commits, threshold is ceil(25 * 0.15) = 4
+    // gravity.txt appears in 25 commits (100%), so it IS a gravity file
+    assert!(result.gravity_files.contains(&"gravity.txt".to_string()));
+
+    // feature.rs appears in 5 commits (20%), so it IS a gravity file (>15%)
+    assert!(result.gravity_files.contains(&"feature.rs".to_string()));
+
+    // Since both files are gravity files, NO signal should be generated
+    assert!(result.signals.is_empty(), "Expected no signals when all shared files are gravity files");
+}
+
 // ---- merge commit tests ----
 
 /// Create a fixture with a merge commit:
@@ -1868,6 +2148,190 @@ fn signals_backward_compatibility_fix_after_feat() {
         assert!(pair.feat_message.starts_with("feat:"),
             "fix_after_feat should only contain feat commits, got: {}", pair.feat_message);
     }
+}
+
+// ---- cosmetic fix filter tests ----
+
+/// Create a fixture with cosmetic fix commits that should NOT generate signals.
+///
+/// Commits (newest to oldest):
+///   5. "fix typo in README"         -- modifies README.md (cosmetic, no signal)
+///   4. "fix: fix real bug"          -- modifies src/lib.rs (functional, signals)
+///   3. "feat: add feature"          -- modifies src/lib.rs
+///   2. "Fix formatting in utils"    -- modifies src/utils.rs (cosmetic, no signal)
+///   1. "feat: initial commit"       -- creates README.md, src/lib.rs, src/utils.rs
+fn create_cosmetic_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Commit 1: feat: initial commit
+    let tree_oid = stage_files(&repo, &[
+        ("README.md", "# Project\n"),
+        ("src/lib.rs", "pub fn hello() {}\n"),
+        ("src/utils.rs", "pub fn helper() {}\n"),
+    ]);
+    let s = make_sig(base_epoch);
+    let c1 = do_commit(&repo, tree_oid, &[], &s, "feat: initial commit");
+
+    // Commit 2: Fix formatting in utils (cosmetic)
+    let tree_oid = stage_files(&repo, &[
+        ("src/utils.rs", "pub fn helper() { }\n"), // Just spacing change
+    ]);
+    let s = make_sig(base_epoch + day);
+    let c2 = do_commit(&repo, tree_oid, &[c1], &s, "Fix formatting in utils");
+
+    // Commit 3: feat: add feature
+    let tree_oid = stage_files(&repo, &[
+        ("src/lib.rs", "pub fn hello() {}\npub fn new_feature() {}\n"),
+    ]);
+    let s = make_sig(base_epoch + 2 * day);
+    let c3 = do_commit(&repo, tree_oid, &[c2], &s, "feat: add feature");
+
+    // Commit 4: fix: fix real bug (functional)
+    let tree_oid = stage_files(&repo, &[
+        ("src/lib.rs", "pub fn hello() {}\npub fn new_feature() {\n    // Fixed bug\n}\n"),
+    ]);
+    let s = make_sig(base_epoch + 3 * day);
+    let c4 = do_commit(&repo, tree_oid, &[c3], &s, "fix: fix real bug");
+
+    // Commit 5: fix typo in README (cosmetic)
+    let tree_oid = stage_files(&repo, &[
+        ("README.md", "# Project\n\nFixed typo.\n"),
+    ]);
+    let s = make_sig(base_epoch + 4 * day);
+    let _c5 = do_commit(&repo, tree_oid, &[c4], &s, "fix typo in README");
+
+    (dir, repo)
+}
+
+#[test]
+fn cosmetic_fix_does_not_generate_signal() {
+    let (_dir, repo) = create_cosmetic_fixture();
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // Should only have one signal: the functional "fix: fix real bug" after "feat: add feature"
+    // The cosmetic fixes should NOT generate signals
+    assert_eq!(result.signals.len(), 1, "Should only have one signal from functional fix");
+
+    let signal = &result.signals[0];
+    assert!(matches!(signal.kind, git_intel::signals::SignalKind::FixAfterFeat));
+    assert_eq!(signal.files, vec!["src/lib.rs"], "Signal should be for src/lib.rs");
+}
+
+#[test]
+fn cosmetic_fix_various_patterns_filtered() {
+    // Create a fixture with multiple cosmetic patterns
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Create initial feat commit
+    let tree_oid = stage_files(&repo, &[
+        ("src/lib.rs", "pub fn hello() {}\n"),
+    ]);
+    let s = make_sig(base_epoch);
+    let c1 = do_commit(&repo, tree_oid, &[], &s, "feat: initial feature");
+
+    // Test various cosmetic patterns
+    let cosmetic_messages = vec![
+        "fix style in code",
+        "Fix spacing issues",
+        "fixed formatting",
+        "fix whitespace errors",
+        "fix indent problem",
+        "fix lint warnings",
+        "Fix comment typo",
+        "fixed style guide violations",
+    ];
+
+    let mut last_commit = c1;
+    for (i, msg) in cosmetic_messages.iter().enumerate() {
+        let tree_oid = stage_files(&repo, &[
+            ("src/lib.rs", &format!("pub fn hello() {{\n    // comment {}\n}}\n", i)),
+        ]);
+        let s = make_sig(base_epoch + (i as i64 + 1) * day);
+        last_commit = do_commit(&repo, tree_oid, &[last_commit], &s, msg);
+    }
+
+    let result = patterns::run(&repo, None, None, None).unwrap();
+
+    // All cosmetic fixes should be filtered out, so no signals
+    assert!(result.signals.is_empty(), "All cosmetic fix patterns should be filtered out");
 }
 
 // ---- feature branch lifecycle tests ----

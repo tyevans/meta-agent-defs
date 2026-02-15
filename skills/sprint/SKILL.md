@@ -4,7 +4,7 @@ description: "Plan and dispatch work to team members with the learning loop: ass
 argument-hint: "[task filter or focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Bash(tools/git-intel/target/release/git-intel:*), Task
 ---
 
 # Sprint: Plan, Dispatch, Learn
@@ -115,6 +115,22 @@ Build the task prompt following the spawn protocol from team-protocol.md:
 1. Read the member's current `learnings.md`
 2. Compose a prompt that includes: member identity (name, role, owns), learnings, task description, and reflection instructions
 3. Include any relevant context from previous dispatches in this sprint
+
+#### Signal Enrichment (conditional)
+
+**If** `tools/git-intel/target/release/git-intel` exists:
+
+1. Run `tools/git-intel/target/release/git-intel patterns --repo . --since "30d"` and parse the JSON output
+2. Extract signals where `kind == "fix_after_refactor"` from the `signals` array
+3. For each fix_after_refactor signal, check if any of the signal's `files` match the member's `owns` glob patterns (from team.yaml)
+4. If there's overlap, add a signal warning section to the dispatch prompt:
+
+```markdown
+**Signal Warning**: Recent refactor-then-fix pattern detected on files you own:
+- [file path]: refactored in [first commit hash], then fixed in [second commit hash]. This area may need extra verification after changes.
+```
+
+**If** git-intel doesn't exist, skip this enrichment silently and proceed with the standard prompt composition
 
 ### 3b. Execute
 

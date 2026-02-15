@@ -1,10 +1,41 @@
 use anyhow::Result;
 use git2::Repository;
 use serde::Serialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::common;
 use crate::signals::{Signal, SignalKind};
+
+/// Gravity file threshold: files touched by more than this percentage of commits
+/// are considered "gravity files" and filtered from signal detection.
+const GRAVITY_FILE_THRESHOLD: f64 = 0.15;
+
+/// Minimum number of commits required to enable gravity file detection.
+/// Below this threshold, gravity file filtering is disabled to avoid false negatives
+/// in small repositories or short time windows.
+const MIN_COMMITS_FOR_GRAVITY_DETECTION: usize = 20;
+
+/// Returns true if the commit message matches cosmetic fix patterns.
+/// These are formatting/style fixes that don't represent functional issues.
+fn is_cosmetic_fix(message: &str) -> bool {
+    let lower = message.to_lowercase();
+    let patterns = [
+        "fix style",
+        "fix spacing",
+        "fix formatting",
+        "fixed formatting",
+        "fix typo",
+        "fix whitespace",
+        "fix indent",
+        "fix lint",
+        "fix comment",
+        "fix copyright",
+        "fixed style",
+        "fixed spacing",
+        "fixed typo",
+    ];
+    patterns.iter().any(|&pattern| lower.contains(pattern))
+}
 
 #[derive(Serialize)]
 pub struct PatternsOutput {
@@ -14,6 +45,7 @@ pub struct PatternsOutput {
     pub temporal_clusters: Vec<TemporalCluster>,
     pub total_commits_analyzed: usize,
     pub signals: Vec<Signal>,
+    pub gravity_files: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -162,23 +194,46 @@ fn run_impl(
 
     let total_commits_analyzed = commits_info.len();
 
+    // Compute gravity files: files touched by >15% of all commits
+    // Only enable this filtering if we have enough commits to make it meaningful
+    let gravity_files_set: HashSet<String> = if total_commits_analyzed >= MIN_COMMITS_FOR_GRAVITY_DETECTION {
+        let mut file_touch_counts: HashMap<String, usize> = HashMap::new();
+        for ci in &commits_info {
+            for f in &ci.files_touched {
+                *file_touch_counts.entry(f.clone()).or_insert(0) += 1;
+            }
+        }
+        let gravity_threshold = (total_commits_analyzed as f64 * GRAVITY_FILE_THRESHOLD).ceil() as usize;
+        file_touch_counts
+            .iter()
+            .filter(|(_, &count)| count >= gravity_threshold)
+            .map(|(path, _)| path.clone())
+            .collect()
+    } else {
+        HashSet::new()
+    };
+    let mut gravity_files: Vec<String> = gravity_files_set.iter().cloned().collect();
+    gravity_files.sort();
+
     // 1. Fix-after-feat: find fix commits that follow feat commits within 5 commits
     //    Requires file overlap: at least one file must be touched by both the feat and fix.
+    //    Gravity files are excluded from the overlap check.
     let mut fix_after_feat = Vec::new();
     let mut signals = Vec::new();
     for (i, ci) in commits_info.iter().enumerate() {
-        if ci.commit_type == "fix" {
-            let fix_files: std::collections::HashSet<&String> = ci.files_touched.iter().collect();
+        if ci.commit_type == "fix" && !is_cosmetic_fix(&ci.message) {
+            let fix_files: HashSet<&String> = ci.files_touched.iter().collect();
             for gap in 1..=5 {
                 if i + gap >= commits_info.len() {
                     break;
                 }
                 let older = &commits_info[i + gap];
                 if older.commit_type == "feat" || older.commit_type == "refactor" {
+                    // Compute shared files, excluding gravity files
                     let shared: Vec<String> = older
                         .files_touched
                         .iter()
-                        .filter(|f| fix_files.contains(f))
+                        .filter(|f| fix_files.contains(f) && !gravity_files_set.contains(*f))
                         .cloned()
                         .collect();
                     if !shared.is_empty() {
@@ -402,5 +457,95 @@ fn run_impl(
         temporal_clusters,
         total_commits_analyzed,
         signals,
+        gravity_files,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_cosmetic_fix_matches_patterns() {
+        // Test exact matches (case-insensitive)
+        assert!(is_cosmetic_fix("fix style"));
+        assert!(is_cosmetic_fix("Fix Style"));
+        assert!(is_cosmetic_fix("FIX STYLE"));
+
+        assert!(is_cosmetic_fix("fix spacing"));
+        assert!(is_cosmetic_fix("fix formatting"));
+        assert!(is_cosmetic_fix("fixed formatting"));
+        assert!(is_cosmetic_fix("fix typo"));
+        assert!(is_cosmetic_fix("fix whitespace"));
+        assert!(is_cosmetic_fix("fix indent"));
+        assert!(is_cosmetic_fix("fix lint"));
+        assert!(is_cosmetic_fix("fix comment"));
+        assert!(is_cosmetic_fix("fix copyright"));
+        assert!(is_cosmetic_fix("fixed style"));
+        assert!(is_cosmetic_fix("fixed spacing"));
+        assert!(is_cosmetic_fix("fixed typo"));
+    }
+
+    #[test]
+    fn test_is_cosmetic_fix_in_context() {
+        // Test patterns within larger commit messages
+        assert!(is_cosmetic_fix("chore: fix style in main.rs"));
+        assert!(is_cosmetic_fix("Fix typo in documentation"));
+        assert!(is_cosmetic_fix("Update README and fix formatting"));
+        assert!(is_cosmetic_fix("Fixed spacing issues in tests"));
+    }
+
+    #[test]
+    fn test_is_cosmetic_fix_rejects_functional() {
+        // Test that functional fix commits are NOT filtered out
+        assert!(!is_cosmetic_fix("fix bug in authentication"));
+        assert!(!is_cosmetic_fix("Fix crash on startup"));
+        assert!(!is_cosmetic_fix("fix memory leak"));
+        assert!(!is_cosmetic_fix("Fix race condition"));
+        assert!(!is_cosmetic_fix("fix: resolve null pointer"));
+        assert!(!is_cosmetic_fix("Fixed broken tests"));
+    }
+
+    #[test]
+    fn test_is_cosmetic_fix_edge_cases() {
+        // Test edge cases
+        assert!(!is_cosmetic_fix(""));
+        assert!(!is_cosmetic_fix("feat: add new feature"));
+        assert!(!is_cosmetic_fix("refactor: restructure module"));
+
+        // "fix" alone without cosmetic keywords should not match
+        assert!(!is_cosmetic_fix("fix"));
+        assert!(!is_cosmetic_fix("Fix"));
+    }
+
+    #[test]
+    fn test_gravity_file_threshold() {
+        // Verify the constant is set to 15%
+        assert_eq!(GRAVITY_FILE_THRESHOLD, 0.15);
+    }
+
+    #[test]
+    fn test_gravity_file_minimum_commits() {
+        // Verify the minimum commit threshold is set to 20
+        assert_eq!(MIN_COMMITS_FOR_GRAVITY_DETECTION, 20);
+    }
+
+    #[test]
+    fn test_gravity_file_computation() {
+        // Test gravity file threshold calculation
+        // With 100 commits, threshold should be ceil(100 * 0.15) = 15
+        let total_commits = 100;
+        let threshold = (total_commits as f64 * GRAVITY_FILE_THRESHOLD).ceil() as usize;
+        assert_eq!(threshold, 15);
+
+        // With 20 commits, threshold should be ceil(20 * 0.15) = 3
+        let total_commits = 20;
+        let threshold = (total_commits as f64 * GRAVITY_FILE_THRESHOLD).ceil() as usize;
+        assert_eq!(threshold, 3);
+
+        // With 10 commits, threshold should be ceil(10 * 0.15) = 2
+        let total_commits = 10;
+        let threshold = (total_commits as f64 * GRAVITY_FILE_THRESHOLD).ceil() as usize;
+        assert_eq!(threshold, 2);
+    }
 }
