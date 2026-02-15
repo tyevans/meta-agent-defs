@@ -3,7 +3,7 @@ use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
 
-use git_intel::{churn, lifecycle, metrics, patterns};
+use git_intel::{cache, churn, hotspots, lifecycle, metrics, patterns};
 
 /// Create a temporary git repo with a controlled commit history.
 ///
@@ -785,4 +785,178 @@ fn metrics_nl_heuristic_classification() {
     assert_eq!(find_type("feat"), 1);   // "Added support for dark mode"
     assert_eq!(find_type("fix"), 4);    // Fixed, Bugfix, hotfix, closes #42
     assert_eq!(find_type("other"), 1);  // "initial setup"
+}
+
+// ---- cache tests ----
+
+#[test]
+fn cache_miss_then_hit() {
+    let (_dir, repo) = create_fixture();
+    let key = cache::cache_key("metrics", None, None);
+
+    // Cache should miss on first read
+    assert!(cache::read_cache(&repo, &key).is_none());
+
+    // Compute and write
+    let result = metrics::run(&repo, None, None).unwrap();
+    cache::write_cache(&repo, &key, &result).unwrap();
+
+    // Cache should hit now
+    let cached = cache::read_cache(&repo, &key);
+    assert!(cached.is_some());
+
+    // Cached JSON should deserialize to same total_commits
+    let cached_json: serde_json::Value =
+        serde_json::from_str(&cached.unwrap()).unwrap();
+    assert_eq!(cached_json["total_commits"], 5);
+}
+
+#[test]
+fn cache_invalidated_by_new_commit() {
+    let (dir, repo) = create_fixture();
+    let key = cache::cache_key("metrics", None, None);
+
+    // Write cache
+    let result = metrics::run(&repo, None, None).unwrap();
+    cache::write_cache(&repo, &key, &result).unwrap();
+    assert!(cache::read_cache(&repo, &key).is_some());
+
+    // Make a new commit to change HEAD
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    let sig = Signature::new("Test Author", "test@test.com", &Time::new(base_epoch + 10 * day, 0))
+        .expect("create sig");
+    let mut index = repo.index().unwrap();
+    let new_file = dir.path().join("new.txt");
+    fs::write(&new_file, "new content\n").unwrap();
+    index.add_path(Path::new("new.txt")).unwrap();
+    index.write().unwrap();
+    let tree_oid = index.write_tree().unwrap();
+    let tree = repo.find_tree(tree_oid).unwrap();
+    let head = repo.head().unwrap().target().unwrap();
+    let parent = repo.find_commit(head).unwrap();
+    repo.commit(Some("HEAD"), &sig, &sig, "feat: new commit", &tree, &[&parent])
+        .unwrap();
+
+    // Cache should miss now (HEAD changed)
+    assert!(cache::read_cache(&repo, &key).is_none());
+}
+
+#[test]
+fn cache_separate_keys_for_since() {
+    let (_dir, repo) = create_fixture();
+    let key_all = cache::cache_key("metrics", None, None);
+    let key_since = cache::cache_key("metrics", Some(1736467200), None);
+    assert_ne!(key_all, key_since);
+
+    // Write cache for "all"
+    let result = metrics::run(&repo, None, None).unwrap();
+    cache::write_cache(&repo, &key_all, &result).unwrap();
+
+    // "since" key should still miss
+    assert!(cache::read_cache(&repo, &key_since).is_none());
+    // "all" key should hit
+    assert!(cache::read_cache(&repo, &key_all).is_some());
+}
+
+// ---- hotspots tests ----
+
+#[test]
+fn hotspots_depth_1_groups_by_top_level() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, 1, None).unwrap();
+    assert_eq!(result.depth, 1);
+    assert_eq!(result.total_commits_analyzed, 5);
+
+    // Fixture files: README.md (root), src/lib.rs, src/utils.rs (src), .gitignore (root)
+    // depth=1 should give us "." (root files) and "src"
+    assert_eq!(result.total_directories, 2);
+
+    let find_dir = |name: &str| -> &hotspots::DirectoryHotspot {
+        result.directories.iter().find(|d| d.path == name).unwrap()
+    };
+
+    let src = find_dir("src");
+    assert_eq!(src.file_count, 2); // lib.rs + utils.rs
+
+    let root = find_dir(".");
+    assert_eq!(root.file_count, 2); // README.md + .gitignore
+}
+
+#[test]
+fn hotspots_sorted_by_churn_descending() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, 1, None).unwrap();
+
+    for w in result.directories.windows(2) {
+        assert!(w[0].total_churn >= w[1].total_churn);
+    }
+}
+
+#[test]
+fn hotspots_limit_truncates() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, 1, Some(1)).unwrap();
+
+    assert_eq!(result.directories.len(), 1);
+    // total_directories still reflects the full count
+    assert_eq!(result.total_directories, 2);
+}
+
+#[test]
+fn hotspots_depth_2_preserves_nested() {
+    let (_dir, repo) = create_fixture();
+    // At depth 2, "src/lib.rs" -> "src" (only 1 level deep), root files -> "."
+    // Same as depth 1 for this fixture since src/ has no subdirs
+    let result = hotspots::run(&repo, None, 2, None).unwrap();
+    assert_eq!(result.total_directories, 2);
+}
+
+#[test]
+fn hotspots_churn_sums_match() {
+    let (_dir, repo) = create_fixture();
+    let hotspot_result = hotspots::run(&repo, None, 1, None).unwrap();
+    let churn_result = churn::run(&repo, None, None).unwrap();
+
+    // Total additions across all hotspot dirs should equal total across all churn files
+    let hotspot_adds: usize = hotspot_result.directories.iter().map(|d| d.additions).sum();
+    let churn_adds: usize = churn_result.files.iter().map(|f| f.additions).sum();
+    assert_eq!(hotspot_adds, churn_adds);
+
+    let hotspot_dels: usize = hotspot_result.directories.iter().map(|d| d.deletions).sum();
+    let churn_dels: usize = churn_result.files.iter().map(|f| f.deletions).sum();
+    assert_eq!(hotspot_dels, churn_dels);
+}
+
+#[test]
+fn hotspots_since_filter() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Only commits 3, 4, 5 (chore: gitignore, fix: lib.rs, docs: README)
+    let since = Some(base_epoch + 2 * day);
+    let result = hotspots::run(&repo, since, 1, None).unwrap();
+    assert_eq!(result.total_commits_analyzed, 3);
+}
+
+#[test]
+fn hotspots_json_output_shape() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, 1, None).unwrap();
+    let json = serde_json::to_string_pretty(&result).unwrap();
+    let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+
+    assert!(parsed["directories"].is_array());
+    assert!(parsed["total_directories"].is_number());
+    assert!(parsed["total_commits_analyzed"].is_number());
+    assert!(parsed["depth"].is_number());
+
+    // Check directory entry shape
+    let first = &parsed["directories"][0];
+    assert!(first["path"].is_string());
+    assert!(first["additions"].is_number());
+    assert!(first["deletions"].is_number());
+    assert!(first["total_churn"].is_number());
+    assert!(first["commit_count"].is_number());
+    assert!(first["file_count"].is_number());
 }

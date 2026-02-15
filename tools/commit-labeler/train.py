@@ -19,6 +19,7 @@ from sklearn.model_selection import cross_val_score
 # Import model modules to trigger registration
 import models.embed_mlp
 import models.tfidf_logreg
+import models.transformer
 from data import freeze_test_set, load_labeled, load_test_set
 from eval import evaluate, print_report
 from models import MODELS
@@ -193,9 +194,16 @@ def main():
             print(f"  {label:12s}: {', '.join(top_features)}")
 
     # Save model
-    with open(args.output, "wb") as f:
-        pickle.dump(model, f)
-    print(f"\nModel saved to {args.output}")
+    if args.model == "transformer":
+        # Transformer uses custom save method
+        save_dir = args.output.parent / "transformer-model"
+        model.save(save_dir)
+        print(f"\nTransformer model saved to {save_dir}")
+    else:
+        # Other models use pickle
+        with open(args.output, "wb") as f:
+            pickle.dump(model, f)
+        print(f"\nModel saved to {args.output}")
 
     # Sanity check predictions
     test_samples = [

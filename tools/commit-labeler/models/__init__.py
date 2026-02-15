@@ -29,4 +29,14 @@ class ModelProtocol(Protocol):
 MODELS: dict[str, type[ModelProtocol]] = {}
 
 
+# Import model modules to trigger registration
+# These imports happen after MODELS is defined so models can register themselves
+def _register_models():
+    """Import all model modules to populate MODELS registry."""
+    from . import tfidf_logreg, embed_mlp, transformer
+
+
+_register_models()
+
+
 __all__ = ["ModelProtocol", "MODELS"]

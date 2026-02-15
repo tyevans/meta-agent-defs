@@ -1,8 +1,10 @@
 // Each subcommand module exposes run(&Repository, ...) -> Result<T: Serialize>.
 // This uniform interface is intentional; see DESIGN-daemon.md for the
 // caching/daemon design that depends on it.
+pub mod cache;
 pub mod churn;
 pub mod common;
+pub mod hotspots;
 pub mod lifecycle;
 pub mod metrics;
 pub mod patterns;

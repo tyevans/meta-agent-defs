@@ -108,6 +108,14 @@
 - Key insight: Parallel dispatch across ownership areas (Rust + Python) works cleanly with zero conflicts. Round 3 parallelized two rust-dev tasks on different files (common.rs vs patterns.rs) — also safe. 6/6 first-attempt successes (cumulative streak: 60+). Clearing blocker beads (pxzb, 7tqk) to unblock Phase 2 ModernBERT gate was higher strategic value than more git-intel features.
 - Backlog state: 227/263 closed, 36 open (20 ready, 16 blocked). Phase 2 decision gate (lwww) now unblocked.
 
+## Retro: 2026-02-15 (session 17 — dual-track sprint: git-intel + commit-labeler Phase 2)
+- Tasks completed: 5 (4 dispatched + 1 closed as superseded)
+- Workflow: /sprint with 2 rounds of parallel dispatch (rust-dev + ml-eng)
+- Commits: 0 (uncommitted — session end will commit)
+- New learnings: 11 across 2 members (rust-dev +4, ml-eng +7)
+- Key insight: Superseded bead detection saved a wasted dispatch — 6a4j (train_transformer.py) was already covered by lwww (models/transformer.py) from a different planning session. ml-eng over-produced docs (5 extra files beyond benchmark.py); orchestrator cleanup needed. 4/4 first-attempt dispatch successes (streak: 64+). git-intel now at 75 tests with cache + hotspots. commit-labeler Phase 2 gate shipped (transformer model + embedding benchmark).
+- Backlog state: 232/263 closed, 31 open (23 ready, 8 blocked)
+
 ## Retro: 2026-02-14 (session 13 — git-intel integration audit)
 - Tasks completed: 4 (2 doc structure updates + install.sh optional build + git-pulse.sh delegation)
 - Workflow: /fractal (3 parallel handlers) → assess → /sprint (3 serial dispatches, all infra-owned)

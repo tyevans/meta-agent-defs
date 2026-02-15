@@ -32,8 +32,16 @@
 ## Testing
 - git2 test fixtures: work with `Oid` values between commits, never hold `Commit<'repo>` across commit boundaries — avoids borrow conflicts (added: 2026-02-14)
 - Fixture builder pattern: `stage_files` + `do_commit` closures create reproducible repos with controlled dates and content (added: 2026-02-14)
-- 58 tests: 32 unit + 26 integration (added: 2026-02-15)
+- 75 tests: 39 unit + 36 integration (added: 2026-02-15)
 - Merge commit fixture: create branch, divergent commits on main+feature, then merge — produces commit with 2 parents for testing (added: 2026-02-15)
+
+## Cache
+- Cache write errors should always be silently ignored (`let _ =`) to avoid breaking the main path (added: 2026-02-15)
+- serde_json::Value for partial cache validation (check head_commit without deserializing result) avoids needing Deserialize on output structs (added: 2026-02-15)
+- Cache lives in .git/git-intel-cache/, keyed by {subcommand}-{since_epoch}.json, invalidated on HEAD change (added: 2026-02-15)
+
+## Subcommand Composition
+- Reusing existing subcommand output (e.g. churn::run()) for aggregation is cleaner than duplicating diff traversal — hotspots is ~60 lines of logic on top of churn (added: 2026-02-15)
 
 ## Cross-Agent Notes
 - (none yet)

@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
-use git_intel::{churn, lifecycle, metrics, parse_since, patterns};
+use git_intel::{cache, churn, hotspots, lifecycle, metrics, parse_since, patterns};
 
 #[derive(Parser)]
 #[command(name = "git-intel", about = "Git history analyzer — JSON output for hooks and skills")]
@@ -19,6 +19,10 @@ struct Cli {
     #[arg(long, global = true)]
     limit: Option<usize>,
 
+    /// Bypass cache and always recompute
+    #[arg(long, global = true)]
+    no_cache: bool,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -34,6 +38,12 @@ enum Commands {
         /// File paths to track
         #[arg(required = true)]
         files: Vec<String>,
+    },
+    /// Directory-level churn aggregation (group file churn by path prefix)
+    Hotspots {
+        /// Directory depth for grouping (1 = top-level dirs, 2 = two levels, etc.)
+        #[arg(long, default_value_t = 1)]
+        depth: usize,
     },
     /// Detect fix-after-feat sequences, multi-edit chains, convergence
     Patterns {
@@ -52,19 +62,64 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Metrics => {
+            let key = cache::cache_key("metrics", since_epoch, None);
+            if !cli.no_cache {
+                if let Some(cached) = cache::read_cache(&repo, &key) {
+                    println!("{}", cached);
+                    return Ok(());
+                }
+            }
             let result = metrics::run(&repo, since_epoch, cli.limit)?;
+            let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
         Commands::Churn => {
+            let key = cache::cache_key("churn", since_epoch, None);
+            if !cli.no_cache {
+                if let Some(cached) = cache::read_cache(&repo, &key) {
+                    println!("{}", cached);
+                    return Ok(());
+                }
+            }
             let result = churn::run(&repo, since_epoch, cli.limit)?;
+            let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
         Commands::Lifecycle { files } => {
+            let key = cache::cache_key("lifecycle", since_epoch, Some(&files));
+            if !cli.no_cache {
+                if let Some(cached) = cache::read_cache(&repo, &key) {
+                    println!("{}", cached);
+                    return Ok(());
+                }
+            }
             let result = lifecycle::run(&repo, since_epoch, &files)?;
+            let _ = cache::write_cache(&repo, &key, &result);
+            println!("{}", serde_json::to_string_pretty(&result)?);
+        }
+        Commands::Hotspots { depth } => {
+            let extra = &[format!("{}", depth)];
+            let key = cache::cache_key("hotspots", since_epoch, Some(extra));
+            if !cli.no_cache {
+                if let Some(cached) = cache::read_cache(&repo, &key) {
+                    println!("{}", cached);
+                    return Ok(());
+                }
+            }
+            let result = hotspots::run(&repo, since_epoch, depth, cli.limit)?;
+            let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
         Commands::Patterns { convergence_limit } => {
+            let key = cache::cache_key("patterns", since_epoch, None);
+            if !cli.no_cache {
+                if let Some(cached) = cache::read_cache(&repo, &key) {
+                    println!("{}", cached);
+                    return Ok(());
+                }
+            }
             let result = patterns::run_with_convergence_limit(&repo, since_epoch, cli.limit, convergence_limit)?;
+            let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
     }

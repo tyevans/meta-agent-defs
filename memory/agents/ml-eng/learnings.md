@@ -24,5 +24,16 @@
 ## Preferences
 - schemas.py for Pydantic models (CommitLabel, LabelEntry, CommitClassification, BatchClassification); models/ package for ML implementations (ModelProtocol registry) — avoids namespace collision (added: 2026-02-15)
 
+## Transformer Integration
+- ModernBERT-base is at answerdotai/ModernBERT-base on HuggingFace hub (149M params) (added: 2026-02-15)
+- Transformer models need custom save/load (directory-based) vs sklearn models (pickle) — train.py has special save logic for this (added: 2026-02-15)
+- HuggingFace Trainer requires datasets.Dataset, not raw numpy arrays (added: 2026-02-15)
+- Commit messages are short — max_length=128 tokens is sufficient (added: 2026-02-15)
+- models/__init__.py uses _register_models() to auto-import all model modules (added: 2026-02-15)
+
+## Benchmarking
+- Benchmark scripts should be standalone (not model implementations) — benchmark.py is separate from models/ (added: 2026-02-15)
+- Reusing existing architecture patterns (MLP from embed_mlp) ensures fair comparison across embedding models (added: 2026-02-15)
+
 ## Cross-Agent Notes
 - (none yet)
