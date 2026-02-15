@@ -34,7 +34,7 @@
 ## Testing
 - git2 test fixtures: work with `Oid` values between commits, never hold `Commit<'repo>` across commit boundaries — avoids borrow conflicts (added: 2026-02-14)
 - Fixture builder pattern: `stage_files` + `do_commit` closures create reproducible repos with controlled dates and content (added: 2026-02-14)
-- 196 tests: 107 unit + 89 integration (updated: 2026-02-15, dormant files + directory chains)
+- 208 tests: 114 unit + 94 integration (updated: 2026-02-15, cosmetic + gravity filters)
 - Merge commit fixture: create branch, divergent commits on main+feature, then merge — produces commit with 2 parents for testing (added: 2026-02-15)
 
 ## Cache
@@ -51,7 +51,7 @@
 - ML feature flag: `#[cfg(feature = "ml")]` guards module + CLI flags + function variants. ort + tokenizers as optional deps, `load-dynamic` for system ONNX Runtime (consolidated: 2026-02-15)
 
 ## Precision Study Findings
-- Signal detector highly conservative: 0 signals on ripgrep/tokio/serde/rayon, 12 on clap (2y). 67% TP rate — "incomplete feature rollout" pattern (same author, small gap). FPs from unrelated code paths in same file, opportunistic cleanup (consolidated: 2026-02-15)
+- Signal precision: fix_after_refactor 89% TP, fix_after_feat 40%. Two filters shipped: is_cosmetic_fix() excludes style/typo messages, gravity-file detection (>15% commit frequency, 20-commit minimum) excludes high-churn files from intersection. Cross-project validated 108/108 on 18 repos (updated: 2026-02-15)
 
 ## Cross-Agent Notes
 - (none yet)

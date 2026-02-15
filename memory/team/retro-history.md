@@ -1,5 +1,13 @@
 # Retrospective History
 
+## Retro: 2026-02-15 (session 23 — cross-project validation epic)
+- Tasks completed: 12 (epic + 8 children: harness, telemetry hook, repo recloning, precision study, cosmetic filter, gravity filter, sprint signal wiring, 1 superseded)
+- Workflow: /meeting (Pragmatist vs Innovator) → create epic + 5 beads → parallel dispatch (rust-dev + infra) → serial dispatch (3 more tasks) → close
+- Commits: 4 (2 feat, 2 chore). Fix rate: 0%
+- New learnings: 2 updates (rust-dev test count + precision findings). ml-eng pruned 70→37 lines
+- Key insight: Cross-project validation is high-ROI — found that partial clone repos (--filter=blob:none) silently fail git-intel diff operations. Full bare clone re-fetch was required. Precision study methodology (stratified sampling across signal count range) is reusable for future filter evaluation. Signal type divergence (89% vs 40%) suggests treating fix_after_refactor and fix_after_feat as fundamentally different quality signals.
+- Backlog state: 313/313 closed, 0 open
+
 ## Retro: 2026-02-15 (session 22 — final sprint, all epics closed)
 - Tasks completed: 4 (dormant files, directory chains, ensemble, registry)
 - Workflow: /sprint Round 2 with 4 parallel agents (2 rust-dev + 2 ml-eng)

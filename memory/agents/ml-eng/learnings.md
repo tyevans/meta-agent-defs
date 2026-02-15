@@ -1,69 +1,37 @@
 # Learnings: ml-eng
 
 ## Codebase Patterns
-- Project lives at tools/commit-labeler/ (relocated from research/commit-labeler/) (added: 2026-02-14)
-- Python project managed with uv (pyproject.toml + uv.lock), Python 3.x (added: 2026-02-14)
-- Models live in models/ package with ModelProtocol registry: tfidf_logreg.py, embed_mlp.py, transformer.py, setfit.py — auto-register via MODELS dict in __init__.py (updated: 2026-02-15)
-- Labeling via Ollama API: label.py handles both raw and enriched modes (--enriched flag) (added: 2026-02-14)
-- Data pipeline: pipeline.sh orchestrates 7 phases: clone → extract → stride → enrich → label → train → summary (added: 2026-02-14)
-- Unified train.py CLI with --model flag dispatches to tfidf-logreg or embed-mlp via MODELS registry (added: 2026-02-14)
-- train_embed.py deleted — code moved to models/embed_mlp.py + unified train.py (added: 2026-02-14)
-- labels.json is the canonical vocabulary contract — 13 labels, version 1. data.py:load_labels() is the Python entry point (added: 2026-02-14)
-- enrich_diffs.py adds git diff context to commit messages for richer classification (added: 2026-02-14)
-- Shared utilities: data.py (canonical I/O module — all data loading, parse, resume, distribution), eval.py (run_eval + evaluate + print_report) (added: 2026-02-15)
-- eval.py:run_eval() is the canonical eval harness — all models should use it. Wraps evaluate()+print_report(), adds probability metrics and JSON export (added: 2026-02-15)
-- JSON eval export format: {"model": str, "metrics": {...}, "report": {...}, "proba_metrics": {...}, "top_confusions": [...]} (added: 2026-02-15)
-- train.py --eval-output flag saves eval results as JSON for cross-model comparison (added: 2026-02-15)
-- Phase 1 cleanup removed 4 files: relabel.py, train_embed.py, train_hybrid.py, analyze_errors.py. Only data.py, label.py, train.py, enrich_diffs.py, eval.py remain (added: 2026-02-15)
-- label.py now outputs multi-label format: "labels" list instead of "label" string (added: 2026-02-14)
-- print_distribution() handles both old single-label and new multi-label JSONL formats (added: 2026-02-14)
+- Project: tools/commit-labeler/ — Python (uv), 7-phase pipeline: clone → extract → stride → enrich → label → train → summary
+- Models in models/ package with ModelProtocol registry: tfidf_logreg, embed_mlp, transformer, setfit, ensemble — auto-register via MODELS dict in __init__.py
+- Shared utilities: data.py (canonical I/O — loading, parse, resume, distribution), eval.py (run_eval + evaluate + print_report with JSON export), schemas.py (Pydantic models)
+- labels.json is vocabulary contract (13 labels, v1); data.py:load_labels() is Python entry point
+- label.py handles Ollama labeling (raw + --enriched modes), outputs multi-label format ("labels" list)
+- train.py unified CLI: --model flag dispatches to registry, --eval-output JSON, --registry auto-registers results
 
 ## Gotchas
-- relabel.py deleted — all diff-aware labeling is now in label.py --enriched (added: 2026-02-14)
-- All I/O duplicates eliminated: parse_commit_line, load_done_hashes, print_distribution now only in data.py — label.py and enrich_diffs.py import from it (added: 2026-02-15)
-- enrich_diffs.py auto-detects pipe-delimited vs JSONL input format (added: 2026-02-14)
-- pipeline.sh Phase 5 auto-detects enriched vs raw input based on whether Phase 4 ran (added: 2026-02-14)
+- enrich_diffs.py auto-detects pipe-delimited vs JSONL input; pipeline.sh Phase 5 auto-detects enriched vs raw
+- All I/O in data.py only — label.py and enrich_diffs.py import from it (no duplication)
+- schemas.py for Pydantic models, models/ for ML implementations — avoids namespace collision
 
-## Preferences
-- schemas.py for Pydantic models (CommitLabel, LabelEntry, CommitClassification, BatchClassification); models/ package for ML implementations (ModelProtocol registry) — avoids namespace collision (added: 2026-02-15)
-
-## Transformer Integration
-- ModernBERT-base is at answerdotai/ModernBERT-base on HuggingFace hub (149M params) (added: 2026-02-15)
-- Transformer models need custom save/load (directory-based) vs sklearn models (pickle) — train.py has special save logic for this (added: 2026-02-15)
-- HuggingFace Trainer requires datasets.Dataset, not raw numpy arrays (added: 2026-02-15)
-- Commit messages are short — max_length=128 tokens is sufficient (added: 2026-02-15)
-- models/__init__.py uses _register_models() to auto-import all model modules (added: 2026-02-15)
-
-## Benchmarking
-- Benchmark scripts should be standalone (not model implementations) — benchmark.py is separate from models/ (added: 2026-02-15)
-- Reusing existing architecture patterns (MLP from embed_mlp) ensures fair comparison across embedding models (added: 2026-02-15)
-- Code-aware models in benchmark.py: CodeBERT (CLS pooling), UniXcoder (mean pooling), CodeT5+ (encoder method) — each needs different embedding extraction strategy via TransformersEncoder with configurable pooling (added: 2026-02-15)
-
-## SetFit
-- SetFit uses contrastive fine-tuning + small classification head — lazy import pattern (`from setfit import ...` inside train/load methods) avoids import-time overhead for other models (added: 2026-02-15)
-- Few-shot via --samples-per-class (8/16/64/None=all) with deterministic seed for reproducibility. Directory-based save/load like transformer (added: 2026-02-15)
+## Model-Specific
+- ModernBERT-base (149M params): max_length=128, needs datasets.Dataset (not numpy), custom save/load (directory-based vs pickle)
+- SetFit: contrastive fine-tuning + small head, lazy import, --samples-per-class for few-shot, directory-based save/load
+- EnsembleClassifier: 3 strategies (majority/soft/weighted_soft_vote), loads pre-trained sub-models, _align_probas() handles different class orderings
+- Smart model type detection: transformer (tokenizer_config.json), setfit (label_mapping.json), ensemble (config.json), else pickle
 
 ## Class Imbalance
-- FocalLoss in losses.py: standalone PyTorch module, formula FL(p_t) = -(1-p_t)^gamma * log(p_t), supports alpha (class weights). Default gamma=2.0 (added: 2026-02-15)
-- train.py CLI flags: --class-weight (none|balanced|auto), --focal-loss, --focal-gamma (added: 2026-02-15)
-- embed_mlp.py rewritten from sklearn MLPClassifier to custom PyTorch MLP — needed for custom loss functions. Has early stopping (patience=10), device management (added: 2026-02-15)
-- transformer.py uses WeightedTrainer subclass of HuggingFace Trainer — overrides compute_loss for class weights and focal loss (added: 2026-02-15)
-- Class weight computation: sklearn compute_class_weight('balanced') or manual inverse frequency n_samples/(n_classes*class_count) (added: 2026-02-15)
+- FocalLoss in losses.py: FL(p_t) = -(1-p_t)^gamma * log(p_t), default gamma=2.0. Train flags: --class-weight, --focal-loss, --focal-gamma
+- embed_mlp rewritten from sklearn to PyTorch MLP for custom loss support (early stopping, patience=10)
+- transformer uses WeightedTrainer subclass overriding compute_loss
 
 ## ONNX Export
-- torch.onnx.export needs `onnxscript` for newer PyTorch — not just `onnx` + `onnxruntime` (added: 2026-02-15)
-- ONNX export: model must be in eval mode, dummy inputs must match device. Use opset_version=14+ for ModernBERT (added: 2026-02-15)
-- Exported model outputs f32 logits (not probabilities) — Rust side must apply softmax. Expects i64 input tensors. Large models produce model.onnx + model.onnx.data (external weights) (added: 2026-02-15)
-- train.py --export-onnx supports standalone mode (load existing model + export) and train+export mode (added: 2026-02-15)
-
-## Ensemble
-- EnsembleClassifier in models/ensemble.py: 3 strategies (majority_vote, soft_vote, weighted_soft_vote), registered as "ensemble" in MODELS dict (added: 2026-02-15)
-- Ensemble train() loads pre-trained sub-models (no actual training); --ensemble-models paths, --ensemble-strategy, --ensemble-weights CLI flags (added: 2026-02-15)
-- Smart model type detection: transformer (tokenizer_config.json), setfit (label_mapping.json only), ensemble (config.json), else pickle. _align_probas() handles different class orderings (added: 2026-02-15)
+- torch.onnx.export needs `onnxscript` for newer PyTorch, opset_version=14+ for ModernBERT
+- Output: f32 logits (not probabilities) — Rust applies softmax. Expects i64 input. Large models produce model.onnx + model.onnx.data
+- train.py --export-onnx supports standalone (load + export) and train+export modes
 
 ## Experiment Tracking
-- registry.py: file-based JSON registry in results/ dir. register_result(), list_results(), best_result(), compare_results() (added: 2026-02-15)
-- train.py --registry flag auto-registers eval results with metadata (timestamp, git commit, CLI args, sample counts) (added: 2026-02-15)
+- registry.py: file-based JSON in results/ dir. register_result(), list_results(), best_result(), compare_results()
+- Benchmark scripts standalone (benchmark.py separate from models/). Code-aware models: CodeBERT (CLS pooling), UniXcoder (mean pooling), CodeT5+ (encoder method)
 
 ## Cross-Agent Notes
 - (none yet)
