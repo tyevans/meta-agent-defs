@@ -14,7 +14,11 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
 fi
 
 # Check if git-intel and jq are available
-GIT_INTEL_PATH="tools/git-intel/target/debug/git-intel"
+# Try relative path first (running from meta-agent-defs), then absolute path (running from any project)
+GIT_INTEL_PATH="tools/git-intel/target/release/git-intel"
+if [ ! -f "$GIT_INTEL_PATH" ]; then
+  GIT_INTEL_PATH="$HOME/workspace/meta-agent-defs/tools/git-intel/target/release/git-intel"
+fi
 USE_GIT_INTEL=false
 if [ -f "$GIT_INTEL_PATH" ] && command -v jq >/dev/null 2>&1; then
   # Only use git-intel if --since is ISO format (YYYY-MM-DD) or not provided
@@ -27,6 +31,9 @@ if [ "$USE_GIT_INTEL" = true ]; then
   ML_FLAGS=""
   REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
   ONNX_MODEL_DIR="$REPO_ROOT/tools/data/onnx-model"
+  if [ ! -f "$ONNX_MODEL_DIR/model.onnx" ]; then
+    ONNX_MODEL_DIR="$HOME/workspace/meta-agent-defs/tools/data/onnx-model"
+  fi
   if [ -f "$ONNX_MODEL_DIR/model.onnx" ] && \
      $GIT_INTEL_PATH --help 2>&1 | grep -q '\-\-ml'; then
     # Runtime test: verify ML feature works (may fail if ONNX Runtime lib missing)
@@ -70,6 +77,13 @@ if [ "$USE_GIT_INTEL" = true ]; then
       total=$(echo "$CHURN_JSON" | jq -r ".files[$idx].total_churn")
       echo "churn_$i: $path ($total)"
     done
+  fi
+
+  # Output signal count from patterns (if available)
+  PATTERNS_JSON=$($GIT_INTEL_PATH patterns --repo . $ML_FLAGS ${SINCE_VALUE:+--since "$SINCE_VALUE"} 2>/dev/null || echo '{"signals":[]}')
+  SIGNAL_COUNT=$(echo "$PATTERNS_JSON" | jq -r '.signals | length')
+  if [ "$SIGNAL_COUNT" -gt 0 ]; then
+    echo "signals: $SIGNAL_COUNT"
   fi
 else
   # Fall back to raw git implementation
