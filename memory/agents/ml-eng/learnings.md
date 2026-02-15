@@ -33,5 +33,20 @@
 - registry.py: file-based JSON in results/ dir. register_result(), list_results(), best_result(), compare_results()
 - Benchmark scripts standalone (benchmark.py separate from models/). Code-aware models: CodeBERT (CLS pooling), UniXcoder (mean pooling), CodeT5+ (encoder method)
 
+## Remote Training
+- NEVER train locally — always use GPU server debian@192.168.1.14 (RTX 3090) (added: 2026-02-15)
+- Sync code+data up: `rsync -avz --exclude='.venv' --exclude='__pycache__' --exclude='results' tools/commit-labeler/ debian@192.168.1.14:~/commit-labeler/ && rsync -avz tools/data/ debian@192.168.1.14:~/data/` (added: 2026-02-15)
+- Run training via ssh: `ssh debian@192.168.1.14 'cd ~/commit-labeler && ...'` (added: 2026-02-15)
+- Sync results back: `rsync -avz --exclude='checkpoint-*' debian@192.168.1.14:~/commit-labeler/results/ tools/commit-labeler/results/` — exclude checkpoints to avoid multi-GB transfers (added: 2026-02-15)
+
+## Training Comparison Results
+- Best macro F1: tfidf-logreg + balanced — 0.641. Best fix F1: transformer + focal — 0.831 (P=0.819, R=0.843) (added: 2026-02-15)
+- Transformer + focal is production model (exported to ONNX). Best fix detection, best refactor (0.549), high accuracy (0.765) (added: 2026-02-15)
+- Class weighting hurts transformers (0.636→0.602 macro F1, fix recall drops 0.847→0.722). Opposite of tfidf where weighting helps +6.9% (added: 2026-02-15)
+- Focal loss helps transformers (+1.0% macro F1) but hurts simpler models. Focuses learning on hard examples where transformer capacity matters (added: 2026-02-15)
+- "other" is a catchall — 0→detectable is noise, not a real improvement (added: 2026-02-15)
+- Non-interactive SSH needs `export PATH="$HOME/.local/bin:$PATH"` prefix for uv (added: 2026-02-15)
+- Transformer batch_size=64 is optimal for RTX 3090 (128 OOMs, 16 underutilizes at 3.5/24GB) (added: 2026-02-15)
+
 ## Cross-Agent Notes
 - (none yet)

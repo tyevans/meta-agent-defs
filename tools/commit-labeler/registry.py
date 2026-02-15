@@ -28,6 +28,20 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
+
+class NumpyEncoder(json.JSONEncoder):
+    """JSON encoder that converts numpy types to native Python types."""
+    def default(self, obj):
+        if isinstance(obj, (np.integer, np.int64)):
+            return int(obj)
+        if isinstance(obj, (np.floating, np.float64)):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(obj)
+
 
 def register_result(
     result: dict[str, Any],
@@ -78,9 +92,9 @@ def register_result(
     filename = f"{model_name}_{safe_timestamp}.json"
     filepath = registry_dir / filename
 
-    # Write to file
+    # Write to file with numpy-aware encoder
     with open(filepath, "w") as f:
-        json.dump(full_result, f, indent=2)
+        json.dump(full_result, f, indent=2, cls=NumpyEncoder)
 
     return filepath
 
