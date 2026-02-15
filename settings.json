@@ -86,6 +86,15 @@
             "command": "echo 'REVIEW GATE: Agent completed. Verify deliverable quality before proceeding:' >&2; echo '  [ ] Spike sections present: Firm Tasks Found | Areas Needing Deeper Spikes | Clean Areas | Summary' >&2; echo '  [ ] Findings tagged with confidence: CONFIRMED | LIKELY | POSSIBLE' >&2; echo '  [ ] Evidence includes file paths and line numbers' >&2; echo '  [ ] Gaps captured as new beads | Downstream connections identified' >&2"
           }
         ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p ~/.claude/telemetry && echo \"{\\\"ts\\\":\\\"$(date -Is)\\\",\\\"skill\\\":\\\"$(echo \"$CLAUDE_TOOL_INPUT\" | head -c 200)\\\",\\\"project\\\":\\\"$(pwd)\\\"}\" >> ~/.claude/telemetry/skills.jsonl || true"
+          }
+        ]
       }
     ],
     "SessionEnd": [
