@@ -10,6 +10,8 @@ pub struct PatternsOutput {
     pub fix_after_feat: Vec<FixAfterFeat>,
     pub multi_edit_chains: Vec<MultiEditChain>,
     pub convergence: Vec<ConvergencePair>,
+    pub convergence_truncated: bool,
+    pub convergence_limit: usize,
     pub total_commits_analyzed: usize,
 }
 
@@ -56,7 +58,22 @@ struct CommitInfo {
     files_touched: Vec<String>,
 }
 
+/// Default cap for convergence pairs to prevent output explosion.
+pub const DEFAULT_CONVERGENCE_LIMIT: usize = 50;
+
+/// Minimum file size in bytes for convergence scanning.
+pub const MIN_CONVERGENCE_BYTES: usize = 500;
+
 pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Result<PatternsOutput> {
+    run_with_convergence_limit(repo, since, limit, DEFAULT_CONVERGENCE_LIMIT)
+}
+
+pub fn run_with_convergence_limit(
+    repo: &Repository,
+    since: Option<i64>,
+    limit: Option<usize>,
+    convergence_limit: usize,
+) -> Result<PatternsOutput> {
     let commits = common::walk_commits(repo, since)?;
 
     let mut commits_info: Vec<CommitInfo> = Vec::new();
@@ -98,7 +115,7 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
             oid: common::short_hash(&commit.id()),
             date: dt.format("%Y-%m-%d").to_string(),
             message: first_line,
-            commit_type: common::classify_commit(&message),
+            commit_type: common::classify_commit_with_parents(&message, commit.parent_count()),
             files_touched: files,
         });
     }
@@ -188,9 +205,9 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
         git2::TreeWalkResult::Ok
     })?;
 
-    // Find pairs with similar sizes (within 10% of each other, min 100 bytes).
+    // Find pairs with similar sizes (within 10% of each other, min 500 bytes).
     // Sort by size then scan adjacent entries — O(n log n) instead of O(n^2).
-    file_sizes.retain(|&(_, size)| size >= 100);
+    file_sizes.retain(|&(_, size)| size >= MIN_CONVERGENCE_BYTES);
     file_sizes.sort_by_key(|&(_, size)| size);
 
     for i in 0..file_sizes.len() {
@@ -216,14 +233,21 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
     }
     convergence.sort_by(|a, b| b.bytes_ratio.partial_cmp(&a.bytes_ratio).unwrap());
 
-    if let Some(limit) = limit {
-        convergence.truncate(limit);
-    }
+    // Apply convergence-specific limit (--convergence-limit flag, default 50).
+    // The generic --limit flag is applied first if present and smaller.
+    let effective_limit = match limit {
+        Some(l) if l < convergence_limit => l,
+        _ => convergence_limit,
+    };
+    let convergence_truncated = convergence.len() > effective_limit;
+    convergence.truncate(effective_limit);
 
     Ok(PatternsOutput {
         fix_after_feat,
         multi_edit_chains,
         convergence,
+        convergence_truncated,
+        convergence_limit,
         total_commits_analyzed,
     })
 }

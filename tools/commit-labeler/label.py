@@ -23,56 +23,14 @@ import argparse
 import json
 import time
 from collections import Counter
-from enum import Enum
 from pathlib import Path
 
-from pydantic import BaseModel, Field
 from pydantic_ai import Agent, PromptedOutput
 from pydantic_ai.models.openai import OpenAIChatModel, OpenAIChatModelSettings
 from pydantic_ai.providers.ollama import OllamaProvider
 
-
-# --- Models ---
-
-
-class CommitLabel(str, Enum):
-    feat = "feat"
-    fix = "fix"
-    refactor = "refactor"
-    chore = "chore"
-    docs = "docs"
-    test = "test"
-    perf = "perf"
-    style = "style"
-    ci = "ci"
-    build = "build"
-    i18n = "i18n"
-    revert = "revert"
-    other = "other"
-
-
-class LabelEntry(BaseModel):
-    """A single label with confidence."""
-
-    label: CommitLabel = Field(description="The commit type category")
-    confidence: float = Field(ge=0.0, le=1.0, description="How confident")
-
-
-class CommitClassification(BaseModel):
-    """Multi-label classification for one commit."""
-
-    labels: list[LabelEntry] = Field(
-        description="Up to 3 labels, most confident first", max_length=3
-    )
-    reasoning: str = Field(description="One sentence explanation")
-
-
-class BatchClassification(BaseModel):
-    """Classification results for a batch of commits."""
-
-    classifications: list[CommitClassification] = Field(
-        description="One classification per commit, in the same order as input"
-    )
+from data import load_done_hashes, parse_commit_line, print_distribution
+from schemas import BatchClassification, CommitClassification
 
 
 # --- Prompts ---
@@ -208,21 +166,6 @@ def make_single_prompt(item: str | dict, enriched: bool = False) -> str:
 # --- I/O helpers ---
 
 
-def parse_commit_line(line: str) -> dict | None:
-    """Parse repo|||hash|||author|||email|||date|||message format."""
-    parts = line.strip().split("|||")
-    if len(parts) < 6:
-        return None
-    return {
-        "repo": parts[0],
-        "hash": parts[1],
-        "author": parts[2],
-        "email": parts[3],
-        "date": parts[4],
-        "message": "|||".join(parts[5:]),
-    }
-
-
 def load_enriched(path: Path) -> list[dict]:
     """Load enriched JSONL records."""
     records = []
@@ -233,47 +176,6 @@ def load_enriched(path: Path) -> list[dict]:
                 continue
             records.append(json.loads(line))
     return records
-
-
-def load_done_hashes(output_path: Path) -> set[str]:
-    """Load already-labeled commit hashes for resume support."""
-    done = set()
-    if output_path.exists():
-        with open(output_path) as f:
-            for line in f:
-                try:
-                    obj = json.loads(line.strip())
-                    done.add(obj["hash"])
-                except (json.JSONDecodeError, KeyError):
-                    continue
-    return done
-
-
-def print_distribution(output_path: Path):
-    """Print label distribution from output file (multi-label aware)."""
-    dist: Counter[str] = Counter()
-    with open(output_path) as f:
-        for line in f:
-            try:
-                obj = json.loads(line.strip())
-                # Handle both old single-label and new multi-label formats
-                if "labels" in obj:
-                    # Multi-label: count each label
-                    for lbl in obj["labels"]:
-                        dist[lbl["label"]] += 1
-                elif "label" in obj:
-                    # Old single-label format
-                    dist[obj["label"]] += 1
-            except (json.JSONDecodeError, KeyError):
-                pass
-
-    total = sum(dist.values())
-    if total == 0:
-        return
-
-    print("\nLabel distribution:")
-    for label, count in dist.most_common():
-        print(f"  {label:12s}: {count:4d} ({100 * count / total:.1f}%)")
 
 
 # --- Main ---

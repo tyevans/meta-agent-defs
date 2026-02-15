@@ -66,7 +66,7 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
 
     for commit in &commits {
         let message = commit.message().unwrap_or("");
-        let ctype = common::classify_commit(message);
+        let ctype = common::classify_commit_with_parents(message, commit.parent_count());
         *type_counts.entry(ctype.to_string()).or_insert(0) += 1;
 
         let time = commit.time().seconds();

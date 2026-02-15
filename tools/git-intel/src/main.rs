@@ -36,7 +36,11 @@ enum Commands {
         files: Vec<String>,
     },
     /// Detect fix-after-feat sequences, multi-edit chains, convergence
-    Patterns,
+    Patterns {
+        /// Maximum number of convergence pairs to output (default: 50)
+        #[arg(long, default_value_t = patterns::DEFAULT_CONVERGENCE_LIMIT)]
+        convergence_limit: usize,
+    },
 }
 
 fn main() -> Result<()> {
@@ -59,8 +63,8 @@ fn main() -> Result<()> {
             let result = lifecycle::run(&repo, since_epoch, &files)?;
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
-        Commands::Patterns => {
-            let result = patterns::run(&repo, since_epoch, cli.limit)?;
+        Commands::Patterns { convergence_limit } => {
+            let result = patterns::run_with_convergence_limit(&repo, since_epoch, cli.limit, convergence_limit)?;
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
     }

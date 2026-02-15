@@ -11,6 +11,10 @@
 - clap needs `global = true` on args so flags work after subcommand name (e.g., `git-intel metrics --repo .`) (added: 2026-02-14)
 - git2's `diff.foreach` callback API requires careful lifetime management with multiple closures — line counting callback needs file paths from delta callback (added: 2026-02-14)
 - classify_commit uses strict matching (type: type( type! type+space) not starts_with — prevents "fixing"→"fix" false positives (added: 2026-02-14)
+- classify_commit_with_parents(message, parent_count): merge detection (>=2 parents) takes priority over message-based classification (added: 2026-02-15)
+- Revert detection: guard clause before conventional commit loop, matches `Revert "..."`, `revert:`, `revert(` — priority: merge > revert > conventional (added: 2026-02-15)
+- NL heuristics fallback: "fixed"→fix, "added"→feat, "Fixes/Closes #N"→fix, "bugfix/hotfix"→fix. Last check before "other" (added: 2026-02-15)
+- Convergence pairs: DEFAULT_CONVERGENCE_LIMIT=50, MIN_CONVERGENCE_BYTES=500, --convergence-limit flag, sorted by bytes_ratio before truncation (added: 2026-02-15)
 - churn.rs: single-pass diff.foreach with shared HashMap hits borrow issues — use two-pass (file-level then line-level) or Oid-based lookup (added: 2026-02-14)
 
 ## Preferences
@@ -28,7 +32,8 @@
 ## Testing
 - git2 test fixtures: work with `Oid` values between commits, never hold `Commit<'repo>` across commit boundaries — avoids borrow conflicts (added: 2026-02-14)
 - Fixture builder pattern: `stage_files` + `do_commit` closures create reproducible repos with controlled dates and content (added: 2026-02-14)
-- 31 tests: 14 unit (classify_commit, parse_since) + 17 integration (fixture repo per subcommand) (added: 2026-02-14)
+- 58 tests: 32 unit + 26 integration (added: 2026-02-15)
+- Merge commit fixture: create branch, divergent commits on main+feature, then merge — produces commit with 2 parents for testing (added: 2026-02-15)
 
 ## Cross-Agent Notes
 - (none yet)

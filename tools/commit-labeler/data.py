@@ -92,13 +92,20 @@ def load_done_hashes(output_path: Path) -> set[str]:
 
 
 def print_distribution(output_path: Path):
-    """Print label distribution from output file."""
+    """Print label distribution from output file (multi-label aware)."""
     dist: Counter[str] = Counter()
     with open(output_path) as f:
         for line in f:
             try:
                 obj = json.loads(line.strip())
-                dist[obj["label"]] += 1
+                # Handle both old single-label and new multi-label formats
+                if "labels" in obj:
+                    # Multi-label: count each label
+                    for lbl in obj["labels"]:
+                        dist[lbl["label"]] += 1
+                elif "label" in obj:
+                    # Old single-label format
+                    dist[obj["label"]] += 1
             except (json.JSONDecodeError, KeyError):
                 pass
 

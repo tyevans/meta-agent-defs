@@ -23,6 +23,8 @@ import subprocess
 from collections import Counter
 from pathlib import Path
 
+from data import parse_commit_line
+
 
 def get_diff_stats(repo_dir: Path, commit_hash: str) -> dict | None:
     """Extract diff stats from a bare git clone."""
@@ -74,21 +76,6 @@ def get_diff_stats(repo_dir: Path, commit_hash: str) -> dict | None:
         }
     except (subprocess.TimeoutExpired, Exception):
         return None
-
-
-def parse_commit_line(line: str) -> dict | None:
-    """Parse pipe-delimited commit line into dict."""
-    parts = line.strip().split("|||")
-    if len(parts) < 6:
-        return None
-    return {
-        "repo": parts[0],
-        "hash": parts[1],
-        "author": parts[2],
-        "email": parts[3],
-        "date": parts[4],
-        "message": "|||".join(parts[5:]),
-    }
 
 
 def detect_format(path: Path) -> str:
