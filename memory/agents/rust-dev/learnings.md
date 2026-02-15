@@ -3,7 +3,7 @@
 ## Codebase Patterns
 - Project is tools/git-intel/ — a Rust CLI that analyzes git history and outputs JSON
 - Uses git2-rs crate for git repository access (chosen for maturity/stability over shelling out)
-- Subcommands: metrics, churn, lifecycle, patterns, hotspots — each outputs JSON to stdout
+- Subcommands: metrics, churn, lifecycle, patterns, hotspots, authors, trends — each outputs JSON to stdout
 - Parent project is a content-only repo of Markdown definitions; this is the only compiled artifact
 - lib.rs + main.rs split: library crate re-exports all modules for testability, main.rs is thin CLI wrapper (added: 2026-02-14)
 
@@ -16,7 +16,7 @@
 - Release detection: starts with "v"+digit, contains "release" or "bump version" — positioned after revert, before conventional (added: 2026-02-15)
 - extract_ticket_ref(): manual parsing (no regex crate), priority: bracketed JIRA > unbracketed JIRA > Fixes/Closes #N > bare #N. Integrated into metrics output (added: 2026-02-15)
 - --until flag: end-of-day semantics (23:59:59 UTC), inverted ranges error immediately. Cache key includes both since+until (added: 2026-02-15)
-- hotspots --depth: dir_prefix() groups paths by N components. depth=0 returns "." for project-root aggregate (added: 2026-02-15)
+- dir_prefix() now in common.rs (shared by hotspots + authors). Groups paths by N components, depth=0 returns "." (updated: 2026-02-15)
 - NL heuristics fallback: "fixed"→fix, "added"→feat, "Fixes/Closes #N"→fix, "bugfix/hotfix"→fix. Last check before "other" (added: 2026-02-15)
 - Convergence pairs removed: were noise, not signal. Deleted entirely from patterns.rs (added: 2026-02-15)
 - diff.foreach 4th callback (line-level) useful for per-file add/del counting without separate diff pass (added: 2026-02-15)
@@ -39,7 +39,7 @@
 ## Testing
 - git2 test fixtures: work with `Oid` values between commits, never hold `Commit<'repo>` across commit boundaries — avoids borrow conflicts (added: 2026-02-14)
 - Fixture builder pattern: `stage_files` + `do_commit` closures create reproducible repos with controlled dates and content (added: 2026-02-14)
-- 114 tests: 72 unit + 42 integration (updated: 2026-02-15, convergence tests removed, temporal cluster tests added)
+- 150 tests: 79 unit + 71 integration (updated: 2026-02-15, added authors/trends/hotspot-types/mailmap tests)
 - Merge commit fixture: create branch, divergent commits on main+feature, then merge — produces commit with 2 parents for testing (added: 2026-02-15)
 
 ## Cache
@@ -48,7 +48,10 @@
 - Cache lives in .git/git-intel-cache/, keyed by {subcommand}-{since_epoch}.json, invalidated on HEAD change (added: 2026-02-15)
 
 ## Subcommand Composition
-- Reusing existing subcommand output (e.g. churn::run()) for aggregation is cleaner than duplicating diff traversal — hotspots is ~60 lines of logic on top of churn (added: 2026-02-15)
+- Reusing existing subcommand output (e.g. churn::run(), metrics::run()) for aggregation is cleaner than duplicating diff traversal — hotspots, trends both compose this way (updated: 2026-02-15)
+- Bus factor algorithm: sort authors by commits desc, accumulate until >50% of total. Count = bus factor (added: 2026-02-15)
+- .mailmap must be committed (not just in working dir) for repo.mailmap() to pick it up. Empty mailmap on repos without .mailmap is fine — resolve returns original identity (added: 2026-02-15)
+- Two-pass hotspots: churn for add/del stats + separate commit walk for type classification. Merging into one pass would require refactoring churn API — not worth it (added: 2026-02-15)
 
 ## ML/ONNX Integration
 - ort v2 API: `TensorRef::from_array_view(([1usize, N], &*vec))` for tensor creation, `session.run(ort::inputs![t1, t2])` returns directly (not Result), `try_extract_tensor::<f32>()` returns `(&Shape, &[f32])` tuple (added: 2026-02-15)
