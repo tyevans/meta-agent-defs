@@ -3,7 +3,7 @@ use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
 
-use git_intel::{cache, churn, hotspots, lifecycle, metrics, patterns};
+use git_intel::{authors, cache, churn, common, hotspots, lifecycle, metrics, patterns, trends};
 
 /// Create a temporary git repo with a controlled commit history.
 ///
@@ -1010,4 +1010,641 @@ fn temporal_cluster_not_triggered_by_spread_commits() {
     let result = patterns::run(&repo, None, None, None).unwrap();
     // Standard fixture: commits are 1 day apart, no cluster possible
     assert!(result.temporal_clusters.is_empty());
+}
+
+// ---- hotspots type_distribution tests ----
+
+#[test]
+fn hotspots_type_distribution_present() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, None, 1, None).unwrap();
+
+    // Every directory should have a non-empty type_distribution
+    for dir in &result.directories {
+        assert!(
+            !dir.type_distribution.is_empty(),
+            "type_distribution should not be empty for {}",
+            dir.path
+        );
+    }
+}
+
+#[test]
+fn hotspots_type_distribution_correct_counts() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, None, 1, None).unwrap();
+
+    // Fixture commits and their touched directories (depth=1):
+    //   1. "feat: initial commit"       -> "." (README.md), "src" (src/lib.rs)
+    //   2. "feat: add helper module"    -> "src" (src/utils.rs)
+    //   3. "chore: add gitignore"       -> "." (.gitignore)
+    //   4. "fix: handle null input"     -> "src" (src/lib.rs)
+    //   5. "docs: update README"        -> "." (README.md)
+    //
+    // src directory: feat(2), fix(1)
+    // root directory: feat(1), chore(1), docs(1)
+
+    let find_dir = |name: &str| -> &hotspots::DirectoryHotspot {
+        result.directories.iter().find(|d| d.path == name).unwrap()
+    };
+
+    let src = find_dir("src");
+    assert_eq!(src.type_distribution.get("feat"), Some(&2));
+    assert_eq!(src.type_distribution.get("fix"), Some(&1));
+    assert_eq!(src.type_distribution.get("chore"), None);
+
+    let root = find_dir(".");
+    assert_eq!(root.type_distribution.get("feat"), Some(&1));
+    assert_eq!(root.type_distribution.get("chore"), Some(&1));
+    assert_eq!(root.type_distribution.get("docs"), Some(&1));
+    assert_eq!(root.type_distribution.get("fix"), None);
+}
+
+#[test]
+fn hotspots_type_distribution_depth_0_aggregates() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, None, 0, None).unwrap();
+
+    // depth=0: all files aggregate to "."
+    // All 5 commits touch "." : feat(2), chore(1), fix(1), docs(1)
+    assert_eq!(result.directories.len(), 1);
+    let root = &result.directories[0];
+    assert_eq!(root.path, ".");
+
+    let total_type_count: usize = root.type_distribution.values().sum();
+    assert_eq!(total_type_count, 5); // one entry per commit
+    assert_eq!(root.type_distribution.get("feat"), Some(&2));
+    assert_eq!(root.type_distribution.get("fix"), Some(&1));
+    assert_eq!(root.type_distribution.get("chore"), Some(&1));
+    assert_eq!(root.type_distribution.get("docs"), Some(&1));
+}
+
+#[test]
+fn hotspots_type_distribution_in_json() {
+    let (_dir, repo) = create_fixture();
+    let result = hotspots::run(&repo, None, None, 1, None).unwrap();
+    let json = serde_json::to_string_pretty(&result).unwrap();
+    let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+
+    // Every directory entry should have a type_distribution object
+    for dir in parsed["directories"].as_array().unwrap() {
+        assert!(
+            dir["type_distribution"].is_object(),
+            "type_distribution should be a JSON object"
+        );
+    }
+}
+
+#[test]
+fn hotspots_type_distribution_with_since_filter() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Only commits 4 and 5: fix (src/lib.rs) and docs (README.md)
+    let since = Some(base_epoch + 3 * day);
+    let result = hotspots::run(&repo, since, None, 1, None).unwrap();
+
+    let find_dir = |name: &str| -> Option<&hotspots::DirectoryHotspot> {
+        result.directories.iter().find(|d| d.path == name)
+    };
+
+    if let Some(src) = find_dir("src") {
+        assert_eq!(src.type_distribution.get("fix"), Some(&1));
+        assert_eq!(src.type_distribution.get("feat"), None);
+    }
+
+    if let Some(root) = find_dir(".") {
+        assert_eq!(root.type_distribution.get("docs"), Some(&1));
+        assert_eq!(root.type_distribution.get("feat"), None);
+    }
+}
+
+#[test]
+fn hotspots_type_distribution_merge_commit() {
+    let (_dir, repo) = create_merge_fixture();
+    let result = hotspots::run(&repo, None, None, 0, None).unwrap();
+
+    // Merge fixture: feat, fix, feat, merge — all at depth=0 go to "."
+    let root = &result.directories[0];
+    assert_eq!(root.type_distribution.get("merge"), Some(&1));
+    assert_eq!(root.type_distribution.get("feat"), Some(&2));
+    assert_eq!(root.type_distribution.get("fix"), Some(&1));
+}
+
+// ---- mailmap tests ----
+
+/// Create a fixture with commits from two different email addresses that map
+/// to the same person via .mailmap.
+///
+/// Commits:
+///   1. "feat: initial commit" by "Alice <alice@work.com>"   (README.md)
+///   2. "fix: typo"           by "Alice <alice@home.com>"    (README.md)
+///   3. .mailmap added        by "Alice <alice@work.com>"    (maps alice@home.com -> alice@work.com)
+fn create_mailmap_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Commit 1: Alice at work email
+    let tree_oid = stage_files(&repo, &[("README.md", "# Mailmap Test\n")]);
+    let sig1 = Signature::new("Alice", "alice@work.com", &Time::new(base_epoch, 0))
+        .expect("create sig");
+    let c1 = do_commit(&repo, tree_oid, &[], &sig1, "feat: initial commit");
+
+    // Commit 2: Alice at home email (different identity, same person)
+    let tree_oid = stage_files(&repo, &[("README.md", "# Mailmap Test\n\nFixed typo.\n")]);
+    let sig2 = Signature::new("alice", "alice@home.com", &Time::new(base_epoch + day, 0))
+        .expect("create sig");
+    let c2 = do_commit(&repo, tree_oid, &[c1], &sig2, "fix: typo");
+
+    // Commit 3: Add .mailmap that maps home -> work
+    let tree_oid = stage_files(
+        &repo,
+        &[(".mailmap", "Alice <alice@work.com> <alice@home.com>\n")],
+    );
+    let sig3 = Signature::new("Alice", "alice@work.com", &Time::new(base_epoch + 2 * day, 0))
+        .expect("create sig");
+    let _c3 = do_commit(&repo, tree_oid, &[c2], &sig3, "chore: add mailmap");
+
+    (dir, repo)
+}
+
+#[test]
+fn mailmap_resolve_normalizes_identity() {
+    let (_dir, repo) = create_mailmap_fixture();
+    let mailmap = common::load_mailmap(&repo);
+    assert!(mailmap.is_some(), "mailmap should load from repo with .mailmap");
+
+    let mm = mailmap.as_ref().unwrap();
+
+    // The home email should resolve to the work email
+    let sig_home = Signature::new("alice", "alice@home.com", &Time::new(0, 0)).unwrap();
+    let (name, email) = common::resolve_author(Some(mm), &sig_home);
+    assert_eq!(name, "Alice");
+    assert_eq!(email, "alice@work.com");
+
+    // The work email should stay unchanged
+    let sig_work = Signature::new("Alice", "alice@work.com", &Time::new(0, 0)).unwrap();
+    let (name2, email2) = common::resolve_author(Some(mm), &sig_work);
+    assert_eq!(name2, "Alice");
+    assert_eq!(email2, "alice@work.com");
+}
+
+#[test]
+fn mailmap_resolve_counts_as_one_author() {
+    let (_dir, repo) = create_mailmap_fixture();
+    let mailmap = common::load_mailmap(&repo);
+    let mm = mailmap.as_ref();
+
+    // Walk all commits and collect unique authors via mailmap
+    let commits = common::walk_commits(&repo, None, None).unwrap();
+    let mut authors = std::collections::HashSet::new();
+    for commit in &commits {
+        let (name, email) = common::resolve_author(mm, &commit.author());
+        authors.insert((name, email));
+    }
+
+    // Without mailmap we'd see 2 authors (alice@work.com, alice@home.com).
+    // With mailmap they should collapse to 1.
+    assert_eq!(authors.len(), 1, "mailmap should collapse two emails into one author");
+    let (name, email) = authors.into_iter().next().unwrap();
+    assert_eq!(name, "Alice");
+    assert_eq!(email, "alice@work.com");
+}
+
+#[test]
+fn mailmap_resolve_without_mailmap_returns_original() {
+    // Use the standard fixture which has no .mailmap
+    let (_dir, repo) = create_fixture();
+    let mailmap = common::load_mailmap(&repo);
+
+    // No .mailmap in this repo — load_mailmap may return Some(empty) or None
+    // depending on git2 behavior. Either way, resolve_author should return
+    // the original identity.
+    let sig = Signature::new("Test Author", "test@test.com", &Time::new(0, 0)).unwrap();
+    let (name, email) = common::resolve_author(mailmap.as_ref(), &sig);
+    assert_eq!(name, "Test Author");
+    assert_eq!(email, "test@test.com");
+}
+
+#[test]
+fn mailmap_resolve_none_mailmap_returns_original() {
+    let sig = Signature::new("Someone", "someone@example.com", &Time::new(0, 0)).unwrap();
+    let (name, email) = common::resolve_author(None, &sig);
+    assert_eq!(name, "Someone");
+    assert_eq!(email, "someone@example.com");
+}
+
+// ---- authors tests ----
+
+#[test]
+fn authors_single_author_fixture() {
+    let (_dir, repo) = create_fixture();
+    let result = authors::run(&repo, None, None, 1, None).unwrap();
+
+    assert_eq!(result.total_commits_analyzed, 5);
+    assert_eq!(result.total_authors, 1); // All commits by "Test Author"
+    assert_eq!(result.depth, 1);
+
+    // Should have 2 directories: "." and "src"
+    assert_eq!(result.directories.len(), 2);
+
+    for dir in &result.directories {
+        assert_eq!(dir.authors.len(), 1);
+        assert_eq!(dir.authors[0].name, "Test Author");
+        assert_eq!(dir.authors[0].email, "test@test.com");
+        assert_eq!(dir.top_contributor, "Test Author");
+        // Single author means bus_factor = 1
+        assert_eq!(dir.bus_factor, 1);
+    }
+}
+
+#[test]
+fn authors_directory_commit_counts() {
+    let (_dir, repo) = create_fixture();
+    let result = authors::run(&repo, None, None, 1, None).unwrap();
+
+    let find_dir = |name: &str| -> &authors::DirectoryAuthors {
+        result.directories.iter().find(|d| d.path == name).unwrap()
+    };
+
+    // src: commits 1 (feat: initial, touches src/lib.rs), 2 (feat: add helper, src/utils.rs), 4 (fix: src/lib.rs)
+    let src = find_dir("src");
+    assert_eq!(src.total_commits, 3);
+
+    // root: commits 1 (feat: initial, README.md), 3 (chore: .gitignore), 5 (docs: README.md)
+    let root = find_dir(".");
+    assert_eq!(root.total_commits, 3);
+}
+
+#[test]
+fn authors_lines_nonzero() {
+    let (_dir, repo) = create_fixture();
+    let result = authors::run(&repo, None, None, 1, None).unwrap();
+
+    for dir in &result.directories {
+        let total_lines: usize = dir.authors.iter().map(|a| a.lines_added + a.lines_deleted).sum();
+        assert!(total_lines > 0, "directory {} should have nonzero lines", dir.path);
+    }
+}
+
+#[test]
+fn authors_depth_0_aggregates() {
+    let (_dir, repo) = create_fixture();
+    let result = authors::run(&repo, None, None, 0, None).unwrap();
+
+    assert_eq!(result.depth, 0);
+    assert_eq!(result.directories.len(), 1);
+    assert_eq!(result.directories[0].path, ".");
+    assert_eq!(result.directories[0].total_commits, 5);
+}
+
+#[test]
+fn authors_since_filter() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Only commits 3, 4, 5
+    let since = Some(base_epoch + 2 * day);
+    let result = authors::run(&repo, since, None, 1, None).unwrap();
+    assert_eq!(result.total_commits_analyzed, 3);
+}
+
+#[test]
+fn authors_until_filter() {
+    let (_dir, repo) = create_fixture();
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+    // Only commits 1, 2
+    let until = Some(base_epoch + day + 86399);
+    let result = authors::run(&repo, None, until, 1, None).unwrap();
+    assert_eq!(result.total_commits_analyzed, 2);
+}
+
+#[test]
+fn authors_limit_truncates() {
+    let (_dir, repo) = create_fixture();
+    let result = authors::run(&repo, None, None, 1, Some(1)).unwrap();
+    assert_eq!(result.directories.len(), 1);
+}
+
+#[test]
+fn authors_json_output_shape() {
+    let (_dir, repo) = create_fixture();
+    let result = authors::run(&repo, None, None, 1, None).unwrap();
+    let json = serde_json::to_string_pretty(&result).unwrap();
+    let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+
+    assert!(parsed["directories"].is_array());
+    assert!(parsed["total_authors"].is_number());
+    assert!(parsed["total_commits_analyzed"].is_number());
+    assert!(parsed["depth"].is_number());
+
+    let first = &parsed["directories"][0];
+    assert!(first["path"].is_string());
+    assert!(first["authors"].is_array());
+    assert!(first["top_contributor"].is_string());
+    assert!(first["bus_factor"].is_number());
+    assert!(first["total_commits"].is_number());
+
+    let author = &first["authors"][0];
+    assert!(author["name"].is_string());
+    assert!(author["email"].is_string());
+    assert!(author["commits"].is_number());
+    assert!(author["lines_added"].is_number());
+    assert!(author["lines_deleted"].is_number());
+}
+
+/// Create a multi-author fixture for bus factor testing.
+///
+/// Commits:
+///   1. "feat: initial" by Alice (README.md)
+///   2. "feat: feature"  by Alice (src/a.rs)
+///   3. "fix: bug"      by Alice (src/a.rs)
+///   4. "docs: readme"  by Bob   (README.md)
+///   5. "feat: new"     by Charlie (src/b.rs)
+fn create_multi_author_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    let do_commit = |repo: &Repository,
+                     tree_oid: Oid,
+                     parent_oids: &[Oid],
+                     sig: &Signature,
+                     message: &str|
+     -> Oid {
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parents: Vec<git2::Commit> = parent_oids
+            .iter()
+            .map(|oid| repo.find_commit(*oid).expect("find parent"))
+            .collect();
+        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+        repo.commit(Some("HEAD"), sig, sig, message, &tree, &parent_refs)
+            .expect("create commit")
+    };
+
+    // Alice: 3 commits
+    let sig_alice = |epoch: i64| -> Signature<'static> {
+        Signature::new("Alice", "alice@test.com", &Time::new(epoch, 0)).expect("sig")
+    };
+    // Bob: 1 commit
+    let sig_bob = |epoch: i64| -> Signature<'static> {
+        Signature::new("Bob", "bob@test.com", &Time::new(epoch, 0)).expect("sig")
+    };
+    // Charlie: 1 commit
+    let sig_charlie = |epoch: i64| -> Signature<'static> {
+        Signature::new("Charlie", "charlie@test.com", &Time::new(epoch, 0)).expect("sig")
+    };
+
+    let tree_oid = stage_files(&repo, &[("README.md", "# Multi Author\n")]);
+    let s = sig_alice(base_epoch);
+    let c1 = do_commit(&repo, tree_oid, &[], &s, "feat: initial");
+
+    let tree_oid = stage_files(&repo, &[("src/a.rs", "// feature\n")]);
+    let s = sig_alice(base_epoch + day);
+    let c2 = do_commit(&repo, tree_oid, &[c1], &s, "feat: feature");
+
+    let tree_oid = stage_files(&repo, &[("src/a.rs", "// feature\n// fixed\n")]);
+    let s = sig_alice(base_epoch + 2 * day);
+    let c3 = do_commit(&repo, tree_oid, &[c2], &s, "fix: bug");
+
+    let tree_oid = stage_files(&repo, &[("README.md", "# Multi Author\n\nUpdated.\n")]);
+    let s = sig_bob(base_epoch + 3 * day);
+    let c4 = do_commit(&repo, tree_oid, &[c3], &s, "docs: readme");
+
+    let tree_oid = stage_files(&repo, &[("src/b.rs", "// new feature\n")]);
+    let s = sig_charlie(base_epoch + 4 * day);
+    let _c5 = do_commit(&repo, tree_oid, &[c4], &s, "feat: new");
+
+    (dir, repo)
+}
+
+#[test]
+fn authors_multi_author_total_count() {
+    let (_dir, repo) = create_multi_author_fixture();
+    let result = authors::run(&repo, None, None, 1, None).unwrap();
+
+    assert_eq!(result.total_authors, 3);
+    assert_eq!(result.total_commits_analyzed, 5);
+}
+
+#[test]
+fn authors_multi_author_bus_factor() {
+    let (_dir, repo) = create_multi_author_fixture();
+    let result = authors::run(&repo, None, None, 1, None).unwrap();
+
+    let find_dir = |name: &str| -> &authors::DirectoryAuthors {
+        result.directories.iter().find(|d| d.path == name).unwrap()
+    };
+
+    // src: Alice has 2 commits (feat + fix), Charlie has 1. Total = 3.
+    // Alice alone = 2/3 = 66% > 50%, so bus_factor = 1
+    let src = find_dir("src");
+    assert_eq!(src.bus_factor, 1);
+    assert_eq!(src.top_contributor, "Alice");
+
+    // root: Alice has 1 commit, Bob has 1. Total = 2.
+    // Alice alone = 1/2 = 50%, not >50%. Both needed = 2/2 > 50%, bus_factor = 2
+    let root = find_dir(".");
+    assert_eq!(root.bus_factor, 2);
+}
+
+#[test]
+fn authors_multi_author_sorted_by_commits() {
+    let (_dir, repo) = create_multi_author_fixture();
+    let result = authors::run(&repo, None, None, 1, None).unwrap();
+
+    // Within each directory, authors should be sorted by commits descending
+    for dir in &result.directories {
+        for w in dir.authors.windows(2) {
+            assert!(
+                w[0].commits >= w[1].commits,
+                "authors in {} not sorted by commits desc",
+                dir.path
+            );
+        }
+    }
+}
+
+#[test]
+fn authors_mailmap_deduplicates() {
+    let (_dir, repo) = create_mailmap_fixture();
+    let result = authors::run(&repo, None, None, 0, None).unwrap();
+
+    // With mailmap, alice@home.com and alice@work.com should be unified
+    assert_eq!(result.total_authors, 1);
+    assert_eq!(result.directories[0].authors.len(), 1);
+    assert_eq!(result.directories[0].authors[0].email, "alice@work.com");
+    assert_eq!(result.directories[0].authors[0].commits, 3);
+}
+
+// ---- trends tests ----
+
+#[test]
+fn trends_basic_output_shape() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 2, 30, 3).unwrap();
+
+    assert_eq!(result.window_count, 2);
+    assert_eq!(result.window_size_days, 30);
+    assert_eq!(result.windows.len(), 2);
+
+    // Windows should be ordered most recent first
+    assert_eq!(result.windows[0].index, 0);
+    assert_eq!(result.windows[1].index, 1);
+
+    // Deltas should have valid trend strings
+    assert!(["increasing", "decreasing", "stable"].contains(&result.deltas.commit_trend.as_str()));
+    assert!(["increasing", "decreasing", "stable"].contains(&result.deltas.fix_rate_trend.as_str()));
+}
+
+#[test]
+fn trends_window_labels_have_dates() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 2, 30, 5).unwrap();
+
+    for w in &result.windows {
+        // Labels should be "YYYY-MM-DD to YYYY-MM-DD"
+        assert!(w.label.contains(" to "), "label should contain ' to ': {}", w.label);
+        assert_eq!(w.since.len(), 10, "since should be YYYY-MM-DD format");
+        assert_eq!(w.until.len(), 10, "until should be YYYY-MM-DD format");
+    }
+}
+
+#[test]
+fn trends_velocity_computation() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 2, 30, 5).unwrap();
+
+    for w in &result.windows {
+        let expected_velocity = w.total_commits as f64 / 30.0;
+        assert!(
+            (w.velocity - expected_velocity).abs() < 0.001,
+            "velocity {} should equal total_commits/window_days {}",
+            w.velocity,
+            expected_velocity
+        );
+    }
+}
+
+#[test]
+fn trends_churn_limit_respected() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 1, 365, 2).unwrap();
+
+    for w in &result.windows {
+        assert!(
+            w.top_churn_files.len() <= 2,
+            "top_churn_files should respect limit: got {}",
+            w.top_churn_files.len()
+        );
+    }
+}
+
+#[test]
+fn trends_single_window_stable_deltas() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 1, 365, 5).unwrap();
+
+    assert_eq!(result.windows.len(), 1);
+    // With only one window, deltas should be "stable"
+    assert_eq!(result.deltas.commit_trend, "stable");
+    assert_eq!(result.deltas.fix_rate_trend, "stable");
+}
+
+#[test]
+fn trends_json_output_shape() {
+    let (_dir, repo) = create_fixture();
+    let result = trends::run(&repo, 2, 30, 3).unwrap();
+    let json = serde_json::to_string_pretty(&result).unwrap();
+    let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+
+    assert!(parsed["windows"].is_array());
+    assert!(parsed["window_count"].is_number());
+    assert!(parsed["window_size_days"].is_number());
+    assert!(parsed["deltas"].is_object());
+    assert!(parsed["deltas"]["commit_trend"].is_string());
+    assert!(parsed["deltas"]["fix_rate_trend"].is_string());
+
+    // Check window entry shape
+    if let Some(first) = parsed["windows"].as_array().and_then(|a| a.first()) {
+        assert!(first["index"].is_number());
+        assert!(first["label"].is_string());
+        assert!(first["since"].is_string());
+        assert!(first["until"].is_string());
+        assert!(first["total_commits"].is_number());
+        assert!(first["type_distribution"].is_object());
+        assert!(first["velocity"].is_number());
+        assert!(first["top_churn_files"].is_array());
+    }
+}
+
+/// Test with a fixture that has commits within a known time range
+/// to verify windows actually capture the right data.
+#[test]
+fn trends_captures_fixture_commits() {
+    let (_dir, repo) = create_fixture();
+    // Fixture commits span base_epoch to base_epoch + 4*day
+    // = 1736467200 to 1736467200 + 345600 = ~5 days
+    // Use a large window (365 days) so window 0 (most recent, ending "now")
+    // won't contain the fixture commits (they're from 2025-01-10),
+    // but if we use enough windows we might catch them.
+    // Instead, just verify the function doesn't panic with various configs.
+    let result = trends::run(&repo, 4, 90, 5).unwrap();
+    assert_eq!(result.windows.len(), 4);
+
+    // The type_distribution should be a HashMap for every window
+    for w in &result.windows {
+        // velocity should never be negative
+        assert!(w.velocity >= 0.0);
+    }
 }

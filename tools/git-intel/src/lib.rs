@@ -1,6 +1,7 @@
 // Each subcommand module exposes run(&Repository, ...) -> Result<T: Serialize>.
 // This uniform interface is intentional; see DESIGN-daemon.md for the
 // caching/daemon design that depends on it.
+pub mod authors;
 pub mod cache;
 pub mod churn;
 pub mod common;
@@ -10,6 +11,7 @@ pub mod metrics;
 #[cfg(feature = "ml")]
 pub mod ml;
 pub mod patterns;
+pub mod trends;
 
 use anyhow::Result;
 

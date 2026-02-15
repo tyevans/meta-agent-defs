@@ -1,9 +1,37 @@
 use anyhow::Result;
-use git2::{Commit, Oid, Repository, Sort};
+use git2::{Commit, Mailmap, Oid, Repository, Signature, Sort};
 
 /// Return the first 7 characters of a git object ID (standard short hash).
 pub fn short_hash(oid: &Oid) -> String {
     oid.to_string()[..7].to_string()
+}
+
+/// Load the repository's mailmap, returning `None` if unavailable.
+///
+/// This is a convenience wrapper around `Repository::mailmap()` that
+/// converts errors (e.g. no `.mailmap` file) into `None`.
+pub fn load_mailmap(repo: &Repository) -> Option<Mailmap> {
+    repo.mailmap().ok()
+}
+
+/// Resolve an author signature through the mailmap, returning the
+/// canonical (name, email) pair.
+///
+/// If `mailmap` is `None` or resolution fails, the original name and
+/// email from the signature are returned unchanged.
+pub fn resolve_author(mailmap: Option<&Mailmap>, sig: &Signature) -> (String, String) {
+    if let Some(mm) = mailmap {
+        if let Ok(resolved) = mm.resolve_signature(sig) {
+            return (
+                resolved.name().unwrap_or("unknown").to_string(),
+                resolved.email().unwrap_or("unknown").to_string(),
+            );
+        }
+    }
+    (
+        sig.name().unwrap_or("unknown").to_string(),
+        sig.email().unwrap_or("unknown").to_string(),
+    )
 }
 
 /// Classify a commit by its message and parent count.
@@ -310,9 +338,48 @@ pub fn walk_commits<'repo>(
     Ok(commits)
 }
 
+/// Extract the directory prefix at the given depth from a file path.
+/// depth=1: "src/lib.rs" -> "src", "README.md" -> "."
+/// depth=2: "src/utils/helper.rs" -> "src/utils", "src/lib.rs" -> "src"
+pub fn dir_prefix(path: &str, depth: usize) -> String {
+    if depth == 0 {
+        return ".".to_string();
+    }
+    let parts: Vec<&str> = path.split('/').collect();
+    if parts.len() <= depth {
+        // File is at or above the requested depth — use parent dir or "."
+        if parts.len() == 1 {
+            ".".to_string()
+        } else {
+            parts[..parts.len() - 1].join("/")
+        }
+    } else {
+        parts[..depth].join("/")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn dir_prefix_depth_0() {
+        assert_eq!(dir_prefix("src/lib.rs", 0), ".");
+        assert_eq!(dir_prefix("README.md", 0), ".");
+    }
+
+    #[test]
+    fn dir_prefix_depth_1() {
+        assert_eq!(dir_prefix("src/lib.rs", 1), "src");
+        assert_eq!(dir_prefix("README.md", 1), ".");
+    }
+
+    #[test]
+    fn dir_prefix_depth_2() {
+        assert_eq!(dir_prefix("src/utils/helper.rs", 2), "src/utils");
+        assert_eq!(dir_prefix("src/lib.rs", 2), "src");
+        assert_eq!(dir_prefix("README.md", 2), ".");
+    }
 
     #[test]
     fn classify_standard_types() {

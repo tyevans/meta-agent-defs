@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
-use git_intel::{cache, churn, hotspots, lifecycle, metrics, parse_since, parse_until, patterns, validate_range};
+use git_intel::{authors, cache, churn, hotspots, lifecycle, metrics, parse_since, parse_until, patterns, trends, validate_range};
 
 #[derive(Parser)]
 #[command(name = "git-intel", about = "Git history analyzer — JSON output for hooks and skills")]
@@ -61,6 +61,21 @@ enum Commands {
     },
     /// Detect fix-after-feat sequences, multi-edit chains, temporal clusters
     Patterns,
+    /// Per-directory ownership analysis: top contributor, bus factor, author stats
+    Authors {
+        /// Directory depth for grouping (1 = top-level dirs, 2 = two levels, etc.)
+        #[arg(long, default_value_t = 1)]
+        depth: usize,
+    },
+    /// Multi-window temporal comparison: how metrics change over time
+    Trends {
+        /// Number of time windows to compare (default: 4)
+        #[arg(long, default_value_t = 4)]
+        windows: usize,
+        /// Size of each window in days (default: 90)
+        #[arg(long, default_value_t = 90)]
+        window_size: u32,
+    },
 }
 
 fn main() -> Result<()> {
@@ -136,6 +151,33 @@ fn main() -> Result<()> {
                 }
             }
             let result = hotspots::run(&repo, since_epoch, until_epoch, depth, cli.limit)?;
+            let _ = cache::write_cache(&repo, &key, &result);
+            println!("{}", serde_json::to_string_pretty(&result)?);
+        }
+        Commands::Authors { depth } => {
+            let extra = &[format!("{}", depth)];
+            let key = cache::cache_key("authors", since_epoch, until_epoch, Some(extra));
+            if !cli.no_cache {
+                if let Some(cached) = cache::read_cache(&repo, &key) {
+                    println!("{}", cached);
+                    return Ok(());
+                }
+            }
+            let result = authors::run(&repo, since_epoch, until_epoch, depth, cli.limit)?;
+            let _ = cache::write_cache(&repo, &key, &result);
+            println!("{}", serde_json::to_string_pretty(&result)?);
+        }
+        Commands::Trends { windows, window_size } => {
+            let churn_limit = cli.limit.unwrap_or(5);
+            let extra = &[format!("{}", windows), format!("{}", window_size), format!("{}", churn_limit)];
+            let key = cache::cache_key("trends", since_epoch, until_epoch, Some(extra));
+            if !cli.no_cache {
+                if let Some(cached) = cache::read_cache(&repo, &key) {
+                    println!("{}", cached);
+                    return Ok(());
+                }
+            }
+            let result = trends::run(&repo, windows, window_size, churn_limit)?;
             let _ = cache::write_cache(&repo, &key, &result);
             println!("{}", serde_json::to_string_pretty(&result)?);
         }
