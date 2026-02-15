@@ -32,10 +32,14 @@ fn head_oid(repo: &Repository) -> Result<String> {
 
 /// Build cache key filename from subcommand name and args.
 ///
-/// - metrics/churn/patterns: `{subcommand}-{since_label}.json`
-/// - lifecycle: `lifecycle-{hash(files)}-{since_label}.json`
-pub fn cache_key(subcommand: &str, since: Option<i64>, files: Option<&[String]>) -> String {
+/// - metrics/churn/patterns: `{subcommand}-{since_label}-{until_label}.json`
+/// - lifecycle: `lifecycle-{hash(files)}-{since_label}-{until_label}.json`
+pub fn cache_key(subcommand: &str, since: Option<i64>, until: Option<i64>, files: Option<&[String]>) -> String {
     let since_label = match since {
+        Some(ts) => format!("{}", ts),
+        None => "all".to_string(),
+    };
+    let until_label = match until {
         Some(ts) => format!("{}", ts),
         None => "all".to_string(),
     };
@@ -49,9 +53,9 @@ pub fn cache_key(subcommand: &str, since: Option<i64>, files: Option<&[String]>)
                 file.hash(&mut hasher);
             }
             let h = hasher.finish();
-            format!("{}-{:x}-{}.json", subcommand, h, since_label)
+            format!("{}-{:x}-{}-{}.json", subcommand, h, since_label, until_label)
         }
-        None => format!("{}-{}.json", subcommand, since_label),
+        None => format!("{}-{}-{}.json", subcommand, since_label, until_label),
     }
 }
 
@@ -102,21 +106,33 @@ mod tests {
 
     #[test]
     fn cache_key_metrics_all() {
-        assert_eq!(cache_key("metrics", None, None), "metrics-all.json");
+        assert_eq!(cache_key("metrics", None, None, None), "metrics-all-all.json");
     }
 
     #[test]
     fn cache_key_metrics_since() {
-        let key = cache_key("metrics", Some(1768435200), None);
-        assert_eq!(key, "metrics-1768435200.json");
+        let key = cache_key("metrics", Some(1768435200), None, None);
+        assert_eq!(key, "metrics-1768435200-all.json");
+    }
+
+    #[test]
+    fn cache_key_metrics_until() {
+        let key = cache_key("metrics", None, Some(1768521599), None);
+        assert_eq!(key, "metrics-all-1768521599.json");
+    }
+
+    #[test]
+    fn cache_key_metrics_since_until() {
+        let key = cache_key("metrics", Some(1768435200), Some(1768521599), None);
+        assert_eq!(key, "metrics-1768435200-1768521599.json");
     }
 
     #[test]
     fn cache_key_lifecycle_files() {
         let files = vec!["src/main.rs".to_string(), "Cargo.toml".to_string()];
-        let key = cache_key("lifecycle", None, Some(&files));
+        let key = cache_key("lifecycle", None, None, Some(&files));
         assert!(key.starts_with("lifecycle-"));
-        assert!(key.ends_with("-all.json"));
+        assert!(key.ends_with("-all-all.json"));
     }
 
     #[test]
@@ -124,8 +140,8 @@ mod tests {
         let files_a = vec!["a.rs".to_string(), "b.rs".to_string()];
         let files_b = vec!["b.rs".to_string(), "a.rs".to_string()];
         assert_eq!(
-            cache_key("lifecycle", None, Some(&files_a)),
-            cache_key("lifecycle", None, Some(&files_b))
+            cache_key("lifecycle", None, None, Some(&files_a)),
+            cache_key("lifecycle", None, None, Some(&files_b))
         );
     }
 }

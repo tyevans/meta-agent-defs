@@ -36,8 +36,8 @@ fn count_blob_lines(repo: &Repository, tree: &git2::Tree, path: &str) -> Option<
     Some(content.lines().count())
 }
 
-pub fn run(repo: &Repository, since: Option<i64>, files: &[String]) -> Result<LifecycleOutput> {
-    let commits = common::walk_commits(repo, since)?;
+pub fn run(repo: &Repository, since: Option<i64>, until: Option<i64>, files: &[String]) -> Result<LifecycleOutput> {
+    let commits = common::walk_commits(repo, since, until)?;
 
     let mut result_files = Vec::new();
 

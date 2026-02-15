@@ -11,6 +11,14 @@ pub struct MetricsOutput {
     pub activity: Vec<ActivityBurst>,
     pub velocity: VelocityStats,
     pub total_commits: usize,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub ticket_refs: Vec<TicketRef>,
+}
+
+#[derive(Serialize)]
+pub struct TicketRef {
+    pub ticket: String,
+    pub count: usize,
 }
 
 #[derive(Serialize)]
@@ -56,18 +64,45 @@ fn lines_changed(repo: &Repository, commit: &git2::Commit) -> usize {
     stats.insertions() + stats.deletions()
 }
 
-pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Result<MetricsOutput> {
-    let commits = common::walk_commits(repo, since)?;
+pub fn run(repo: &Repository, since: Option<i64>, until: Option<i64>, limit: Option<usize>) -> Result<MetricsOutput> {
+    run_impl(repo, since, until, limit, &mut |msg, parents| {
+        common::classify_commit_with_parents(msg, parents).to_string()
+    })
+}
+
+/// Run metrics with an optional ML classifier for enriched commit classification.
+#[cfg(feature = "ml")]
+pub fn run_with_ml(
+    repo: &Repository,
+    since: Option<i64>,
+    until: Option<i64>,
+    limit: Option<usize>,
+    mut ml: Option<&mut crate::ml::MlClassifier>,
+) -> Result<MetricsOutput> {
+    run_impl(repo, since, until, limit, &mut |msg, parents| {
+        common::classify_commit_with_ml(msg, parents, ml.as_mut().map(|m| &mut **m))
+    })
+}
+
+fn run_impl(
+    repo: &Repository,
+    since: Option<i64>,
+    until: Option<i64>,
+    limit: Option<usize>,
+    classify: &mut dyn FnMut(&str, usize) -> String,
+) -> Result<MetricsOutput> {
+    let commits = common::walk_commits(repo, since, until)?;
 
     let mut type_counts: HashMap<String, usize> = HashMap::new();
     let mut daily_counts: HashMap<String, usize> = HashMap::new();
+    let mut ticket_counts: HashMap<String, usize> = HashMap::new();
     let mut line_counts: Vec<usize> = Vec::new();
     let total = commits.len();
 
     for commit in &commits {
         let message = commit.message().unwrap_or("");
-        let ctype = common::classify_commit_with_parents(message, commit.parent_count());
-        *type_counts.entry(ctype.to_string()).or_insert(0) += 1;
+        let ctype = classify(message, commit.parent_count());
+        *type_counts.entry(ctype).or_insert(0) += 1;
 
         let time = commit.time().seconds();
         let dt = match chrono::DateTime::from_timestamp(time, 0) {
@@ -83,6 +118,10 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
         };
         let date_str = dt.format("%Y-%m-%d").to_string();
         *daily_counts.entry(date_str).or_insert(0) += 1;
+
+        if let Some(ticket) = common::extract_ticket_ref(message) {
+            *ticket_counts.entry(ticket).or_insert(0) += 1;
+        }
 
         let lines = lines_changed(repo, commit);
         line_counts.push(lines);
@@ -131,10 +170,22 @@ pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Resul
         total_lines_changed: total_lines,
     };
 
+    // Build ticket refs sorted by count descending
+    let mut ticket_refs: Vec<TicketRef> = ticket_counts
+        .into_iter()
+        .map(|(ticket, count)| TicketRef { ticket, count })
+        .collect();
+    ticket_refs.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.ticket.cmp(&b.ticket)));
+
+    if let Some(limit) = limit {
+        ticket_refs.truncate(limit);
+    }
+
     Ok(MetricsOutput {
         commit_types,
         activity,
         velocity,
         total_commits: total,
+        ticket_refs,
     })
 }

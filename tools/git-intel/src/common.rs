@@ -21,9 +21,9 @@ pub fn classify_commit_with_parents(message: &str, parent_count: usize) -> &'sta
 }
 
 /// Classify a commit message into a conventional-commit type.
-/// Returns one of: revert, feat, fix, chore, docs, refactor, test, style, perf, ci, build, other.
+/// Returns one of: release, revert, feat, fix, chore, docs, refactor, test, style, perf, ci, build, other.
 ///
-/// Priority order: revert > conventional prefix > NL heuristics > "other".
+/// Priority order: revert > release > conventional prefix > NL heuristics > "other".
 ///
 /// Revert commits are detected first (before conventional commit parsing):
 /// - Git's default format: `Revert "..."`
@@ -47,6 +47,16 @@ pub fn classify_commit(message: &str) -> &'static str {
     // Revert detection: git default format `Revert "..."` and conventional `revert:` / `revert(`
     if lower.starts_with("revert \"") || lower.starts_with("revert: ") || lower.starts_with("revert:") || lower.starts_with("revert(") {
         return "revert";
+    }
+
+    // Release/version detection: "v1.2.3", "Release 2.0", "Bump version to 1.5"
+    if lower.starts_with('v') {
+        if lower.len() > 1 && lower.as_bytes()[1].is_ascii_digit() {
+            return "release";
+        }
+    }
+    if lower.contains("release") || lower.contains("bump version") {
+        return "release";
     }
 
     let types: &[(&str, &str)] = &[
@@ -102,11 +112,173 @@ pub fn classify_commit(message: &str) -> &'static str {
     "other"
 }
 
-/// Walk commits from HEAD in time order, filtered by an optional since timestamp.
+/// Classify a commit message with an optional ML fallback.
+/// When the rule-based chain returns "other" and an ML classifier is provided,
+/// the ML model is consulted. If it returns a label above the confidence threshold,
+/// that label is used instead of "other".
+///
+/// The chain becomes: merge > revert > release > conventional > NL heuristics > [ML] > "other"
+#[cfg(feature = "ml")]
+pub fn classify_commit_with_ml(message: &str, parent_count: usize, ml: Option<&mut crate::ml::MlClassifier>) -> String {
+    let rule_label = classify_commit_with_parents(message, parent_count);
+    if rule_label != "other" {
+        return rule_label.to_string();
+    }
+    if let Some(classifier) = ml {
+        if let Some((label, _confidence)) = classifier.classify(message) {
+            return label;
+        }
+    }
+    "other".to_string()
+}
+
+/// Non-ML version that returns String for uniform API when ml feature is disabled.
+#[cfg(not(feature = "ml"))]
+pub fn classify_commit_with_ml_disabled(message: &str, parent_count: usize) -> String {
+    classify_commit_with_parents(message, parent_count).to_string()
+}
+
+/// Extract a ticket reference from a commit message.
+/// Returns the first match found using this priority order:
+/// 1. Bracketed JIRA-style: `[PROJ-123]`
+/// 2. JIRA-style: `PROJ-123` (2+ uppercase letters, dash, 1+ digits)
+/// 3. "Fixes #N" / "Closes #N" patterns
+/// 4. Bare GitHub issue: `#N`
+///
+/// Returns `None` if no ticket reference is found.
+pub fn extract_ticket_ref(message: &str) -> Option<String> {
+    let first_line = message.lines().next().unwrap_or("");
+
+    // 1. Bracketed JIRA-style: [PROJ-123]
+    if let Some(start) = first_line.find('[') {
+        if let Some(end) = first_line[start..].find(']') {
+            let inner = &first_line[start + 1..start + end];
+            if is_jira_ref(inner) {
+                return Some(inner.to_string());
+            }
+        }
+    }
+
+    // 2. Unbracketed JIRA-style: scan for UPPERCASE-DIGITS pattern
+    if let Some(ticket) = find_jira_ref(first_line) {
+        return Some(ticket);
+    }
+
+    // 3. "Fixes #N" / "Closes #N" / "Fixed #N" / "Closed #N" patterns
+    let lower = first_line.to_lowercase();
+    for keyword in &["fixes #", "fixed #", "closes #", "closed #"] {
+        if let Some(pos) = lower.find(keyword) {
+            let num_start = pos + keyword.len();
+            if let Some(num) = extract_digits(&first_line[num_start..]) {
+                return Some(format!("#{}", num));
+            }
+        }
+    }
+
+    // 4. Bare GitHub issue: #N
+    if let Some(pos) = first_line.find('#') {
+        if let Some(num) = extract_digits(&first_line[pos + 1..]) {
+            return Some(format!("#{}", num));
+        }
+    }
+
+    None
+}
+
+/// Check if a string matches JIRA-style: 2+ uppercase letters, dash, 1+ digits.
+fn is_jira_ref(s: &str) -> bool {
+    let bytes = s.as_bytes();
+    let mut i = 0;
+
+    // Need at least 2 uppercase letters
+    while i < bytes.len() && bytes[i].is_ascii_uppercase() {
+        i += 1;
+    }
+    if i < 2 {
+        return false;
+    }
+
+    // Dash
+    if i >= bytes.len() || bytes[i] != b'-' {
+        return false;
+    }
+    i += 1;
+
+    // At least 1 digit
+    let digit_start = i;
+    while i < bytes.len() && bytes[i].is_ascii_digit() {
+        i += 1;
+    }
+    if i == digit_start {
+        return false;
+    }
+
+    // Must consume the entire string
+    i == bytes.len()
+}
+
+/// Find the first JIRA-style reference in text (word-boundary aware).
+fn find_jira_ref(text: &str) -> Option<String> {
+    let bytes = text.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i < len {
+        // Look for start of uppercase sequence
+        if bytes[i].is_ascii_uppercase() {
+            // Check word boundary: must be at start or preceded by non-alphanumeric
+            if i > 0 && (bytes[i - 1].is_ascii_alphanumeric() || bytes[i - 1] == b'-') {
+                i += 1;
+                continue;
+            }
+
+            let start = i;
+            // Count uppercase letters
+            while i < len && bytes[i].is_ascii_uppercase() {
+                i += 1;
+            }
+            let upper_count = i - start;
+
+            // Need 2+ uppercase, then dash, then 1+ digits
+            if upper_count >= 2 && i < len && bytes[i] == b'-' {
+                i += 1; // skip dash
+                let digit_start = i;
+                while i < len && bytes[i].is_ascii_digit() {
+                    i += 1;
+                }
+                if i > digit_start {
+                    // Check trailing boundary: end of string or non-alphanumeric
+                    if i >= len || !bytes[i].is_ascii_alphanumeric() {
+                        return Some(text[start..i].to_string());
+                    }
+                }
+            }
+        } else {
+            i += 1;
+        }
+    }
+    None
+}
+
+/// Extract a run of digits from the start of a string.
+fn extract_digits(s: &str) -> Option<String> {
+    let digits: String = s.chars().take_while(|c| c.is_ascii_digit()).collect();
+    if digits.is_empty() {
+        None
+    } else {
+        Some(digits)
+    }
+}
+
+/// Walk commits from HEAD in time order, filtered by optional time bounds.
 /// Returns commits newest-first.
+///
+/// - `since`: lower bound (inclusive) — commits before this timestamp are excluded
+/// - `until`: upper bound (inclusive) — commits after this timestamp are skipped
 pub fn walk_commits<'repo>(
     repo: &'repo Repository,
     since: Option<i64>,
+    until: Option<i64>,
 ) -> Result<Vec<Commit<'repo>>> {
     let mut revwalk = repo.revwalk()?;
     revwalk.push_head()?;
@@ -116,9 +288,18 @@ pub fn walk_commits<'repo>(
     for oid in revwalk {
         let oid = oid?;
         let commit = repo.find_commit(oid)?;
+        let ts = commit.time().seconds();
 
+        // Skip commits newer than the until bound
+        if let Some(until_ts) = until {
+            if ts > until_ts {
+                continue;
+            }
+        }
+
+        // Stop once we pass the since bound (commits are time-sorted descending)
         if let Some(since_ts) = since {
-            if commit.time().seconds() < since_ts {
+            if ts < since_ts {
                 break;
             }
         }
@@ -207,7 +388,6 @@ mod tests {
 
     #[test]
     fn classify_unrecognized() {
-        assert_eq!(classify_commit("release: v1.0"), "other");
         assert_eq!(classify_commit("random commit message"), "other");
         assert_eq!(classify_commit("WIP"), "other");
     }
@@ -343,5 +523,145 @@ mod tests {
         // Root commit (0 parents) falls through to message classification
         assert_eq!(classify_commit_with_parents("feat: initial commit", 0), "feat");
         assert_eq!(classify_commit_with_parents("initial commit", 0), "other");
+    }
+
+    // ---- release/version commit classification tests ----
+
+    #[test]
+    fn classify_release_semver_tag() {
+        assert_eq!(classify_commit("v1.2.3"), "release");
+        assert_eq!(classify_commit("v0.1.0"), "release");
+        assert_eq!(classify_commit("v0.1.0-beta"), "release");
+        assert_eq!(classify_commit("v2.0.0-rc.1"), "release");
+    }
+
+    #[test]
+    fn classify_release_semver_mixed_case() {
+        assert_eq!(classify_commit("V1.2.3"), "release");
+        assert_eq!(classify_commit("V0.1.0-beta"), "release");
+    }
+
+    #[test]
+    fn classify_release_keyword() {
+        assert_eq!(classify_commit("Release 2.0"), "release");
+        assert_eq!(classify_commit("release: v1.0"), "release");
+        assert_eq!(classify_commit("RELEASE 3.0"), "release");
+        assert_eq!(classify_commit("release v4.5.1"), "release");
+    }
+
+    #[test]
+    fn classify_release_bump_version() {
+        assert_eq!(classify_commit("Bump version to 1.5"), "release");
+        assert_eq!(classify_commit("bump version to 2.0.0"), "release");
+        assert_eq!(classify_commit("Bump version"), "release");
+    }
+
+    #[test]
+    fn classify_release_not_false_positive() {
+        // "version" alone or "v" without digit should not match
+        assert_eq!(classify_commit("very important change"), "other");
+        assert_eq!(classify_commit("various updates"), "other");
+    }
+
+    #[test]
+    fn classify_release_with_parents() {
+        // Release with 1 parent should be "release"
+        assert_eq!(classify_commit_with_parents("v1.2.3", 1), "release");
+        // Merge commit with release message should still be "merge"
+        assert_eq!(classify_commit_with_parents("v1.2.3", 2), "merge");
+    }
+
+    // ---- ticket reference extraction tests ----
+
+    #[test]
+    fn ticket_jira_style_colon() {
+        assert_eq!(extract_ticket_ref("JIRA-123: fix login"), Some("JIRA-123".to_string()));
+    }
+
+    #[test]
+    fn ticket_jira_style_space() {
+        assert_eq!(extract_ticket_ref("PROJ-456 update auth"), Some("PROJ-456".to_string()));
+    }
+
+    #[test]
+    fn ticket_jira_two_letter_prefix() {
+        assert_eq!(extract_ticket_ref("FO-1 minimal prefix"), Some("FO-1".to_string()));
+    }
+
+    #[test]
+    fn ticket_bracketed_jira() {
+        assert_eq!(extract_ticket_ref("[PROJ-456] update auth"), Some("PROJ-456".to_string()));
+    }
+
+    #[test]
+    fn ticket_bracketed_takes_priority() {
+        // Bracketed should be found even if unbracketed appears first in text
+        assert_eq!(extract_ticket_ref("fix [CORE-99] for JIRA-123"), Some("CORE-99".to_string()));
+    }
+
+    #[test]
+    fn ticket_github_issue_bare() {
+        assert_eq!(extract_ticket_ref("fix typo #789"), Some("#789".to_string()));
+    }
+
+    #[test]
+    fn ticket_fixes_pattern() {
+        assert_eq!(extract_ticket_ref("Fixes #42 — null check"), Some("#42".to_string()));
+    }
+
+    #[test]
+    fn ticket_closes_pattern() {
+        assert_eq!(extract_ticket_ref("Closes #100"), Some("#100".to_string()));
+    }
+
+    #[test]
+    fn ticket_fixed_pattern() {
+        assert_eq!(extract_ticket_ref("Fixed #55 in auth"), Some("#55".to_string()));
+    }
+
+    #[test]
+    fn ticket_no_reference() {
+        assert_eq!(extract_ticket_ref("just a regular commit message"), None);
+    }
+
+    #[test]
+    fn ticket_empty_message() {
+        assert_eq!(extract_ticket_ref(""), None);
+    }
+
+    #[test]
+    fn ticket_multiline_uses_first_line() {
+        assert_eq!(
+            extract_ticket_ref("JIRA-100: first line\n\nBody mentions JIRA-200"),
+            Some("JIRA-100".to_string())
+        );
+    }
+
+    #[test]
+    fn ticket_single_letter_prefix_no_match() {
+        // Single uppercase letter + dash + digits should NOT match (need 2+ letters)
+        assert_eq!(extract_ticket_ref("A-123 something"), None);
+    }
+
+    #[test]
+    fn ticket_jira_mid_sentence() {
+        assert_eq!(
+            extract_ticket_ref("fix: resolve CORE-42 auth issue"),
+            Some("CORE-42".to_string())
+        );
+    }
+
+    #[test]
+    fn ticket_multiple_returns_first_jira() {
+        // Multiple JIRA refs: first one wins
+        assert_eq!(
+            extract_ticket_ref("PROJ-1 and PROJ-2 changes"),
+            Some("PROJ-1".to_string())
+        );
+    }
+
+    #[test]
+    fn ticket_hash_without_digits_no_match() {
+        assert_eq!(extract_ticket_ref("use # for comments"), None);
     }
 }

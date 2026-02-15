@@ -27,6 +27,9 @@ pub struct DirectoryHotspot {
 /// depth=1: "src/lib.rs" -> "src", "README.md" -> "."
 /// depth=2: "src/utils/helper.rs" -> "src/utils", "src/lib.rs" -> "src"
 fn dir_prefix(path: &str, depth: usize) -> String {
+    if depth == 0 {
+        return ".".to_string();
+    }
     let parts: Vec<&str> = path.split('/').collect();
     if parts.len() <= depth {
         // File is at or above the requested depth — use parent dir or "."
@@ -47,10 +50,11 @@ fn dir_prefix(path: &str, depth: usize) -> String {
 pub fn run(
     repo: &Repository,
     since: Option<i64>,
+    until: Option<i64>,
     depth: usize,
     limit: Option<usize>,
 ) -> Result<HotspotsOutput> {
-    let churn_output = churn::run(repo, since, None)?;
+    let churn_output = churn::run(repo, since, until, None)?;
     let total_commits = churn_output.total_commits_analyzed;
 
     let mut dir_map: HashMap<String, DirAccumulator> = HashMap::new();
@@ -114,6 +118,13 @@ struct DirAccumulator {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn dir_prefix_depth_0_aggregates_to_root() {
+        assert_eq!(dir_prefix("src/lib.rs", 0), ".");
+        assert_eq!(dir_prefix("a/b/c/d.rs", 0), ".");
+        assert_eq!(dir_prefix("README.md", 0), ".");
+    }
 
     #[test]
     fn dir_prefix_depth_1() {

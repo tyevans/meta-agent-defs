@@ -27,8 +27,8 @@ struct FileChurnAccumulator {
     commit_count: usize,
 }
 
-pub fn run(repo: &Repository, since: Option<i64>, limit: Option<usize>) -> Result<ChurnOutput> {
-    let commits = common::walk_commits(repo, since)?;
+pub fn run(repo: &Repository, since: Option<i64>, until: Option<i64>, limit: Option<usize>) -> Result<ChurnOutput> {
+    let commits = common::walk_commits(repo, since, until)?;
 
     let mut accum: HashMap<String, FileChurnAccumulator> = HashMap::new();
     let total_commits = commits.len();
