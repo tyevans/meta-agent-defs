@@ -91,11 +91,12 @@ fn run_impl(
     limit: Option<usize>,
     classify: &mut dyn FnMut(&str, usize) -> String,
 ) -> Result<PatternsOutput> {
-    let commits = common::walk_commits(repo, since, until)?;
+    let commits_iter = common::walk_commits(repo, since, until)?;
 
     let mut commits_info: Vec<CommitInfo> = Vec::new();
 
-    for commit in &commits {
+    for result in commits_iter {
+        let commit = result?;
         let message = commit.message().unwrap_or("").to_string();
         let first_line = message.lines().next().unwrap_or("").to_string();
         let time = commit.time().seconds();

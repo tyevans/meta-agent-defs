@@ -37,7 +37,10 @@ fn count_blob_lines(repo: &Repository, tree: &git2::Tree, path: &str) -> Option<
 }
 
 pub fn run(repo: &Repository, since: Option<i64>, until: Option<i64>, files: &[String]) -> Result<LifecycleOutput> {
-    let commits = common::walk_commits(repo, since, until)?;
+    // Lifecycle needs to iterate commits once per file, so collect upfront.
+    // This is inherent to the algorithm: each file needs a full scan of the commit list.
+    let commits: Vec<git2::Commit> = common::walk_commits(repo, since, until)?
+        .collect::<Result<Vec<_>>>()?;
 
     let mut result_files = Vec::new();
 

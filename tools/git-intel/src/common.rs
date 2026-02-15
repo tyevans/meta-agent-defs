@@ -298,8 +298,61 @@ fn extract_digits(s: &str) -> Option<String> {
     }
 }
 
+/// Iterator over commits from HEAD in time order, filtered by optional time bounds.
+/// Yields commits newest-first, allowing callers to process and discard incrementally
+/// instead of collecting all commits into memory upfront.
+pub struct CommitIter<'repo> {
+    repo: &'repo Repository,
+    revwalk: git2::Revwalk<'repo>,
+    since: Option<i64>,
+    until: Option<i64>,
+    done: bool,
+}
+
+impl<'repo> Iterator for CommitIter<'repo> {
+    type Item = Result<Commit<'repo>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.done {
+            return None;
+        }
+        loop {
+            let oid = match self.revwalk.next()? {
+                Ok(oid) => oid,
+                Err(e) => return Some(Err(e.into())),
+            };
+            let commit = match self.repo.find_commit(oid) {
+                Ok(c) => c,
+                Err(e) => return Some(Err(e.into())),
+            };
+            let ts = commit.time().seconds();
+
+            // Skip commits newer than the until bound
+            if let Some(until_ts) = self.until {
+                if ts > until_ts {
+                    continue;
+                }
+            }
+
+            // Stop once we pass the since bound (commits are time-sorted descending)
+            if let Some(since_ts) = self.since {
+                if ts < since_ts {
+                    self.done = true;
+                    return None;
+                }
+            }
+
+            return Some(Ok(commit));
+        }
+    }
+}
+
 /// Walk commits from HEAD in time order, filtered by optional time bounds.
-/// Returns commits newest-first.
+/// Returns an iterator yielding commits newest-first.
+///
+/// Callers that need random access (e.g. patterns) should collect locally.
+/// Callers that only need a single pass can stream, keeping memory proportional
+/// to active processing rather than total commit count.
 ///
 /// - `since`: lower bound (inclusive) — commits before this timestamp are excluded
 /// - `until`: upper bound (inclusive) — commits after this timestamp are skipped
@@ -307,35 +360,18 @@ pub fn walk_commits<'repo>(
     repo: &'repo Repository,
     since: Option<i64>,
     until: Option<i64>,
-) -> Result<Vec<Commit<'repo>>> {
+) -> Result<CommitIter<'repo>> {
     let mut revwalk = repo.revwalk()?;
     revwalk.push_head()?;
     revwalk.set_sorting(Sort::TIME)?;
 
-    let mut commits = Vec::new();
-    for oid in revwalk {
-        let oid = oid?;
-        let commit = repo.find_commit(oid)?;
-        let ts = commit.time().seconds();
-
-        // Skip commits newer than the until bound
-        if let Some(until_ts) = until {
-            if ts > until_ts {
-                continue;
-            }
-        }
-
-        // Stop once we pass the since bound (commits are time-sorted descending)
-        if let Some(since_ts) = since {
-            if ts < since_ts {
-                break;
-            }
-        }
-
-        commits.push(commit);
-    }
-
-    Ok(commits)
+    Ok(CommitIter {
+        repo,
+        revwalk,
+        since,
+        until,
+        done: false,
+    })
 }
 
 /// Extract the directory prefix at the given depth from a file path.

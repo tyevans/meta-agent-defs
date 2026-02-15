@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
-"""Benchmark multiple sentence transformer models with identical MLP heads.
+"""Benchmark multiple embedding models with identical MLP heads.
 
 This is a STANDALONE benchmark script (not a model implementation).
 Compares embedding backbones by training the same MLP architecture on each.
+
+Supports two encoder backends:
+- sentence-transformers models (default, via SentenceTransformer)
+- HuggingFace transformers models (code-aware, via AutoModel/AutoTokenizer)
+
+Code-aware models use different pooling strategies:
+- CodeBERT: CLS token embedding
+- UniXcoder: mean pooling over token embeddings
+- CodeT5+: dedicated encoder (no pooling needed)
 """
 
 from __future__ import annotations
@@ -11,6 +20,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
@@ -26,7 +36,7 @@ from eval import run_eval
 from models.embed_mlp import format_input
 
 
-# Default embedding models to benchmark
+# Default sentence-transformer embedding models to benchmark
 DEFAULT_MODELS = [
     "all-MiniLM-L6-v2",
     "nomic-ai/nomic-embed-text-v1.5",
@@ -34,6 +44,140 @@ DEFAULT_MODELS = [
     "thenlper/gte-small",
     "intfloat/e5-small-v2",
 ]
+
+# Code-aware models from HuggingFace hub (require transformers backend)
+CODE_MODELS = [
+    "microsoft/codebert-base",
+    "microsoft/unixcoder-base",
+    "Salesforce/codet5p-110m-embedding",
+]
+
+
+class Encoder(ABC):
+    """Abstract encoder that produces fixed-size embeddings from text."""
+
+    @abstractmethod
+    def encode(self, texts: list[str], batch_size: int = 128) -> np.ndarray:
+        """Encode texts to embeddings array of shape (n_texts, embedding_dim)."""
+        ...
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """Model name for display."""
+        ...
+
+
+class SentenceTransformerEncoder(Encoder):
+    """Encoder backed by sentence-transformers library."""
+
+    def __init__(self, model_name: str):
+        self._name = model_name
+        self._model = SentenceTransformer(model_name)
+
+    def encode(self, texts: list[str], batch_size: int = 128) -> np.ndarray:
+        return self._model.encode(texts, show_progress_bar=True, batch_size=batch_size)
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+
+class TransformersEncoder(Encoder):
+    """Encoder backed by HuggingFace transformers with configurable pooling.
+
+    Pooling strategies:
+    - "cls": Use CLS token hidden state (e.g., CodeBERT)
+    - "mean": Mean pooling over non-padding tokens (e.g., UniXcoder)
+    - "encoder": Use model's dedicated encode() method (e.g., CodeT5+)
+    """
+
+    def __init__(self, model_name: str, pooling: str = "cls", max_length: int = 128):
+        from transformers import AutoModel, AutoTokenizer
+
+        self._name = model_name
+        self._pooling = pooling
+        self._max_length = max_length
+        self._device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        if pooling == "encoder":
+            # CodeT5+ embedding model has a dedicated encode() method
+            self._model = AutoModel.from_pretrained(model_name, trust_remote_code=True)
+            self._tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+        else:
+            self._model = AutoModel.from_pretrained(model_name)
+            self._tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+        self._model = self._model.to(self._device)
+        self._model.eval()
+
+    def encode(self, texts: list[str], batch_size: int = 128) -> np.ndarray:
+        all_embeddings = []
+
+        for i in range(0, len(texts), batch_size):
+            batch_texts = texts[i : i + batch_size]
+            inputs = self._tokenizer(
+                batch_texts,
+                padding=True,
+                truncation=True,
+                max_length=self._max_length,
+                return_tensors="pt",
+            ).to(self._device)
+
+            with torch.no_grad():
+                if self._pooling == "encoder":
+                    # CodeT5+ has a dedicated encoder output
+                    outputs = self._model(inputs["input_ids"], attention_mask=inputs["attention_mask"])
+                    # Use the last hidden state with mean pooling as fallback
+                    embeddings = self._mean_pool(outputs.last_hidden_state, inputs["attention_mask"])
+                elif self._pooling == "cls":
+                    outputs = self._model(**inputs)
+                    embeddings = outputs.last_hidden_state[:, 0, :]  # CLS token
+                elif self._pooling == "mean":
+                    outputs = self._model(**inputs)
+                    embeddings = self._mean_pool(outputs.last_hidden_state, inputs["attention_mask"])
+                else:
+                    raise ValueError(f"Unknown pooling strategy: {self._pooling}")
+
+            all_embeddings.append(embeddings.cpu().numpy())
+
+            if (i // batch_size) % 5 == 0:
+                done = min(i + batch_size, len(texts))
+                print(f"  Encoded {done}/{len(texts)} texts")
+
+        return np.concatenate(all_embeddings, axis=0)
+
+    @staticmethod
+    def _mean_pool(hidden_states: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+        """Mean pooling over non-padding token positions."""
+        mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_states.size()).float()
+        sum_embeddings = torch.sum(hidden_states * mask_expanded, dim=1)
+        sum_mask = torch.clamp(mask_expanded.sum(dim=1), min=1e-9)
+        return sum_embeddings / sum_mask
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+
+# Registry of code-aware models and their pooling strategies
+CODE_MODEL_CONFIGS: dict[str, str] = {
+    "microsoft/codebert-base": "cls",
+    "microsoft/unixcoder-base": "mean",
+    "Salesforce/codet5p-110m-embedding": "encoder",
+}
+
+
+def make_encoder(model_name: str) -> Encoder:
+    """Factory that picks the right encoder backend for a model name.
+
+    Code-aware models (in CODE_MODEL_CONFIGS) use TransformersEncoder.
+    Everything else uses SentenceTransformerEncoder.
+    """
+    if model_name in CODE_MODEL_CONFIGS:
+        pooling = CODE_MODEL_CONFIGS[model_name]
+        return TransformersEncoder(model_name, pooling=pooling)
+    return SentenceTransformerEncoder(model_name)
 
 
 class PyTorchMLP(nn.Module):
@@ -266,6 +410,16 @@ def main():
         help=f"List of sentence-transformers model names (default: {len(DEFAULT_MODELS)} models)",
     )
     parser.add_argument(
+        "--code-models",
+        action="store_true",
+        help="Include code-aware models (CodeBERT, UniXcoder, CodeT5+) in the benchmark",
+    )
+    parser.add_argument(
+        "--only-code-models",
+        action="store_true",
+        help="Benchmark ONLY the code-aware models (skip sentence-transformer models)",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         help="Optional path to save JSON results",
@@ -296,6 +450,12 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Resolve model list based on flags
+    if args.only_code_models:
+        args.models = CODE_MODELS
+    elif args.code_models:
+        args.models = list(args.models) + CODE_MODELS
 
     # Device selection
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -338,17 +498,19 @@ def main():
         try:
             print(f"\n{'=' * 80}")
             print(f"Encoding with: {model_name}")
+            if model_name in CODE_MODEL_CONFIGS:
+                print(f"  (code-aware model, pooling={CODE_MODEL_CONFIGS[model_name]})")
             print(f"{'=' * 80}")
 
-            # Load encoder
-            encoder = SentenceTransformer(model_name)
+            # Load encoder (auto-selects backend)
+            encoder = make_encoder(model_name)
 
             # Encode texts (do this once per model)
             print("Encoding train set...")
-            X_train = encoder.encode(texts_train, show_progress_bar=True, batch_size=args.batch_size)
+            X_train = encoder.encode(texts_train, batch_size=args.batch_size)
 
             print("Encoding test set...")
-            X_test = encoder.encode(texts_test, show_progress_bar=True, batch_size=args.batch_size)
+            X_test = encoder.encode(texts_test, batch_size=args.batch_size)
 
             # Benchmark this model
             result = benchmark_model(

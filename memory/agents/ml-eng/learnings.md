@@ -3,7 +3,7 @@
 ## Codebase Patterns
 - Project lives at tools/commit-labeler/ (relocated from research/commit-labeler/) (added: 2026-02-14)
 - Python project managed with uv (pyproject.toml + uv.lock), Python 3.x (added: 2026-02-14)
-- Models live in models/ package with ModelProtocol registry: tfidf_logreg.py and embed_mlp.py, auto-register via MODELS dict (added: 2026-02-14)
+- Models live in models/ package with ModelProtocol registry: tfidf_logreg.py, embed_mlp.py, transformer.py, setfit.py — auto-register via MODELS dict in __init__.py (updated: 2026-02-15)
 - Labeling via Ollama API: label.py handles both raw and enriched modes (--enriched flag) (added: 2026-02-14)
 - Data pipeline: pipeline.sh orchestrates 7 phases: clone → extract → stride → enrich → label → train → summary (added: 2026-02-14)
 - Unified train.py CLI with --model flag dispatches to tfidf-logreg or embed-mlp via MODELS registry (added: 2026-02-14)
@@ -37,6 +37,11 @@
 ## Benchmarking
 - Benchmark scripts should be standalone (not model implementations) — benchmark.py is separate from models/ (added: 2026-02-15)
 - Reusing existing architecture patterns (MLP from embed_mlp) ensures fair comparison across embedding models (added: 2026-02-15)
+- Code-aware models in benchmark.py: CodeBERT (CLS pooling), UniXcoder (mean pooling), CodeT5+ (encoder method) — each needs different embedding extraction strategy via TransformersEncoder with configurable pooling (added: 2026-02-15)
+
+## SetFit
+- SetFit uses contrastive fine-tuning + small classification head — lazy import pattern (`from setfit import ...` inside train/load methods) avoids import-time overhead for other models (added: 2026-02-15)
+- Few-shot via --samples-per-class (8/16/64/None=all) with deterministic seed for reproducibility. Directory-based save/load like transformer (added: 2026-02-15)
 
 ## Class Imbalance
 - FocalLoss in losses.py: standalone PyTorch module, formula FL(p_t) = -(1-p_t)^gamma * log(p_t), supports alpha (class weights). Default gamma=2.0 (added: 2026-02-15)

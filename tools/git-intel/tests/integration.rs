@@ -1229,9 +1229,10 @@ fn mailmap_resolve_counts_as_one_author() {
     let mm = mailmap.as_ref();
 
     // Walk all commits and collect unique authors via mailmap
-    let commits = common::walk_commits(&repo, None, None).unwrap();
+    let commits_iter = common::walk_commits(&repo, None, None).unwrap();
     let mut authors = std::collections::HashSet::new();
-    for commit in &commits {
+    for result in commits_iter {
+        let commit = result.unwrap();
         let (name, email) = common::resolve_author(mm, &commit.author());
         authors.insert((name, email));
     }
@@ -1827,4 +1828,333 @@ fn signals_backward_compatibility_fix_after_feat() {
         assert!(pair.feat_message.starts_with("feat:"),
             "fix_after_feat should only contain feat commits, got: {}", pair.feat_message);
     }
+}
+
+// ---- feature branch lifecycle tests ----
+
+/// Create a fixture where a file is created on main, then edited on a feature branch.
+/// HEAD is set to the feature branch.
+///
+/// Commits:
+///   main:
+///     1. "feat: initial commit" — creates README.md, memory/agents/rust-dev/learnings.md
+///   feature-branch (branched from c1):
+///     2. "chore: update learnings" — modifies memory/agents/rust-dev/learnings.md
+///     3. "chore: more learnings"   — modifies memory/agents/rust-dev/learnings.md
+fn create_feature_branch_fixture() -> (TempDir, Repository) {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    // Commit 1: initial commit on main (HEAD -> master)
+    let tree_oid = stage_files(&repo, &[
+        ("README.md", "# Test\n"),
+        ("memory/agents/rust-dev/learnings.md", "# Learnings\n\n- initial learning\n"),
+    ]);
+    let c1 = {
+        let s = make_sig(base_epoch);
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        repo.commit(Some("HEAD"), &s, &s, "feat: initial commit", &tree, &[])
+            .expect("create commit")
+    };
+
+    // Create feature branch from c1
+    {
+        let c1_commit = repo.find_commit(c1).expect("find c1");
+        repo.branch("feature-branch", &c1_commit, false).expect("create branch");
+    }
+
+    // Switch HEAD to feature branch
+    repo.set_head("refs/heads/feature-branch").expect("set HEAD to feature branch");
+
+    // Commit 2: edit learnings on feature branch
+    let tree_oid = stage_files(&repo, &[
+        ("memory/agents/rust-dev/learnings.md", "# Learnings\n\n- initial learning\n- second learning\n"),
+    ]);
+    let c2 = {
+        let s = make_sig(base_epoch + day);
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parent = repo.find_commit(c1).expect("find c1");
+        repo.commit(Some("HEAD"), &s, &s, "chore: update learnings", &tree, &[&parent])
+            .expect("create commit")
+    };
+
+    // Commit 3: edit learnings again on feature branch
+    let tree_oid = stage_files(&repo, &[
+        ("memory/agents/rust-dev/learnings.md", "# Learnings\n\n- initial learning\n- second learning\n- third learning\n"),
+    ]);
+    {
+        let s = make_sig(base_epoch + 2 * day);
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parent = repo.find_commit(c2).expect("find c2");
+        repo.commit(Some("HEAD"), &s, &s, "chore: more learnings", &tree, &[&parent])
+            .expect("create commit");
+    }
+
+    (dir, repo)
+}
+
+#[test]
+fn lifecycle_feature_branch_finds_commits() {
+    let (_dir, repo) = create_feature_branch_fixture();
+
+    // Verify we're on the feature branch
+    let head = repo.head().expect("get HEAD");
+    assert!(
+        head.name().unwrap().contains("feature-branch"),
+        "HEAD should point to feature-branch, got: {}",
+        head.name().unwrap()
+    );
+
+    // Run lifecycle on the learnings file
+    let result = lifecycle::run(
+        &repo,
+        None,
+        None,
+        &["memory/agents/rust-dev/learnings.md".to_string()],
+    )
+    .unwrap();
+
+    let f = &result.files[0];
+    assert!(f.exists, "file should exist on feature branch");
+    assert!(f.current_lines.is_some(), "should have line count");
+
+    // Should find 3 commits: initial create + 2 edits on feature branch
+    assert_eq!(
+        f.history.len(),
+        3,
+        "lifecycle should find all 3 commits touching the file on the feature branch, got {}",
+        f.history.len()
+    );
+
+    // First entry (newest) should be the third commit
+    assert_eq!(f.history[0].message, "chore: more learnings");
+    // Last entry (oldest) should be the initial commit
+    assert_eq!(f.history[2].status, "created");
+}
+
+#[test]
+fn walk_commits_includes_feature_branch_commits() {
+    let (_dir, repo) = create_feature_branch_fixture();
+
+    // Verify HEAD is on feature branch
+    let head = repo.head().expect("get HEAD");
+    assert!(head.name().unwrap().contains("feature-branch"));
+
+    let commits: Vec<_> = common::walk_commits(&repo, None, None)
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+
+    // Should find 3 commits: 1 on main + 2 on feature branch
+    assert_eq!(
+        commits.len(),
+        3,
+        "walk_commits should find all 3 reachable commits from feature branch HEAD"
+    );
+
+    // Newest first
+    assert_eq!(
+        commits[0].message().unwrap().trim(),
+        "chore: more learnings"
+    );
+    assert_eq!(
+        commits[1].message().unwrap().trim(),
+        "chore: update learnings"
+    );
+    assert_eq!(
+        commits[2].message().unwrap().trim(),
+        "feat: initial commit"
+    );
+}
+
+/// Test lifecycle when feature branch has commits but main has diverged.
+/// This simulates: create on main, branch, commit on both main and feature,
+/// then run lifecycle from feature branch.
+#[test]
+fn lifecycle_feature_branch_with_diverged_main() {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    // Commit 1: initial on main
+    let tree_oid = stage_files(&repo, &[
+        ("README.md", "# Test\n"),
+        ("src/lib.rs", "pub fn hello() {}\n"),
+    ]);
+    let c1 = {
+        let s = make_sig(base_epoch);
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        repo.commit(Some("HEAD"), &s, &s, "feat: initial commit", &tree, &[])
+            .expect("create commit")
+    };
+
+    // Create feature branch from c1
+    {
+        let c1_commit = repo.find_commit(c1).expect("find c1");
+        repo.branch("my-feature", &c1_commit, false).expect("create branch");
+    }
+
+    // Commit 2: advance main (don't switch HEAD yet)
+    let tree_oid = stage_files(&repo, &[
+        ("src/lib.rs", "pub fn hello() {}\npub fn world() {}\n"),
+    ]);
+    let _c2_main = {
+        let s = make_sig(base_epoch + day);
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parent = repo.find_commit(c1).expect("find c1");
+        repo.commit(Some("HEAD"), &s, &s, "feat: advance main", &tree, &[&parent])
+            .expect("create commit")
+    };
+
+    // Switch HEAD to feature branch
+    repo.set_head("refs/heads/my-feature").expect("set HEAD");
+
+    // Commit 3: edit on feature branch
+    let tree_oid = stage_files(&repo, &[
+        ("src/lib.rs", "pub fn hello() {}\npub fn feature_work() {}\n"),
+    ]);
+    let _c3_feature = {
+        let s = make_sig(base_epoch + 2 * day);
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parent = repo.find_commit(c1).expect("find c1");
+        repo.commit(Some("HEAD"), &s, &s, "feat: feature work", &tree, &[&parent])
+            .expect("create commit")
+    };
+
+    // Run lifecycle on src/lib.rs
+    let result = lifecycle::run(
+        &repo,
+        None,
+        None,
+        &["src/lib.rs".to_string()],
+    ).unwrap();
+
+    let f = &result.files[0];
+    assert!(f.exists);
+
+    // Should find 2 commits: initial create + feature branch edit
+    // Should NOT include the main branch commit (c2_main) since it's not reachable from feature HEAD
+    assert_eq!(
+        f.history.len(),
+        2,
+        "lifecycle on feature branch should find 2 commits (initial + feature), got {}",
+        f.history.len()
+    );
+    assert_eq!(f.history[0].message, "feat: feature work");
+    assert_eq!(f.history[1].status, "created");
+}
+
+/// Verify that cache entries from one branch don't pollute results on another branch.
+#[test]
+fn cache_invalidated_by_branch_switch() {
+    let dir = TempDir::new().expect("create temp dir");
+    let repo = Repository::init(dir.path()).expect("init repo");
+
+    let base_epoch: i64 = 1736467200;
+    let day: i64 = 86400;
+
+    let make_sig = |epoch: i64| -> Signature<'static> {
+        Signature::new("Test Author", "test@test.com", &Time::new(epoch, 0))
+            .expect("create signature")
+    };
+
+    let stage_files = |repo: &Repository, files: &[(&str, &str)]| -> Oid {
+        let mut index = repo.index().expect("get index");
+        for (path, content) in files {
+            let full_path = dir.path().join(path);
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent).expect("create dirs");
+            }
+            fs::write(&full_path, content).expect("write file");
+            index.add_path(Path::new(path)).expect("add to index");
+        }
+        index.write().expect("write index");
+        index.write_tree().expect("write tree")
+    };
+
+    // Commit 1: initial on main
+    let tree_oid = stage_files(&repo, &[("README.md", "# Test\n")]);
+    let c1 = {
+        let s = make_sig(base_epoch);
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        repo.commit(Some("HEAD"), &s, &s, "feat: initial commit", &tree, &[])
+            .expect("create commit")
+    };
+
+    // Run metrics and cache on main
+    let key = cache::cache_key("metrics", None, None, None);
+    let result = metrics::run(&repo, None, None, None).unwrap();
+    cache::write_cache(&repo, &key, &result).unwrap();
+    assert!(cache::read_cache(&repo, &key).is_some(), "cache should hit on main");
+    assert_eq!(result.total_commits, 1);
+
+    // Create and switch to feature branch
+    {
+        let c1_commit = repo.find_commit(c1).expect("find c1");
+        repo.branch("feature", &c1_commit, false).expect("create branch");
+    }
+    repo.set_head("refs/heads/feature").expect("set HEAD");
+
+    // Add a commit on feature branch
+    let tree_oid = stage_files(&repo, &[("feature.txt", "feature\n")]);
+    {
+        let s = make_sig(base_epoch + day);
+        let tree = repo.find_tree(tree_oid).expect("find tree");
+        let parent = repo.find_commit(c1).expect("find c1");
+        repo.commit(Some("HEAD"), &s, &s, "feat: feature work", &tree, &[&parent])
+            .expect("create commit");
+    }
+
+    // Cache should miss on feature branch (different HEAD)
+    assert!(
+        cache::read_cache(&repo, &key).is_none(),
+        "cache should miss after switching to feature branch with new commit"
+    );
+
+    // Fresh computation should reflect feature branch state
+    let result = metrics::run(&repo, None, None, None).unwrap();
+    assert_eq!(result.total_commits, 2, "feature branch should see 2 commits");
 }

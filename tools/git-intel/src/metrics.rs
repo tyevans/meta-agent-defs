@@ -97,9 +97,11 @@ fn run_impl(
     let mut daily_counts: HashMap<String, usize> = HashMap::new();
     let mut ticket_counts: HashMap<String, usize> = HashMap::new();
     let mut line_counts: Vec<usize> = Vec::new();
-    let total = commits.len();
+    let mut total = 0usize;
 
-    for commit in &commits {
+    for result in commits {
+        let commit = result?;
+        total += 1;
         let message = commit.message().unwrap_or("");
         let ctype = classify(message, commit.parent_count());
         *type_counts.entry(ctype).or_insert(0) += 1;
@@ -123,7 +125,7 @@ fn run_impl(
             *ticket_counts.entry(ticket).or_insert(0) += 1;
         }
 
-        let lines = lines_changed(repo, commit);
+        let lines = lines_changed(repo, &commit);
         line_counts.push(lines);
     }
 

@@ -31,9 +31,11 @@ pub fn run(repo: &Repository, since: Option<i64>, until: Option<i64>, limit: Opt
     let commits = common::walk_commits(repo, since, until)?;
 
     let mut accum: HashMap<String, FileChurnAccumulator> = HashMap::new();
-    let total_commits = commits.len();
+    let mut total_commits = 0usize;
 
-    for commit in &commits {
+    for result in commits {
+        let commit = result?;
+        total_commits += 1;
         let tree = commit.tree()?;
         let parent_tree = commit.parent(0).ok().and_then(|p| p.tree().ok());
 

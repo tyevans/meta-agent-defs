@@ -11,11 +11,11 @@ struct Cli {
     #[arg(long, default_value = ".", global = true)]
     repo: PathBuf,
 
-    /// Limit history to commits after this date (YYYY-MM-DD)
+    /// Limit history to commits after this date (YYYY-MM-DD or relative: 30d, 4w, 6m, 1y)
     #[arg(long, global = true)]
     since: Option<String>,
 
-    /// Limit history to commits before this date (YYYY-MM-DD, inclusive)
+    /// Limit history to commits before this date (YYYY-MM-DD or relative: 30d, 4w, 6m, 1y, inclusive)
     #[arg(long, global = true)]
     until: Option<String>,
 

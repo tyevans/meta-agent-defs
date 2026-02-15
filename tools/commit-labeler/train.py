@@ -18,6 +18,7 @@ from sklearn.model_selection import cross_val_score
 
 # Import model modules to trigger registration
 import models.embed_mlp
+import models.setfit
 import models.tfidf_logreg
 import models.transformer
 from data import freeze_test_set, load_labeled, load_test_set
@@ -111,6 +112,31 @@ def main():
         type=Path,
         default=None,
         help="Export transformer model to ONNX format at this path (transformer only)",
+    )
+    # SetFit-specific args
+    parser.add_argument(
+        "--setfit-backbone",
+        type=str,
+        default="sentence-transformers/all-mpnet-base-v2",
+        help="Sentence-transformer backbone for SetFit (default: all-mpnet-base-v2)",
+    )
+    parser.add_argument(
+        "--samples-per-class",
+        type=int,
+        default=None,
+        help="Limit training to K samples per class for SetFit few-shot experiments (8/16/64/None=all)",
+    )
+    parser.add_argument(
+        "--setfit-iterations",
+        type=int,
+        default=20,
+        help="Number of contrastive training iterations for SetFit (default 20)",
+    )
+    parser.add_argument(
+        "--setfit-epochs",
+        type=int,
+        default=1,
+        help="Number of epochs for SetFit classification head (default 1)",
     )
     args = parser.parse_args()
 
@@ -211,6 +237,13 @@ def main():
             use_focal_loss=args.focal_loss,
             focal_gamma=args.focal_gamma,
         )
+    elif args.model == "setfit":
+        model = MODELS[args.model](
+            model_name=args.setfit_backbone,
+            samples_per_class=args.samples_per_class,
+            num_iterations=args.setfit_iterations,
+            num_epochs=args.setfit_epochs,
+        )
     else:
         model = MODELS[args.model]()
 
@@ -289,6 +322,14 @@ def main():
         if args.export_onnx:
             print(f"\nExporting to ONNX...")
             model.export_onnx(args.export_onnx)
+    elif args.model == "setfit":
+        # SetFit saves as directory (like transformer)
+        save_dir = args.output.parent / "setfit-model"
+        model.save(save_dir)
+        print(f"\nSetFit model saved to {save_dir}")
+
+        if args.export_onnx:
+            print(f"\nWarning: --export-onnx not supported for SetFit models (ignored)")
     else:
         # Other models use pickle
         with open(args.output, "wb") as f:

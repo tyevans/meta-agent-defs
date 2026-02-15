@@ -70,7 +70,8 @@ pub fn run(
     // Map: dir_prefix -> (commit_type -> count)
     let mut type_dist: HashMap<String, HashMap<String, usize>> = HashMap::new();
 
-    for commit in &commits {
+    for result in commits {
+        let commit = result?;
         let message = commit.message().unwrap_or("");
         let parent_count = commit.parent_count();
         let commit_type = common::classify_commit_with_parents(message, parent_count);

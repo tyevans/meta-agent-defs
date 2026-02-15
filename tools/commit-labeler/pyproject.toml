@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-ai-slim[openai]>=1.59.0",
     "scikit-learn>=1.8.0",
     "sentence-transformers>=5.2.2",
+    "setfit>=1.1.0",
     "torch>=2.10.0",
     "transformers>=4.50.0",
     "datasets>=4.0.0",

@@ -74,14 +74,16 @@ pub fn run(
     limit: Option<usize>,
 ) -> Result<AuthorsOutput> {
     let commits = common::walk_commits(repo, since, until)?;
-    let total_commits_analyzed = commits.len();
+    let mut total_commits_analyzed = 0usize;
 
     let mut dir_map: HashMap<String, DirAccum> = HashMap::new();
     // Track all unique authors globally (by email).
     let mut global_authors: HashMap<String, ()> = HashMap::new();
     let mailmap = common::load_mailmap(repo);
 
-    for commit in &commits {
+    for result in commits {
+        let commit = result?;
+        total_commits_analyzed += 1;
         let author_sig = commit.author();
         let (author_name, author_email) = common::resolve_author(mailmap.as_ref(), &author_sig);
         global_authors.entry(author_email.clone()).or_insert(());

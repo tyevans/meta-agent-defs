@@ -24,15 +24,17 @@
 ## Algorithms
 - Sort-then-scan for pairwise comparison: sort by key, scan adjacent entries, break when threshold exceeded. Produces identical output to nested loop but O(n log n) instead of O(n^2). Use `retain` to filter the working set before sorting. (added: 2026-02-14)
 - Lifecycle "created" detection: check file existence in parent tree via get_path(), not parent_tree.is_none(). The latter only catches root commits. (added: 2026-02-14)
+- push_head() in git2-rs correctly resolves symbolic refs (branches) — no special handling needed for feature branches. Cache invalidation via HEAD commit comparison prevents stale results across branch switches. (added: 2026-02-15)
 
 ## Refactoring
-- walk_commits needs explicit lifetime `<'repo>` on return type since Commit borrows from Repository (added: 2026-02-14)
+- walk_commits returns CommitIter (concrete struct over Box<dyn Iterator>) — avoids heap alloc, enables inlining, carries `'repo` lifetime naturally. 5/6 subcommands stream; lifecycle collects explicitly (updated: 2026-02-15)
 - Return `&'static str` from classify functions instead of String when all returns are literals — zero-allocation, callers .to_string() if needed (added: 2026-02-14)
+- Relative date parsing: try_parse_relative() handles Nd/Nw/Nm/Ny, resolves to absolute epoch at parse time so cache keys are correct without changes. Leap year edge case for Ny uses fallback day-1 (added: 2026-02-15)
 
 ## Testing
 - git2 test fixtures: work with `Oid` values between commits, never hold `Commit<'repo>` across commit boundaries — avoids borrow conflicts (added: 2026-02-14)
 - Fixture builder pattern: `stage_files` + `do_commit` closures create reproducible repos with controlled dates and content (added: 2026-02-14)
-- 155 tests: 79 unit + 76 integration (updated: 2026-02-15, added signal detection tests)
+- 175 tests: 95 unit + 80 integration (updated: 2026-02-15, iterator refactor + relative date tests)
 - Merge commit fixture: create branch, divergent commits on main+feature, then merge — produces commit with 2 parents for testing (added: 2026-02-15)
 
 ## Cache
