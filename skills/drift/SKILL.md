@@ -4,7 +4,7 @@ description: "Detect skill/agent convergence and divergence patterns across defi
 argument-hint: "<category or glob pattern>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(tools/git-intel/target/debug/git-intel:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(tools/git-intel/target/release/git-intel:*)
 ---
 
 # Drift: Definition Convergence/Divergence Analysis
@@ -129,7 +129,7 @@ For each recent commit that modified files in the target set:
 
 For significant divergences found in Phase 2, use git history to determine when the divergence started.
 
-Check for `tools/git-intel/target/debug/git-intel`. If available:
+Check for `tools/git-intel/target/release/git-intel`. If available:
 ```bash
 git-intel patterns --repo . --focus convergence --files <file1> <file2>
 ```

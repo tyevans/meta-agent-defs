@@ -387,15 +387,15 @@ if [ "$SKIP_RUST" = false ]; then
 
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 info "Building git-intel in $GIT_INTEL_DIR..."
-                if (cd "$GIT_INTEL_DIR" && cargo build 2>&1); then
+                if (cd "$GIT_INTEL_DIR" && cargo build --release 2>&1); then
                     log "git-intel built successfully"
-                    info "Binary available at: $GIT_INTEL_DIR/target/debug/git-intel"
+                    info "Binary available at: $GIT_INTEL_DIR/target/release/git-intel"
                 else
                     warn "git-intel build failed (see output above)"
                     warn "Skills using git-intel will fall back gracefully"
                 fi
             else
-                info "Skipping git-intel build (you can build later with: cd $GIT_INTEL_DIR && cargo build)"
+                info "Skipping git-intel build (you can build later with: cd $GIT_INTEL_DIR && cargo build --release)"
             fi
         else
             # cargo not available - print friendly skip message

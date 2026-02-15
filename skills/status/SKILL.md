@@ -4,7 +4,7 @@ description: "Show unified system status: backlog, recent activity, team health,
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(bin/git-pulse.sh:*)", "Bash(tools/git-intel/target/debug/git-intel:*)"]
+allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(bin/git-pulse.sh:*)", "Bash(tools/git-intel/target/release/git-intel:*)"]
 context: inline
 ---
 
@@ -73,10 +73,10 @@ git status --short
 
 Prefer git-intel when available, fall back to git-pulse.sh:
 
-**If `tools/git-intel/target/debug/git-intel` exists**, run:
+**If `tools/git-intel/target/release/git-intel` exists**, run:
 
 ```bash
-tools/git-intel/target/debug/git-intel churn --repo . --limit 10
+tools/git-intel/target/release/git-intel churn --repo . --limit 10
 ```
 
 Parse the JSON output to extract files sorted by `total_churn` (additions + deletions).

@@ -8,21 +8,14 @@
 - lib.rs + main.rs split: library crate re-exports all modules for testability, main.rs is thin CLI wrapper (added: 2026-02-14)
 
 ## Gotchas
-- clap needs `global = true` on args so flags work after subcommand name (e.g., `git-intel metrics --repo .`) (added: 2026-02-14)
-- git2's `diff.foreach` callback API requires careful lifetime management with multiple closures — line counting callback needs file paths from delta callback (added: 2026-02-14)
-- classify_commit uses strict matching (type: type( type! type+space) not starts_with — prevents "fixing"→"fix" false positives (added: 2026-02-14)
-- classify_commit_with_parents(message, parent_count): merge detection (>=2 parents) takes priority over message-based classification (added: 2026-02-15)
-- Revert detection: guard clause before conventional commit loop, matches `Revert "..."`, `revert:`, `revert(` — priority: merge > revert > release > conventional (added: 2026-02-15)
-- Release detection: starts with "v"+digit, contains "release" or "bump version" — positioned after revert, before conventional (added: 2026-02-15)
-- extract_ticket_ref(): manual parsing (no regex crate), priority: bracketed JIRA > unbracketed JIRA > Fixes/Closes #N > bare #N. Integrated into metrics output (added: 2026-02-15)
+- clap needs `global = true` on args so flags work after subcommand name (added: 2026-02-14)
+- git2's `diff.foreach` callback API requires careful lifetime management — line counting callback needs file paths from delta callback. Single-pass with shared HashMap hits borrow issues; use two-pass or Oid-based lookup (added: 2026-02-14)
+- Classifier chain priority: merge (>=2 parents) > revert (`Revert "..."`, `revert:`) > release (`v`+digit, "release", "bump version") > conventional (strict match, not starts_with) > NL heuristics ("fixed"→fix, "added"→feat, "bugfix/hotfix"→fix) > "other" (consolidated: 2026-02-15)
+- extract_ticket_ref(): manual parsing, priority: bracketed JIRA > unbracketed JIRA > Fixes/Closes #N > bare #N (added: 2026-02-15)
 - --until flag: end-of-day semantics (23:59:59 UTC), inverted ranges error immediately. Cache key includes both since+until (added: 2026-02-15)
-- dir_prefix() now in common.rs (shared by hotspots + authors). Groups paths by N components, depth=0 returns "." (updated: 2026-02-15)
-- NL heuristics fallback: "fixed"→fix, "added"→feat, "Fixes/Closes #N"→fix, "bugfix/hotfix"→fix. Last check before "other" (added: 2026-02-15)
-- Convergence pairs removed: were noise, not signal. Deleted entirely from patterns.rs (added: 2026-02-15)
-- diff.foreach 4th callback (line-level) useful for per-file add/del counting without separate diff pass (added: 2026-02-15)
-- Temporal cluster detection: group by type, sort by timestamp, scan for 3+ within 3600s window. Non-overlapping (advance past cluster) (added: 2026-02-15)
-- fix-after-feat with file overlap: HashSet intersection of files_touched between feat and fix commits filters noise dramatically (added: 2026-02-15)
-- churn.rs: single-pass diff.foreach with shared HashMap hits borrow issues — use two-pass (file-level then line-level) or Oid-based lookup (added: 2026-02-14)
+- dir_prefix() in common.rs (shared by hotspots + authors). depth=0 returns "." (updated: 2026-02-15)
+- Pattern detection: fix-after-feat uses HashSet file intersection (filters noise); temporal clusters scan for 3+ same-type within 1h window (non-overlapping); convergence pairs removed as noise (consolidated: 2026-02-15)
+- Signal system: signals.rs defines Signal struct + SignalKind enum; patterns.rs generates signals alongside existing fix_after_feat Vec (backward compatible). Signals cover both feat and refactor predecessors (added: 2026-02-15)
 
 ## Preferences
 - git2 + clap + serde stack compiles in ~12s release, no async needed (added: 2026-02-14)
@@ -39,7 +32,7 @@
 ## Testing
 - git2 test fixtures: work with `Oid` values between commits, never hold `Commit<'repo>` across commit boundaries — avoids borrow conflicts (added: 2026-02-14)
 - Fixture builder pattern: `stage_files` + `do_commit` closures create reproducible repos with controlled dates and content (added: 2026-02-14)
-- 150 tests: 79 unit + 71 integration (updated: 2026-02-15, added authors/trends/hotspot-types/mailmap tests)
+- 155 tests: 79 unit + 76 integration (updated: 2026-02-15, added signal detection tests)
 - Merge commit fixture: create branch, divergent commits on main+feature, then merge — produces commit with 2 parents for testing (added: 2026-02-15)
 
 ## Cache
@@ -59,6 +52,12 @@
 - Reborrow pattern for mutable Option in closure: `ml.as_mut().map(|m| &mut **m)` re-borrows without consuming the Option (added: 2026-02-15)
 - ML feature flag: `#[cfg(feature = "ml")]` guards ml module, CLI flags, and all ML-aware function variants. Zero behavior change when feature is off (added: 2026-02-15)
 - ort + tokenizers as optional deps behind `ml` feature in Cargo.toml. `load-dynamic` feature for ort links to system ONNX Runtime (added: 2026-02-15)
+
+## Precision Study Findings
+- Signal detector is highly conservative: well-maintained repos (ripgrep, tokio, serde, rayon) produce 0 signals in 6-month windows. Only clap produced 12 signals across 2 years (added: 2026-02-15)
+- True positives follow "incomplete feature rollout" pattern: same author, small gap, fix applies feature to missed cases. Not functional bugs (added: 2026-02-15)
+- False positives from: unrelated code paths in same file, opportunistic cleanup bundled with fixes, architectural refactors labeled "fix" (added: 2026-02-15)
+- Severity formula `1/(gap+1) * min(files,5)/5` is uncalibrated — 67% TP rate is above proceed threshold but not alerting-grade (added: 2026-02-15)
 
 ## Cross-Agent Notes
 - (none yet)

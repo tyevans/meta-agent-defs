@@ -38,7 +38,7 @@
 ## Tool Permission Patterns
 - Shell scripts in bin/ need explicit path permissions: `Bash(bin/git-pulse.sh:*)` — prefix matching like `Bash(git:*)` only works for actual shell commands (added: 2026-02-14)
 - Same external tool serves different observability needs via time window: `--since="8 hours ago"` for session-scoped /retro, `--since="7 days ago"` for weekly /status (added: 2026-02-14)
-- git-intel binary permission: `Bash(tools/git-intel/target/debug/git-intel:*)` — skills that use git-intel need this in allowed-tools (added: 2026-02-14)
+- git-intel binary permission: `Bash(tools/git-intel/target/release/git-intel:*)` — skills that use git-intel need this in allowed-tools (added: 2026-02-14)
 
 ## git-intel Integration
 - Extending existing skills with git-intel: add conditional sections that check for binary, use JSON output, graceful fallback to raw git (added: 2026-02-14)

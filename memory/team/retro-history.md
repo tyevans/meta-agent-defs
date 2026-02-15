@@ -140,6 +140,15 @@
 - Key insight: Schema drift between pipeline stages — labeling outputs "labels" (list) but training expected "label" (string). Normalizing in the canonical I/O module (data.py:load_labeled) was the right fix location. First baseline: tfidf-logreg 0.59 macro F1 on 1900 samples.
 - Backlog state: 238/263 closed, 25 open (18 ready, 7 blocked)
 
+## Retro: 2026-02-15 (session 20 — git-intel authors/trends sprint)
+- Tasks completed: 5 (hotspot types + benchmark + authors + mailmap + trends)
+- Workflow: /sprint with 3 rounds (2 parallel + 2 parallel + 1 serial), plus 4 cleanup commits from prior sessions
+- Commits: 8 (4 feat, 4 chore)
+- New learnings: 4 for rust-dev (bus factor, mailmap, two-pass hotspots, composition)
+- Pruned: 8 rust-dev gotcha entries consolidated to 3 (65→56 lines)
+- Key insight: Parallel rust-dev dispatch on shared files (common.rs, integration.rs) works when changes are additive (new modules + new tests, not edits to same functions). Round 2 proved this with zero merge conflicts. Subcommand composition pattern (trends reusing metrics::run() + churn::run()) scales cleanly. 5/5 first-attempt successes (streak: 75+).
+- Backlog state: 260/280 closed, 20 open (16 ready, 4 blocked)
+
 ## Retro: 2026-02-14 (session 13 — git-intel integration audit)
 - Tasks completed: 4 (2 doc structure updates + install.sh optional build + git-pulse.sh delegation)
 - Workflow: /fractal (3 parallel handlers) → assess → /sprint (3 serial dispatches, all infra-owned)

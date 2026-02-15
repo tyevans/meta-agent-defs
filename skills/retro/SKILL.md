@@ -4,7 +4,7 @@ description: "Run an automated session retrospective to evaluate velocity, quali
 argument-hint: "[focus area or session topic]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(bin/git-pulse.sh:*), Bash(wc:*), Bash(tools/git-intel/target/debug/git-intel:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(bin/git-pulse.sh:*), Bash(wc:*), Bash(tools/git-intel/target/release/git-intel:*), Write, Edit
 ---
 
 # Retro: Automated Session Retrospective
@@ -124,10 +124,10 @@ Evaluate the session across these five dimensions:
 
 ### Mistake Patterns
 
-**If `tools/git-intel/target/debug/git-intel` exists**, detect fix-after-feat patterns:
+**If `tools/git-intel/target/release/git-intel` exists**, detect fix-after-feat patterns:
 
 ```bash
-tools/git-intel/target/debug/git-intel patterns --repo . --since "8 hours ago"
+tools/git-intel/target/release/git-intel patterns --repo . --since "8 hours ago"
 ```
 
 Parse the JSON output to identify:
@@ -219,13 +219,13 @@ Append a summary to `memory/team/retro-history.md`:
 
 ### 4f. Learning Lifecycle Analysis (conditional)
 
-**Only run if `tools/git-intel/target/debug/git-intel` exists.** Skip if the tool is not available.
+**Only run if `tools/git-intel/target/release/git-intel` exists.** Skip if the tool is not available.
 
 For each member with a learnings file (`memory/agents/<name>/learnings.md`):
 
 1. **Track learning survival** — Run lifecycle analysis:
    ```bash
-   tools/git-intel/target/debug/git-intel lifecycle --repo . memory/agents/<name>/learnings.md
+   tools/git-intel/target/release/git-intel lifecycle --repo . memory/agents/<name>/learnings.md
    ```
    Parse the JSON output to identify:
    - **Survival count**: Learnings present in 3+ consecutive retro commits (entries that survived pruning)

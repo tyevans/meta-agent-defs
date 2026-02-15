@@ -27,6 +27,8 @@
 - Bash parameter expansion `${VAR:+"$VAR"}` is essential for optional flags with spaces in git commands (added: 2026-02-14)
 - Optional tool delegation pattern: four-gate check — binary exists + deps (jq) + input compatible (ISO date) + runtime feature validation (for optional features like ML). Runtime test catches shared-lib-missing failures that build-time detection misses. (updated: 2026-02-15)
 - ONNX model canonical path: tools/data/onnx-model/model.onnx — git-pulse.sh auto-detects and passes --ml --model-dir to git-intel (added: 2026-02-15)
+- git-pulse.sh signal count: patterns subcommand called after churn, outputs `signals: N` only when >0. Graceful fallback with `|| echo '{"signals":[]}'` (added: 2026-02-15)
+- git-intel cross-project access: both git-pulse.sh and SessionStart hook need absolute fallback path ($HOME/workspace/meta-agent-defs/tools/git-intel/target/release/git-intel) because relative paths only work from meta-agent-defs root (added: 2026-02-15)
 - install.sh optional build features: use `--skip-*` flags for CI, interactive prompt for local, never block install on missing toolchain (added: 2026-02-14)
 
 ## Cross-Agent Notes
