@@ -1,5 +1,14 @@
 # Retrospective History
 
+## Retro: 2026-02-16 (session 25 — Active Learning epic)
+- Tasks completed: 10 tasks + 1 epic (tcke) across 3 sprint rounds spanning 2 sessions (context overflow mid-sprint, seamless recovery)
+- Workflow: /team-meeting (5 members, goal decomposition) → create 10 beads + epic → /sprint Round 1 (4 parallel: ndsx, h811, do61, 57ya) → Round 2 (2 serial: dchv, 1iu1) → Round 3 (4 parallel in 2 batches: xjbo+0in2, s4yc+6r8g)
+- Commits: 5 this session (3 feat, 1 docs, 1 chore). Fix rate: 0%
+- New learnings: 11 for skill-author (9 active learning patterns), 5 for ml-eng (3 semantic analysis + 2 transfer detection)
+- Pruned: 3 skill-author entries archived (cookbook-specific, 62→58 lines)
+- Key insight: /team-meeting → beads → /sprint is the complete planning-to-execution pipeline. 10-task epic completed cleanly across a context overflow boundary — the context summary mechanism preserves enough state for seamless sprint continuation. Orchestrator skills that embed sub-skill logic inline (because Skill tool unavailable to subagents) need phase-per-skill structure with self-contained data flow.
+- Backlog state: 336/336 closed, 0 open. All epics complete.
+
 ## Retro: 2026-02-15 (session 24 — cold-install audit + /advise skill)
 - Tasks completed: 2 beads (cold-install audit htnz, /advise skill 60c1)
 - Workflow: /meeting (Pragmatist vs Innovator) produced 3-sprint plan → cold-install audit on 4x4eva → fix 6 friction points → build /advise skill → update INDEX.md
