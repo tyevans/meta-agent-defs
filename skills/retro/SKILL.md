@@ -305,13 +305,23 @@ Ephemeral examples (do NOT persist):
 - "Session started at 2pm"
 - "User seemed happy with the output"
 
+When adding new learnings, include the `dispatch:` field for provenance tracking (optional but recommended). Use `dispatch: retro-session` for learnings discovered during retro, or `dispatch: bead-xyz` if the learning traces to a specific task.
+
 ### 4c. Apply Updates
 
 Using Write or Edit, update MEMORY.md:
-- Add new durable learnings under appropriate sections
+- Add new durable learnings under appropriate sections with dispatch provenance
 - Update existing entries if new evidence confirms, refutes, or refines them
 - Remove entries that are no longer accurate
 - Keep the file under 200 lines (it is loaded into the system prompt)
+
+Example format for new learnings entries:
+```markdown
+## Workflow Patterns
+- /blossom → /sprint pipeline: spike-driven discovery feeds execution naturally (added: 2026-02-13, dispatch: retro-session)
+```
+
+The `dispatch:` field is optional. Use `dispatch: retro-session` for learnings discovered during retro, or `dispatch: bead-xyz` if the learning traces to a specific bead. Existing entries without this field are backward-compatible.
 
 If detailed notes are needed for a topic, create a separate file in the memory directory (e.g., `team-patterns.md`, `skill-authoring.md`) and link to it from MEMORY.md.
 

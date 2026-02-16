@@ -113,8 +113,14 @@ For each approved assignment, in the approved order:
 Build the task prompt following the spawn protocol from team-protocol.md:
 
 1. Read the member's current `learnings.md`
-2. Compose a prompt that includes: member identity (name, role, owns), learnings, task description, and reflection instructions
-3. Include any relevant context from previous dispatches in this sprint
+2. **Compute the agent identity trailer**: Run `git log -1 --format=%h -- memory/agents/<name>/learnings.md` to get the short SHA of the last commit that modified this member's learnings. The trailer value is `<name>@<sha>`. If the learnings file has no git history (new member), use `git log -1 --format=%h` to get HEAD instead.
+3. Compose a prompt that includes: member identity (name, role, owns), learnings, task description, and reflection instructions
+4. Include any relevant context from previous dispatches in this sprint
+5. **Add commit trailer instruction**: Tell the agent that when making git commits, they must include this trailer on a new line after the commit message body:
+   ```
+   Agent: <computed-trailer-value>
+   ```
+   Make it clear the agent should use the LITERAL value provided in the prompt, not compute it themselves. This trailer goes alongside the existing `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` line.
 
 #### Signal Enrichment (conditional)
 
@@ -180,13 +186,17 @@ For each suggested learning:
 
 1. **Validate**: Is this learning durable (useful across sessions) or ephemeral (only relevant now)?
 2. **Categorize**: Map to the correct section (Codebase Patterns, Gotchas, Preferences, Cross-Agent Notes)
-3. **Append**: Add to `memory/agents/<name>/learnings.md` with today's date
+3. **Append**: Add to `memory/agents/<name>/learnings.md` with today's date and dispatch provenance
 4. **Route cross-agent**: If `for_agent` is specified, also add to that agent's learnings under "Cross-Agent Notes" prefixed with `(from <source-agent>)`
+
+When appending entries, include the `dispatch:` field to track task provenance:
 
 ```markdown
 ## Gotchas
-- TrustService requires bootstrap before first call (added: 2026-02-13)
+- TrustService requires bootstrap before first call (added: 2026-02-13, dispatch: bead-abc123)
 ```
+
+The `dispatch:` field is optional but recommended. Use the bead ID if beads are available (e.g., `dispatch: bead-abc123`), or a brief identifier if not (e.g., `dispatch: sprint-manual`). Existing entries without dispatch provenance are backward-compatible and do not need updating.
 
 ### 4c. Update Bead (conditional)
 

@@ -15,6 +15,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Review code** -> /review (structured code review)
 - **Understand a definition's history** -> /evolution (file change history and stability) or /drift (cross-definition convergence/divergence)
 - **Manage a team** -> /assemble (create) -> /standup (sync) -> /sprint (dispatch)
+- **Understand an agent's capabilities** -> /diagnose-agent (struggle profile from historical evidence)
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
@@ -40,7 +41,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (15)
+### Workflow Skills (16)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -61,6 +62,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /handoff | Session transition capture | inline |
 | /evolution | File change history, churn, stability analysis | inline |
 | /drift | Cross-definition convergence/divergence detection | inline |
+| /diagnose-agent | Agent struggle profile from learnings evolution + git signals | inline |
 
 ### Team Skills (3)
 
@@ -81,7 +83,7 @@ Manage persistent learning teams across sessions.
 
 ## Skills by Context Type
 
-**Inline (25):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift
+**Inline (26):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent
 
 **Fork (7):** blossom, consensus, consolidate, premortem, review, spec, tracer
 

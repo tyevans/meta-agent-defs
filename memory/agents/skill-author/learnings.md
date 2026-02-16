@@ -2,7 +2,7 @@
 
 ## Codebase Patterns
 - Skills live in skills/<name>/SKILL.md with YAML frontmatter (name, description, allowed-tools, context)
-- 30 skills: 18 workflow + 12 composable primitives. `context: fork` for isolation (blossom, consolidate, review); all use `disable-model-invocation: false`
+- 32 skills: 20 workflow + 12 composable primitives. `context: fork` for isolation (blossom, consolidate, review); all use `disable-model-invocation: false`
 - `$ARGUMENTS` is how skills receive user input from the slash command
 - Skills that dispatch agents (blossom, consensus, premortem, spec) follow fan-out-protocol.md with Agent Preamble (added: 2026-02-14)
 - Characterization-over-procedure: "You think like..." (2-3 sentences) outperforms procedural step lists for agent prompts (added: 2026-02-14)
@@ -39,6 +39,12 @@
 - Shell scripts in bin/ need explicit path permissions: `Bash(bin/git-pulse.sh:*)` — prefix matching like `Bash(git:*)` only works for actual shell commands (added: 2026-02-14)
 - Same external tool serves different observability needs via time window: `--since="8 hours ago"` for session-scoped /retro, `--since="7 days ago"` for weekly /status (added: 2026-02-14)
 - git-intel binary permission: `Bash(tools/git-intel/target/release/git-intel:*)` — skills that use git-intel need this in allowed-tools (added: 2026-02-14)
+
+## Active Learning System
+- Sprint skill now includes Agent: commit trailer for per-agent provenance tracking (added: 2026-02-16, dispatch: bead-ndsx)
+- Learnings entries support optional `(dispatch: bead-xyz)` provenance field for tracing learnings to specific tasks (added: 2026-02-16, dispatch: bead-do61)
+- /diagnose-agent: read-only analysis skill, outputs struggle profile in pipe format (WEAKNESS→GAP→STRENGTH ordering for downstream consumption) (added: 2026-02-16, dispatch: bead-57ya)
+- When dispatching literal computed values to agents, explicitly state "use this value as-is" — agents tend to try recomputing things (added: 2026-02-16, dispatch: bead-ndsx)
 
 ## git-intel Integration
 - Extending existing skills with git-intel: add conditional sections that check for binary, use JSON output, graceful fallback to raw git (added: 2026-02-14)
