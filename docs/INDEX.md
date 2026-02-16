@@ -17,6 +17,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Manage a team** -> /assemble (create) -> /standup (sync) -> /sprint (dispatch)
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
+- **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
 
 ## Skills by Category
 
@@ -39,7 +40,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (14)
+### Workflow Skills (15)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -48,6 +49,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /blossom | Spike-driven exploration, produces epic + tasks | fork |
 | /fractal | Goal-directed recursive exploration | inline |
 | /meeting | Multi-agent group discussion | inline |
+| /team-meeting | Goal-oriented planning with persistent team | inline |
 | /consensus | Three independent proposals + synthesis | fork |
 | /premortem | Failure analysis with mitigations | fork |
 | /spec | Progressive specification document | fork |
@@ -79,7 +81,7 @@ Manage persistent learning teams across sessions.
 
 ## Skills by Context Type
 
-**Inline (24):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift
+**Inline (25):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift
 
 **Fork (7):** blossom, consensus, consolidate, premortem, review, spec, tracer
 
@@ -122,6 +124,12 @@ This pattern is especially useful for:
 - Long-running sessions where compression may occur between primitives
 - Preserving research findings across session boundaries
 - Sharing primitive output with subagents (pass file path in task prompt)
+
+## Tools
+
+| Tool | Purpose |
+|------|---------|
+| [git-intel](../tools/git-intel/README.md) | Git history analyzer outputting JSON for hooks, skills, and scripts. 7 subcommands: metrics, churn, lifecycle, patterns, hotspots, authors, trends. |
 
 ## Agents
 
