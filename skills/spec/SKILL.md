@@ -255,8 +255,14 @@ Dispatch a single agent as architecture guardian to review the complete spec and
 > 5. **Completeness:** [PASS/FAIL] — [reasoning]
 >
 > ### Issues (if FAIL)
-> - [Issue 1 with section reference]
-> - [Issue 2 with section reference]
+>
+> Each issue must name the spec section/line, state the concrete problem with codebase evidence, and make it fixable. Do not use vague phrases like "doesn't align with patterns."
+>
+> Example:
+> - Before: "Proposed approach doesn't align with existing patterns"
+> - After: "Section: API Contract, POST /auth/login — returns 200+error JSON. Conflicts with src/api/errors.ts:ErrorResponse pattern (line 23) which uses HTTP status codes for error signaling. Fix: return 401 status + ErrorResponse body"
+>
+> **Issue format:** Section: [section name] — [concrete problem with file:line evidence]. Fix: [specific change needed]
 > ```
 
 ### Dispatch and Wait

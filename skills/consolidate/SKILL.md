@@ -249,9 +249,17 @@ Emit the consolidation report in pipe format:
 
 ### Recommendations
 
-- [Any observations about backlog health]
-- [Suggested next priorities]
-- [Areas that might need a fresh blossom spike]
+**Sharpening gate:** Each recommendation must pass three tests:
+1. Name the specific bead/area/cluster
+2. State what concretely should change
+3. Make it actionable (a single bd command or skill invocation)
+
+**Before:** "Some clusters might benefit from prioritization review"
+**After:** "Reprioritize beads abc1, def2, ghi3 in the auth cluster from P3→P2 — they block 4 downstream tasks"
+
+- [Recommendation 1: specific action]
+- [Recommendation 2: specific action]
+- [Recommendation 3: specific action]
 
 ### Summary
 

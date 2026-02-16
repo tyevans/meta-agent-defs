@@ -155,6 +155,21 @@ For each dimension from Phase 2, identify:
 
 Be specific and actionable. "Communication was good" is not useful. "Sending spike reports via SendMessage with structured format made orchestrator processing 3x faster" is useful.
 
+### Sharpening Gate
+
+Every "could improve" or "try next time" item MUST pass through this gate before being included in the report or becoming a bead:
+
+1. **Name the specific code/file/workflow** where the problem occurred
+2. **State what concretely should change** (a function to add, a check to insert, a pattern to adopt)
+3. **Make it assignable** — could an agent implement this in one session without design decisions?
+
+If an observation fails the gate, sharpen it:
+- "Testing could be better" → fails all 3
+- "gl-renderer.ts has 2 manual blend enable/disable blocks that will be missed on new draw calls" → passes #1
+- "Add GLRenderer.drawWithAlpha(alpha, drawFn) that wraps blend state, replace the 2 existing manual blocks in gl-renderer.ts" → passes all 3
+
+Drop observations you cannot sharpen — they are not actionable yet. If the root cause is unclear, create an investigation bead instead ("Investigate why X keeps happening in Y").
+
 ---
 
 ## Phase 4: Team Learning Health (conditional)
@@ -308,14 +323,14 @@ Read MEMORY.md after edits to confirm it is well-structured and under the line l
 
 ## Phase 6: Capture Action Items (conditional)
 
-**If `.beads/` exists**, create a bead for each action item identified in Phase 3:
+**If `.beads/` exists**, create a bead for each sharpened action item from Phase 3 (items that passed the sharpening gate):
 
 ```bash
-bd create --title="<action item>" --type=task --priority=<2-4> \
-  --description="From retro on [date]. Context: [relevant finding from Phase 2]"
+bd create --title="<concrete action from sharpening gate>" --type=task --priority=<2-4> \
+  --description="From retro on [date]. Context: [relevant finding from Phase 2]. What to change: [specific code/file/workflow change]."
 ```
 
-Action items that are vague observations ("improve testing") are not beads — only create beads for items specific enough to act on in a single session. Typically 1-3 beads per retro; zero is fine if no concrete follow-ups emerged.
+Every item here already passed the sharpening gate, so it should be implementable in one session without design decisions. Typically 1-3 beads per retro; zero is fine if no concrete follow-ups emerged.
 
 **If `.beads/` does not exist**, list action items in the report only.
 

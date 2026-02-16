@@ -285,11 +285,16 @@ When the consolidator's report arrives, review it and proceed to Phase 3b.
 
 ### 3b. Agent Assignment Hints
 
-After consolidation, tag each firm task with the recommended agent type:
+After consolidation, tag each firm task with grounded agent assignment notes. The sharpening gate: name specific files the agent will touch (from spike findings), state concrete skills/knowledge needed (not just a role), and make it dispatchable.
 
 ```bash
-bd update <task-id> --notes="Recommended agent: domain-architect | infrastructure-implementer | api-developer | cli-developer | test-generator | refactorer | general-purpose"
+bd update <task-id> --notes="Recommended agent: <role> — touches <file-list>. Requires: <specific-skills>"
 ```
+
+**Before:** `bd update abc1 --notes="Recommended agent: refactorer"`
+**After:** `bd update abc1 --notes="Recommended agent: refactorer — touches src/domain/auth/User.ts + src/domain/auth/Session.ts. Requires: DDD pattern knowledge, extract-interface refactoring"`
+
+This gives /sprint enough context to make good dispatch decisions without reading every spike report.
 
 ### 3c. Team Shutdown (if team active)
 

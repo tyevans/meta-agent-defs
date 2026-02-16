@@ -235,9 +235,25 @@ For each scenario, produce:
 **Estimated effort**: [S | M | L] (Small: <1 day, Medium: 1-3 days, Large: >3 days)
 ```
 
-### 4b. Grounding Check
+### 4b. Grounding Check + Sharpening Gate
 
 Before finalizing, verify each mitigation: prevention actually blocks the failure, detection is realistic given the current observability stack, and the test scenario is concrete enough to implement. Refine until all three hold.
+
+**Sharpening gate** (from /retro): Each Prevention/Detection/Verification item must pass concreteness tests:
+
+1. **Prevention**: Name the specific file/function to modify, state the exact validation/check/guard (not "add proper validation"), make it implementable without design decisions.
+   - ✗ "Add proper validation to the input handler"
+   - ✓ "In src/api/search.ts:handleQuery(), add regex whitelist ^[a-zA-Z0-9 ]+$ before SQL interpolation at line 47"
+
+2. **Detection**: Name the specific metric or log line (not "monitor for anomalies"), state the concrete threshold/alert (not "watch for issues"), confirm the metric exists in the current observability stack.
+   - ✗ "Monitor for suspicious query patterns"
+   - ✓ "Log event.type='sql_injection_blocked' with query hash, alert if count > 10/min in Datadog monitor 'search-sql-injection'"
+
+3. **Verification**: Name the specific test file/type (not "test with various inputs"), state the concrete scenario and assertion (not "ensure it works"), make the pass/fail criteria explicit.
+   - ✗ "Test the input validation with various edge cases"
+   - ✓ "In tests/api/search.test.ts: POST /search with body={q: \"'; DROP TABLE--\"}, assert HTTP 400 + error.code='INVALID_QUERY_CHARS'"
+
+If a mitigation item fails the gate, rewrite it until it passes. Each item must be implementable in one session without needing clarification.
 
 ---
 

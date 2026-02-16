@@ -116,6 +116,15 @@ List unresolved questions that came up during the session:
 - Questions that need input from someone else
 - Questions that need more investigation
 
+**Sharpening gate:** Transform vague questions into decision frameworks. For each question:
+1. **Name the specific code/component** where the question arose
+2. **State what decision is needed** with concrete options and constraints
+3. **Make it decidable** — include the criteria needed to resolve it
+
+Example transformation:
+- **Before:** "Need to figure out the right caching strategy"
+- **After:** "Cache provider choice for `src/cache/provider.ts`: Redis (latency <10ms, requires infra) vs in-memory (no infra, scale limit at ~1M records). Decision criteria: expected data volume and ops budget. Ask: product team for volume projections"
+
 ---
 
 ## Phase 4: Write Handoff Note
@@ -145,12 +154,12 @@ Produce a structured handoff document:
 - **[task/bead ID]**: blocked on [reason]
 
 ### Open Questions
-- [question needing resolution]
+- **[Component/file]**: [decision needed] — Options: [A (pros/cons), B (pros/cons)]. Criteria: [what determines choice]. Ask: [who or what investigation resolves this]
 
 ### Recommended Next Steps
-1. [highest priority next action]
-2. [second priority]
-3. [third priority]
+1. [Highest priority action with specific file/function/command to run]
+2. [Second priority with pickup point]
+3. [Third priority with context]
 
 ### Risks & Warnings
 - [anything the next session should watch out for]

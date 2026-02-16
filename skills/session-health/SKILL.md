@@ -91,8 +91,14 @@ Based on the above, recommend ONE of:
 [Action] — [1-2 sentence rationale]
 
 ### If continuing, suggested next steps:
-1. [next thing to do]
-2. [thing after that]
+
+**Sharpening requirement**: Each step must be a concrete command or specific file reference, not a suggestion.
+
+- **Before**: "Consider refactoring the authentication module"
+- **After**: "Run /review on src/auth/ — 3 files changed in last 5 commits, fix rate 40%"
+
+1. [runnable command or specific file path]
+2. [runnable command or specific file path]
 ```
 
 ## Important Notes

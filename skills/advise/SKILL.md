@@ -106,6 +106,20 @@ Based on available layers, generate 3-5 concrete recommendations. Each recommend
 
 If `$ARGUMENTS` specifies a focus area, filter recommendations to that area. Still mention urgent items outside the focus (uncommitted changes, high fix rate) but deprioritize unrelated backlog items.
 
+### Sharpening Gate
+
+Before finalizing recommendations, apply these tests to each one:
+
+1. **Name the specific code/file/workflow** — Does it reference a commit hash, bead ID, file path, or metric value?
+2. **State what concretely should change** — Is there a command to run, a file to review, or a bead to close?
+3. **Make it actionable** — Can this be executed as a single command, bead ID, or specific next step?
+
+Reject recommendations starting with "Consider", "You might want to", or "Think about". Every recommendation must reference specific data from Phase 1.
+
+**Example:**
+- ❌ Before: "Consider addressing the high fix rate"
+- ✅ After: "Run /review on commits c752c8d..888d9f2 — fix rate is 45% (9/20 commits in last 30d), concentrated in tools/git-intel/src/integration.rs"
+
 ---
 
 ## Phase 3: Output

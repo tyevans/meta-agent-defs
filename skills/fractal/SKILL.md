@@ -208,7 +208,16 @@ Follow the **distill** primitive's approach: reduce all accumulated ANSWER findi
 
 ### Open Questions
 
-[Anything unresolved that the user should know about]
+Each open question must include:
+1. **Code reference** — file:line or specific decision point
+2. **Evidence** — what was found, what conflicts or gaps exist
+3. **Resolution path** — what would resolve this (skill to run, file to read, person to ask)
+
+Example:
+- Before: "Authentication mechanism needs clarification"
+- After: "src/auth/provider.ts:initialize() — found OAuth2 client in deps (package.json:47) but JWT tokens in tests (tests/auth.test.ts:12). Conflict suggests incomplete migration. Resolve: read src/auth/README.md or run /meeting with Security + Architect roles"
+
+[List open questions using the format above, or state "None" if all dimensions resolved]
 
 ### Summary
 

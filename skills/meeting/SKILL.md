@@ -140,6 +140,18 @@ Ask one panelist to draft a summary, or write it yourself:
 ### Action Items
 [Concrete next steps, if any emerged]
 
+**Sharpening gate** — every action item must pass three tests:
+
+1. **Name the specific code/file/workflow** where the problem/opportunity exists
+2. **State what concretely should change** (a function to add, a check to insert, a pattern to adopt)
+3. **Make it assignable** — could an agent implement this in one session without design decisions?
+
+Example:
+- ❌ "Investigate the auth refactor further"
+- ✅ "Spike JWT vs session cookies in src/auth/provider.ts, produce decision doc with latency + security tradeoffs"
+
+Drop items that can't be sharpened, or convert to investigation beads with explicit research questions.
+
 ### Key Insight
 [The single most valuable thing that emerged from the discussion]
 ```
@@ -164,12 +176,14 @@ TeamDelete()
 
 ### 3c. Optional: Create Beads
 
-If action items emerged, offer to create beads:
+If sharpened action items emerged, offer to create beads:
 
 ```bash
 bd create --title="[action item]" --type=task --priority=[0-4] \
   --description="From meeting on [topic]. Context: [relevant discussion point]"
 ```
+
+Use the sharpened form as the title. The 3-test pattern ensures beads are immediately dispatchable.
 
 ---
 
