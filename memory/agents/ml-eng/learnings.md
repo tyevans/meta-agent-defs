@@ -48,5 +48,12 @@
 - Non-interactive SSH needs `export PATH="$HOME/.local/bin:$PATH"` prefix for uv (added: 2026-02-15)
 - Transformer batch_size=64 is optimal for RTX 3090 (128 OOMs, 16 underutilizes at 3.5/24GB) (added: 2026-02-15)
 
+## Semantic Analysis
+- all-mpnet-base-v2 reusable across tools for semantic similarity — no training needed, CPU-friendly at small scale (<100 texts) (added: 2026-02-16, dispatch: bead-0in2)
+- DBSCAN with cosine metric is the right default for thematic clustering when k is unknown (added: 2026-02-16, dispatch: bead-0in2)
+- Provenance metadata in learnings entries (added/dispatch/triaged dates) should be stripped before semantic embedding (added: 2026-02-16, dispatch: bead-0in2)
+- Transfer value = scope_sim - knowledge_sim is effective for "relevant but unknown" detection; 0.4/0.6/0.15 thresholds produce reasonable results on a 5-agent team (added: 2026-02-16, dispatch: bead-6r8g)
+- Batch embedding across all agents (single encode() call) is the right pattern when total text count is small (<500) (added: 2026-02-16, dispatch: bead-6r8g)
+
 ## Cross-Agent Notes
 - (none yet)

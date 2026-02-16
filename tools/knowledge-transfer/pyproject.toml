@@ -1,0 +1,14 @@
+[project]
+name = "knowledge-transfer"
+version = "0.1.0"
+description = "Embedding-based cross-agent knowledge transfer suggestions — detects when one agent's learning could benefit another based on ownership scope overlap."
+requires-python = ">=3.10"
+dependencies = [
+    "sentence-transformers==3.3.1",
+    "numpy>=1.24",
+    "scikit-learn>=1.3",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+knowledge-transfer = "transfer:main"

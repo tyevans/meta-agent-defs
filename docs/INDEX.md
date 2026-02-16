@@ -18,6 +18,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Understand an agent's capabilities** -> /diagnose-agent (struggle profile from historical evidence)
 - **Generate training challenges** -> /challenge-gen (targeted challenges from struggle profile)
 - **Run challenges and evaluate** -> /challenge-run (dispatch agent, evaluate performance)
+- **Improve agent capabilities** -> /active-learn (full adversarial training loop: diagnose -> challenge -> evaluate -> learn)
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
@@ -43,7 +44,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (18)
+### Workflow Skills (19)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -67,6 +68,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /diagnose-agent | Agent struggle profile from learnings evolution + git signals | inline |
 | /challenge-gen | Generate targeted training challenges from struggle profile | inline |
 | /challenge-run | Execute challenges and evaluate agent performance | inline |
+| /active-learn | Full adversarial training loop: diagnose, challenge, evaluate, learn | fork |
 
 ### Team Skills (3)
 
@@ -89,7 +91,7 @@ Manage persistent learning teams across sessions.
 
 **Inline (28):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run
 
-**Fork (7):** blossom, consensus, consolidate, premortem, review, spec, tracer
+**Fork (8):** active-learn, blossom, consensus, consolidate, premortem, review, spec, tracer
 
 Fork skills run in an isolated context to avoid polluting the main conversation. Use fork skills for heavy exploration; use inline skills for quick operations within the current flow.
 
@@ -107,6 +109,7 @@ Common composition sequences (each step's output feeds the next via context):
 /drift -> /rank -> /sprint            # Compare definitions -> prioritize fixes -> execute
 /diagnose-agent -> /challenge-gen     # Profile agent -> generate targeted challenges
 /diagnose-agent -> /challenge-gen -> /challenge-run  # Profile -> challenges -> evaluate
+/active-learn                                       # Full loop: diagnose -> challenge -> evaluate -> learn (all inline)
 ```
 
 **Note**: Multi-step chains (3+ primitives) are best run in the main session. If dispatching to a subagent, set `max_turns: 40` to avoid turn limits.
@@ -138,6 +141,9 @@ This pattern is especially useful for:
 | Tool | Purpose |
 |------|---------|
 | [git-intel](../tools/git-intel/README.md) | Git history analyzer outputting JSON for hooks, skills, and scripts. 7 subcommands: metrics, churn, lifecycle, patterns, hotspots, authors, trends. |
+| [learnings-coverage](../tools/learnings-coverage/) | Semantic coverage analysis: what % of an agent's commit-message space is captured in their learnings? Embeds with sentence-transformers, reports gaps and well-covered areas. |
+| [difficulty-calibration](../tools/difficulty-calibration/) | Track challenge outcomes and fit logistic regression to predict optimal difficulty level targeting ~70% success rate. 3 subcommands: record, recommend, report. |
+| [knowledge-transfer](../tools/knowledge-transfer/) | Detect cross-agent learning transfer opportunities via sentence embeddings. Finds learnings from agent A that are relevant to agent B's scope but absent from B's knowledge. |
 
 ## Agents
 

@@ -2,7 +2,7 @@
 
 ## Codebase Patterns
 - Skills live in skills/<name>/SKILL.md with YAML frontmatter (name, description, allowed-tools, context)
-- 32 skills: 20 workflow + 12 composable primitives. `context: fork` for isolation (blossom, consolidate, review); all use `disable-model-invocation: false`
+- 36 skills: 23 workflow + 12 composable primitives + 1 orchestrator. `context: fork` for isolation (blossom, consolidate, review, active-learn); all use `disable-model-invocation: false`
 - `$ARGUMENTS` is how skills receive user input from the slash command
 - Skills that dispatch agents (blossom, consensus, premortem, spec) follow fan-out-protocol.md with Agent Preamble (added: 2026-02-14)
 - Characterization-over-procedure: "You think like..." (2-3 sentences) outperforms procedural step lists for agent prompts (added: 2026-02-14)
@@ -45,6 +45,11 @@
 - Learnings entries support optional `(dispatch: bead-xyz)` provenance field for tracing learnings to specific tasks (added: 2026-02-16, dispatch: bead-do61)
 - /diagnose-agent: read-only analysis skill, outputs struggle profile in pipe format (WEAKNESS→GAP→STRENGTH ordering for downstream consumption) (added: 2026-02-16, dispatch: bead-57ya)
 - When dispatching literal computed values to agents, explicitly state "use this value as-is" — agents tend to try recomputing things (added: 2026-02-16, dispatch: bead-ndsx)
+- Skills that write persistent output need `mkdir` in allowed-tools for first-run directory creation (added: 2026-02-16, dispatch: bead-dchv)
+- Two-audience output (agent-facing scenario vs evaluator-facing ground truth) needs explicit section separation and guidelines reinforcing the boundary (added: 2026-02-16, dispatch: bead-dchv)
+- Fan-out evaluation skills need explicit evidence requirements in guidelines — "every rating must cite specific evidence" prevents lazy subjective assessment (added: 2026-02-16, dispatch: bead-1iu1)
+- Calibration matrix pattern (self-reported confidence vs actual result, with nuance rules) is reusable for any skill that asks agents to self-assess (added: 2026-02-16, dispatch: bead-1iu1)
+- Orchestrator skills that embed sub-skill logic inline: keep each phase self-contained with its own data flow, reference upstream skill approach but don't copy verbatim — adapt to the orchestrator's loop context (added: 2026-02-16, dispatch: bead-xjbo)
 
 ## git-intel Integration
 - Extending existing skills with git-intel: add conditional sections that check for binary, use JSON output, graceful fallback to raw git (added: 2026-02-14)
