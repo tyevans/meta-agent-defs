@@ -16,6 +16,8 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Understand a definition's history** -> /evolution (file change history and stability) or /drift (cross-definition convergence/divergence)
 - **Manage a team** -> /assemble (create) -> /standup (sync) -> /sprint (dispatch)
 - **Understand an agent's capabilities** -> /diagnose-agent (struggle profile from historical evidence)
+- **Generate training challenges** -> /challenge-gen (targeted challenges from struggle profile)
+- **Run challenges and evaluate** -> /challenge-run (dispatch agent, evaluate performance)
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
@@ -41,7 +43,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (16)
+### Workflow Skills (18)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -63,6 +65,8 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /evolution | File change history, churn, stability analysis | inline |
 | /drift | Cross-definition convergence/divergence detection | inline |
 | /diagnose-agent | Agent struggle profile from learnings evolution + git signals | inline |
+| /challenge-gen | Generate targeted training challenges from struggle profile | inline |
+| /challenge-run | Execute challenges and evaluate agent performance | inline |
 
 ### Team Skills (3)
 
@@ -83,7 +87,7 @@ Manage persistent learning teams across sessions.
 
 ## Skills by Context Type
 
-**Inline (26):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent
+**Inline (28):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run
 
 **Fork (7):** blossom, consensus, consolidate, premortem, review, spec, tracer
 
@@ -101,6 +105,8 @@ Common composition sequences (each step's output feeds the next via context):
 /gather -> /diff-ideas                # Research -> compare two approaches
 /gather -> /distill -> /sketch        # Research -> condense -> prototype
 /drift -> /rank -> /sprint            # Compare definitions -> prioritize fixes -> execute
+/diagnose-agent -> /challenge-gen     # Profile agent -> generate targeted challenges
+/diagnose-agent -> /challenge-gen -> /challenge-run  # Profile -> challenges -> evaluate
 ```
 
 **Note**: Multi-step chains (3+ primitives) are best run in the main session. If dispatching to a subagent, set `max_turns: 40` to avoid turn limits.
