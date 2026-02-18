@@ -298,7 +298,7 @@ Determine which learnings are **durable** (useful across sessions) vs. **ephemer
 Durable examples:
 - "Agent teams work well for parallel audits but add overhead for < 5 tasks"
 - "Always read existing skill files before writing new ones to match format"
-- "bd dep add direction: epic depends on child, never reverse"
+- "Use --parent for epic hierarchy: bd create --parent=<epic-id>, not bd dep add"
 
 Ephemeral examples (do NOT persist):
 - "Completed 8 tasks today"

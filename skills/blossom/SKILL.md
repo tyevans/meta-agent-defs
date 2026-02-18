@@ -49,20 +49,15 @@ Decompose the goal into 3-6 bounded spike areas (a **/decompose** — MECE sub-p
 
 ### 1d. Create Spike Beads
 
-For each spike area:
+For each spike area, create as a child of the epic:
 
 ```bash
 bd create --title="SPIKE: [specific area to investigate]" --type=task --priority=2 \
+  --parent=<epic-id> \
   --description="Discovery spike. Investigate [area] and report: (1) firm tasks found, (2) areas needing deeper spikes, (3) clean areas requiring no work."
 ```
 
-### 1e. Wire Dependencies
-
-Epic depends on children (epic waits for all children to complete):
-
-```bash
-bd dep add <epic-id> <spike-id>
-```
+The `--parent` flag establishes the epic-child hierarchy, enabling `bd children`, `bd epic status`, and `bd epic close-eligible`.
 
 ---
 
@@ -197,20 +192,20 @@ Each spike agent (whether background Task or team teammate) receives these instr
    - **Team mode:** Send ONE pushback message demanding concrete output (Items section, CONFIRMED findings with file:line citations, evidence from code reading). One retry only -- if still inadequate, log failure and move on.
    - **Background mode:** Cannot re-prompt. Flag via `bd update <spike-id> --notes="QUALITY ISSUE: [problem]"`. Do not create firm tasks from low-quality reports.
 
-2. **Create firm task beads** from the Items section:
+2. **Create firm task beads** as children of the epic:
 
 ```bash
 bd create --title="[title from spike report]" --type=task --priority=[P level as 0-4] \
+  --parent=<epic-id> \
   --description="[confidence level]. [evidence and scope from spike report]"
-bd dep add <epic-id> <task-id>
 ```
 
-3. **Create new spike beads** from the "Deeper Spikes Needed" section:
+3. **Create new spike beads** as children of the epic:
 
 ```bash
 bd create --title="SPIKE: [deeper area]" --type=task --priority=2 \
+  --parent=<epic-id> \
   --description="Deeper discovery spike spawned from SPIKE: [parent spike]. Reason: [why from report]. Look for: [specific questions]"
-bd dep add <epic-id> <new-spike-id>
 ```
 
 4. **Close the completed spike** with findings summary:
@@ -275,7 +270,7 @@ Task({
 >
 > **4. Stale detection:** Check for tasks created more than 2 weeks ago with no progress, tasks whose target code has been refactored, or tasks describing work already done (check git log). Close stale tasks with `bd close <id> --reason="Stale: [explanation]"`.
 >
-> **5. Dependency cleanup:** Remove redundant transitive dependencies. Check for cycles. Validate epic structure (epic depends on children, not the reverse).
+> **5. Dependency cleanup:** Remove redundant transitive dependencies. Run `bd dep cycles` to check for cycles. Run `bd swarm validate <epic-id>` to validate the full epic structure (cycles, orphans, disconnected subgraphs). Run `bd children <epic-id>` to verify all tasks are proper children of the epic.
 >
 > **6. Report:** Send your consolidation report via SendMessage to the orchestrator with these counts: tasks closed (dedup), tasks closed (stale), tasks created (gap fill), dependencies modified.
 >
@@ -316,7 +311,17 @@ Adjust priorities now that the full picture is visible. Upgrade tasks that block
 
 ## Phase 5: Verify
 
-Validate the backlog before presenting it: check for dependency cycles (fix any A↔B loops), verify priority consistency (P0/P1 tasks must not depend on P3/P4 -- upgrade blockers), ensure every task has testable acceptance criteria, and trace the critical path (longest dependency chain = minimum time to completion).
+Run `bd swarm validate <epic-id>` to check the epic structure. This validates:
+- Dependency cycles (and reports them)
+- Orphaned tasks (children with no dependencies wired)
+- Disconnected subgraphs
+- Ready fronts (waves of parallelizable work)
+
+```bash
+bd swarm validate <epic-id>
+```
+
+If validation reports issues, fix them before proceeding. Then manually verify: priority consistency (P0/P1 tasks must not depend on P3/P4 -- upgrade blockers), every task has testable acceptance criteria, and trace the critical path (longest dependency chain = minimum time to completion).
 
 ---
 
@@ -373,7 +378,7 @@ Present the final blossom report in **pipe format** so downstream primitives (/r
 3. **Hybrid dispatch.** Use teams for large explorations (6+ spikes), background agents for small ones (5 or fewer). Fall back to background agents if team creation fails.
 4. **Reuse over respawn.** When a spike teammate finishes, send it a new spike via SendMessage instead of spawning a fresh teammate. This avoids spawn overhead and reuses warm context.
 5. **Consolidate before reporting.** Run consolidation (via teammate or /consolidate) to dedup, fill slice gaps, and resolve orphans before wiring final dependencies.
-6. **Epic depends on children.** Always `bd dep add <epic> <child>`, never the reverse.
+6. **Use `--parent` for epic hierarchy.** Always create children with `bd create --parent=<epic-id>`. This establishes the hierarchy that enables `bd children`, `bd epic status`, and `bd epic close-eligible`. Use `bd dep add` only for cross-task ordering (task A blocks task B).
 7. **Quality gate.** The orchestrator reviews every spike report before creating beads. Spike agents never create beads directly.
 8. **Structured reports.** Spike agents must follow the exact report format for consistent processing.
 9. **Depth limit.** Stop at 20 total spikes (including reused teammates) and reassess with the user if the goal is too broad.

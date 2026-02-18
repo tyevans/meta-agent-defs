@@ -302,14 +302,28 @@ If a mitigation item fails the gate, rewrite it until it passes. Each item must 
 
 ### 5b. Create Beads Tasks
 
+Create an epic to group mitigations, then create each mitigation as a child:
+
+```bash
+bd create --title="EPIC: Pre-mortem mitigations for [feature]" --type=epic --priority=1
+```
+
 For each mitigation in the plan:
 
 ```bash
-bd create --title="[MITIGATION]: [scenario title]" --type=task --priority=<0-for-catastrophic,1-for-major,2-for-minor> \
+bd create --title="[MITIGATION]: [scenario title]" --type=task \
+  --priority=<0-for-catastrophic,1-for-major,2-for-minor> \
+  --parent=<mitigation-epic-id> \
   --description="Pre-mortem mitigation for [feature]. Failure scenario: [brief]. Prevention: [what to build]. Detection: [monitoring]. Test: [verification]. Effort: [S/M/L]."
 ```
 
-Wire dependencies so mitigations complete before the main feature task (`bd dep add <feature> <mitigation>`). Create the feature task if it doesn't exist yet.
+Wire the mitigation epic as a dependency of the main feature task so mitigations complete before implementation:
+
+```bash
+bd dep add <feature-task> <mitigation-epic-id>
+```
+
+Create the feature task if it doesn't exist yet.
 
 ---
 

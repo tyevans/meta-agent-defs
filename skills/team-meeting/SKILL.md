@@ -299,14 +299,21 @@ TeamDelete()
 
 ### 5b. Create Beads (conditional)
 
-If `.beads/` exists, offer to create beads from the approved plan:
+If `.beads/` exists, offer to create beads from the approved plan. First create an epic for the goal, then create tasks as children:
+
+```bash
+bd create --title="EPIC: [goal]" --type=epic --priority=2
+```
+
+For each task in the plan:
 
 ```bash
 bd create --title="[task title]" --type=task --priority=[0-4] \
+  --parent=<epic-id> \
   --description="Assigned: [member]. [acceptance criteria]. Depends on: [dep titles or none]. From team-meeting on [goal]."
 ```
 
-Wire dependencies:
+Wire cross-task ordering dependencies (task A must finish before task B):
 
 ```bash
 bd dep add <downstream-id> <upstream-id>
