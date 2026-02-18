@@ -11,6 +11,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Compare approaches** -> /diff-ideas (two options) or /consensus (three independent proposals)
 - **Plan before building** -> /decompose (break down) -> /plan (sequence) -> /spec (full specification)
 - **Assess risk** -> /premortem (failure analysis) or /critique (adversarial review)
+- **Bootstrap a new project** -> /bootstrap (full setup: infrastructure + agents)
 - **Build something** -> /tracer (iterative end-to-end) or /sketch (skeleton only)
 - **Review code** -> /review (structured code review)
 - **Understand a definition's history** -> /evolution (file change history and stability) or /drift (cross-definition convergence/divergence)
@@ -44,7 +45,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (19)
+### Workflow Skills (20)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -57,6 +58,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /consensus | Three independent proposals + synthesis | fork |
 | /premortem | Failure analysis with mitigations | fork |
 | /spec | Progressive specification document | fork |
+| /bootstrap | Full project setup: infrastructure + agents | fork |
 | /tracer | Iterative thin-slice implementation | fork |
 | /review | Structured code review (5 dimensions) | fork |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
@@ -91,7 +93,7 @@ Manage persistent learning teams across sessions.
 
 **Inline (28):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run
 
-**Fork (8):** active-learn, blossom, consensus, consolidate, premortem, review, spec, tracer
+**Fork (9):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, tracer
 
 Fork skills run in an isolated context to avoid polluting the main conversation. Use fork skills for heavy exploration; use inline skills for quick operations within the current flow.
 
