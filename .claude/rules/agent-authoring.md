@@ -22,6 +22,21 @@ model: opus|sonnet|haiku
 
 Optional: `permissionMode: default|acceptEdits|dontAsk|bypassPermissions|plan`
 
+Optional: `output-contract` -- describes the expected output structure when the agent's output is parsed or consumed by another skill or agent. Include when the output is structurally significant (not free-form prose).
+
+```yaml
+output-contract: |
+  <describe the expected output schema>
+```
+
+Examples:
+- `"pipe-format Items list per rules/pipe-format.md"`
+- `"YAML capability profile (see memory/agents/<name>/capability.yaml)"`
+- `"Structured report with sections: Summary, Findings (Critical/Warning/Suggestion/Nitpick), Verdict (APPROVE/REQUEST CHANGES/NEEDS DISCUSSION)"`
+- `"Sprint reflection: task_result (status, summary, files changed), reflection (what worked, what didn't, confidence), suggested_learnings, follow_up (blockers, next steps)"`
+
+**When to include:** When the agent's output is parsed by another skill (e.g., `/sprint` reflection parser, `/active-learn` challenge evaluator), consumed by the orchestrator with structural expectations, or feeds into a downstream pipeline. Skip for agents whose output is free-form and read only by humans.
+
 ## Required Sections
 
 Every agent MUST include these three sections, in addition to its core instructions:

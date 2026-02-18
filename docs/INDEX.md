@@ -23,6 +23,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
+- **Find the right skill for a goal** -> /discover (semantic recommendation + pipeline suggestion)
 
 ## Skills by Category
 
@@ -89,9 +90,17 @@ Manage persistent learning teams across sessions.
 | /status | Unified dashboard: backlog, activity, team, last session | inline |
 | /advise | Proactive recommendations by composing git state, session history, backlog, and signals. Degrades gracefully — works with just git, richer with each layer present. | inline |
 
+### Meta-Skills (1)
+
+Skills about the skill system itself.
+
+| Skill | Purpose | Context |
+|-------|---------|---------|
+| /discover | Recommend skills or pipelines for a described goal | inline |
+
 ## Skills by Context Type
 
-**Inline (28):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run
+**Inline (29):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
 
 **Fork (9):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, tracer
 
@@ -159,6 +168,7 @@ This pattern is especially useful for:
 
 ## Further Reading
 
+- [Workflow Pipelines](pipelines.md) — 6 canonical end-to-end lifecycle pipelines (discovery, team, deep analysis, planning, recursive exploration, session continuity)
 - [Primitives Cookbook](primitives-cookbook.md) — detailed usage patterns and examples
 - [Primitives Recipes](primitives-recipes.md) — end-to-end workflow recipes
 - [Team System Guide](team-system-guide.md) — team lifecycle, learnings, and coordination

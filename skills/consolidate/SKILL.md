@@ -14,6 +14,8 @@ context: fork
 
 You are running the **Consolidate** workflow — a structured pass over the current beads backlog to eliminate sprawl, fill gaps, and sharpen priorities. Target area (optional): **$ARGUMENTS**
 
+**If `.beads/` does not exist in the project root:** This workflow cannot run in full — there is no beads backlog to consolidate. If a `TODO.md` file exists, review it manually: scan for duplicates, reorder by priority, and remove items already completed (check git log). Then stop. Do not proceed through the phases below.
+
 ## When to Use
 
 - After a blossom run produced a large backlog
@@ -129,12 +131,15 @@ For every task that touches a core/inner layer, verify companion tasks exist acr
 
 For each missing companion, create as a child of the epic (if one exists) or standalone:
 
+**If `.beads/` exists:**
 ```bash
 bd create --title="[layer]: [companion task description]" --type=task --priority=<same-as-parent> \
   --parent=<epic-id>
 ```
 
 If no epic exists, omit `--parent` and wire ordering dependencies with `bd dep add` as needed.
+
+**If `.beads/` does not exist:** Add missing companion tasks to `TODO.md` under the relevant section.
 
 ### 3d. Wire Dependencies
 

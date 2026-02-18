@@ -3,6 +3,8 @@ name: sync-auditor
 description: Audits cross-artifact consistency across the repo -- verifies README.md, CLAUDE.md, AGENTS.md, and install.sh all reflect the actual files present. Use after adding, renaming, or removing agent/skill/settings files, or when you suspect documentation has drifted from reality.
 tools: Read, Glob, Grep, Bash(ls:*), Bash(bd:*), Bash(git diff:*), Bash(git log:*)
 model: haiku
+output-contract: |
+  Sync audit report with per-sync-point PASS/FAIL verdicts (README.md, CLAUDE.md, AGENTS.md, install.sh, Skills), summary counts, and specific fixes needed list. Orchestrator reads FAIL items to create fix tasks.
 ---
 
 # Sync Auditor

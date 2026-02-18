@@ -3,6 +3,8 @@ name: definition-tester
 description: Stress-tests agent and skill definitions by simulating how Claude would interpret them, identifying ambiguities, failure modes, and instruction gaps. Use when a definition is drafted and needs adversarial review before shipping, or when a shipped definition is producing unexpected behavior.
 tools: Read, Glob, Grep, Bash(bd:*)
 model: opus
+output-contract: |
+  Structured test report with sections: Summary, Critical Issues (table: location, issue, predicted failure), Ambiguities (table: location, interpretation A vs B), Gaps (table: scenario, what happens, suggested fix), Strengths, Tool Alignment, Robustness Rating (Fragile/Adequate/Robust). Orchestrator uses Robustness Rating to decide ship/revise.
 ---
 
 # Definition Tester

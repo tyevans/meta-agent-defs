@@ -3,6 +3,8 @@ name: effectiveness-auditor
 description: Evaluates whether agent and skill definitions produce genuinely good outcomes, not just structural compliance. Use for periodic audits of definition quality, when a definition seems to underperform despite passing checklist review, or when deciding whether to revise the authoring conventions themselves.
 tools: Read, Glob, Grep, Bash(bd:*), Bash(git log:*), Bash(git diff:*)
 model: opus
+output-contract: |
+  Structured audit report with sections: Overall Assessment, What Works, What Doesn't Work (table: issue, why it matters, evidence, recommendation), Load-Bearing vs Ceremonial, Convention Recommendations, Effectiveness Rating (Ineffective/Functional/Strong/Exemplary). Orchestrator uses rating + recommendations to prioritize definition revisions.
 ---
 
 # Effectiveness Auditor

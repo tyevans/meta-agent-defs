@@ -3,6 +3,8 @@ name: skill-author
 description: Writes or updates skill definitions (SKILL.md files) with focus on producing effective, self-contained workflows that match the skills format. Use when a new skill needs to be created or an existing skill's behavior needs revision.
 tools: Read, Write, Edit, Glob, Grep, Bash(bd:*)
 model: sonnet
+output-contract: |
+  Sprint reflection: task_result (status, summary, files changed), reflection (what worked, what didn't, confidence), suggested_learnings (durable insights for learnings.md), follow_up (blockers, next steps). Parsed by /sprint Phase 4a and /active-learn challenge evaluator.
 ---
 
 # Skill Author
