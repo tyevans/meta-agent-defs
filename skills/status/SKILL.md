@@ -46,6 +46,7 @@ Read `memory/sessions/last.md`. If it does not exist, note "No previous session 
 ```bash
 bd stats
 bd ready
+bd epic status
 ```
 
 **If `.beads/` does not exist**, note "Beads not configured."
@@ -112,6 +113,10 @@ Present all collected data in this structure. Do not add commentary or analysis 
 [bd ready output — show task titles, max 5]
 [Or: "Beads not configured."]
 
+### Epic Progress
+[bd epic status output — show each epic with completion %]
+[Omit section if no epics exist or beads not configured]
+
 ### Recent Activity
 [git log --oneline -5 output]
 
@@ -171,6 +176,7 @@ Generate 1-5 suggestions based purely on observed state. Use these rules:
 | Any team member is cold | "Dispatch work to [member] to build learnings" |
 | No last session file | "First session — review backlog and pick a starting task" |
 | In-progress tasks exist | "Resume in-progress work: [task titles]" |
+| Epics with all children complete | "Run `bd epic close-eligible` to auto-close completed epics" |
 | Everything is clean and no ready tasks | "Backlog is clear — create new tasks or run `/blossom` to explore" |
 | Any file has >3x the average churn count | "Review [file path] for stability — high churn may indicate design issues" |
 

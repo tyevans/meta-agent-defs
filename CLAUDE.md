@@ -40,6 +40,13 @@ xargs rm -f < ~/.claude/.meta-agent-defs.manifest
 bd stats                        # Backlog overview
 bd ready                        # Available work
 bd create --title="..." --type=task
+bd create --type=epic --title="..."  # Create epic
+bd create --type=task --parent=<epic-id> --title="..."  # Child of epic
+bd children <epic-id>           # List children
+bd epic status                  # Epic completion progress
+bd epic close-eligible          # Auto-close finished epics
+bd swarm validate <epic-id>     # Validate epic DAG
+bd dep cycles                   # Detect dependency cycles
 bd sync --flush-only            # Save state before session end
 ```
 
@@ -121,7 +128,7 @@ meta-agent-defs/
 - Agent frontmatter fields: `name`, `description`, `tools`, `model`, `permissionMode`
 - Skill frontmatter fields: `name`, `description`, `allowed-tools`, `context`, `disable-model-invocation`
 - Hooks fail gracefully with `|| true` for optional tools (like `bd`)
-- Epic depends on children: `bd dep add <epic> <child>`, never the reverse
+- Epic hierarchy via `--parent`: `bd create --parent=<epic-id>` (not `bd dep add`). Use `bd dep add` only for cross-task ordering
 - Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE
 
 ## Do Not Modify

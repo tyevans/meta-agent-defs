@@ -53,15 +53,17 @@ Check if beads is initialized and use it to track your work:
 bd stats 2>/dev/null || echo "Beads not initialized"
 
 # Create an epic for agent generation if beads exists
-bd create --title="Generate project agents" --type=feature --priority=1
+bd create --title="Generate project agents" --type=epic --priority=1
 # Returns: beads-xxx (the epic ID)
 ```
 
-If beads exists, create sub-tasks for each agent you plan to generate. Remember: **epic depends on children**, not vice versa.
+If beads exists, create sub-tasks as children of the epic using `--parent`:
 
 ```bash
-bd dep add <epic-id> <child-task-id>
+bd create --title="Generate [agent-name] agent" --type=task --priority=2 --parent=<epic-id>
 ```
+
+This establishes the epic-child hierarchy, enabling `bd children <epic-id>` and `bd epic status`.
 
 ## Phase 3: Agent Generation Strategy
 
@@ -375,17 +377,20 @@ bd sync --flush-only  # Export when done
 bd dep add <B-id> <A-id>  # B depends on A (A must finish first)
 ```
 
-### Epic/Child Dependencies (IMPORTANT)
+### Epic/Child Hierarchy (IMPORTANT)
 
-**Epics depend on their children, not vice versa.** An epic completes when all children are done.
+**Create children with `--parent`, not `bd dep add`.** This establishes a real hierarchy that enables `bd children`, `bd epic status`, and `bd epic close-eligible`.
 
 ```bash
-# CORRECT: Epic waits for children
-bd dep add <epic-id> <child-task-1>
+# CORRECT: Child of epic via --parent
+bd create --title="Task X" --type=task --parent=<epic-id>
 
-# WRONG: Children wait for epic (backwards!)
-bd dep add <child-task-1> <epic-id>
+# WRONG: Flat task with manual blocking dep
+bd create --title="Task X" --type=task
+bd dep add <epic-id> <task-id>
 ```
+
+Use `bd dep add` only for cross-task ordering (task A must finish before task B).
 
 ## Output
 

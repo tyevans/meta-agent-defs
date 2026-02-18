@@ -127,12 +127,14 @@ For every task that touches a core/inner layer, verify companion tasks exist acr
 
 ### 3c. Fill Gaps
 
-For each missing companion:
+For each missing companion, create as a child of the epic (if one exists) or standalone:
 
 ```bash
-bd create --title="[layer]: [companion task description]" --type=task --priority=<same-as-parent>
-bd dep add <epic-or-parent> <new-task-id>
+bd create --title="[layer]: [companion task description]" --type=task --priority=<same-as-parent> \
+  --parent=<epic-id>
 ```
+
+If no epic exists, omit `--parent` and wire ordering dependencies with `bd dep add` as needed.
 
 ### 3d. Wire Dependencies
 
@@ -195,23 +197,27 @@ bd show <A>  # Look at depends-on list
 # If A -> B -> C AND A -> C, remove A -> C
 ```
 
-### 5b. Check for Cycles
+### 5b. Check for Cycles and Validate Structure
 
-Verify no circular dependencies exist:
-- A depends on B, B depends on A (direct cycle)
-- A depends on B, B depends on C, C depends on A (indirect cycle)
+Use `bd` built-in validation instead of manual checks:
 
-If cycles are found, break them by identifying which dependency is the weakest (most optional) and removing it.
+```bash
+bd dep cycles                  # Detect dependency cycles
+bd swarm validate <epic-id>    # Full structural validation (cycles, orphans, disconnected subgraphs, ready fronts)
+```
+
+If cycles are found, break them by identifying which dependency is the weakest (most optional) and removing it. If `bd swarm validate` reports orphaned or disconnected tasks, re-parent or wire them.
 
 ### 5c. Validate Epic Structure
 
-Every epic should:
-- Depend on all its child tasks (epic completes when children complete)
-- NOT be depended on by its children (children don't wait for the epic)
+Every epic should have its tasks as children (via `--parent`), not just blocking deps:
 
 ```bash
-bd show <epic-id>  # Verify "depends on" lists children, "blocks" is empty or external
+bd children <epic-id>  # Should list all child tasks
+bd epic status         # Should show completion progress
 ```
+
+If tasks were created without `--parent`, they will be missing from `bd children`. Flag these for re-parenting.
 
 ---
 

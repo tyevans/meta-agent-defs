@@ -47,6 +47,7 @@ bd stats
 bd ready
 bd list --status=in_progress
 bd blocked
+bd epic status
 ```
 
 **If `.beads/` does not exist**, skip this step entirely. The standup will focus on git activity and learning health only.
@@ -114,6 +115,12 @@ Health: healthy (active commits + growing learnings), stale (no recent activity)
 - **Ready**: [count] tasks available
 - **In Progress**: [count] tasks active
 - **Blocked**: [count] tasks blocked
+
+### Epic Progress
+[Only include if beads are available and epics exist]
+| Epic | Children | Complete | Progress |
+|------|----------|----------|----------|
+| [title] | [total] | [done] | [%] |
 
 ### Blockers
 [Only include if beads are available. List any blocked beads or issues. "No blockers" if clear.]
