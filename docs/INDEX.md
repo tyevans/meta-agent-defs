@@ -14,6 +14,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Bootstrap a new project** -> /bootstrap (full setup: infrastructure + agents)
 - **Build something** -> /tracer (iterative end-to-end) or /sketch (skeleton only)
 - **Review code** -> /review (structured code review)
+- **File a bug** -> /bug (structured bug report to beads backlog)
 - **Understand a definition's history** -> /evolution (file change history and stability) or /drift (cross-definition convergence/divergence)
 - **Manage a team** -> /assemble (create) -> /standup (sync) -> /sprint (dispatch)
 - **Understand an agent's capabilities** -> /diagnose-agent (struggle profile from historical evidence)
@@ -45,7 +46,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (20)
+### Workflow Skills (21)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -61,6 +62,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /bootstrap | Full project setup: infrastructure + agents | fork |
 | /tracer | Iterative thin-slice implementation | fork |
 | /review | Structured code review (5 dimensions) | fork |
+| /bug | File structured bug reports to beads backlog | inline |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
 | /session-health | Context load and drift diagnostic | inline |
 | /retro | Session retrospective with persistent learnings | inline |
@@ -91,7 +93,7 @@ Manage persistent learning teams across sessions.
 
 ## Skills by Context Type
 
-**Inline (28):** gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run
+**Inline (29):** bug, gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run
 
 **Fork (9):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, tracer
 
@@ -108,6 +110,8 @@ Common composition sequences (each step's output feeds the next via context):
 /gather -> /critique -> /rank         # Research -> stress-test -> prioritize
 /gather -> /diff-ideas                # Research -> compare two approaches
 /gather -> /distill -> /sketch        # Research -> condense -> prototype
+/critique -> /bug                     # Find flaws -> file as tracked issues
+/review -> /bug                       # Code review -> file bugs from findings
 /drift -> /rank -> /sprint            # Compare definitions -> prioritize fixes -> execute
 /diagnose-agent -> /challenge-gen     # Profile agent -> generate targeted challenges
 /diagnose-agent -> /challenge-gen -> /challenge-run  # Profile -> challenges -> evaluate
