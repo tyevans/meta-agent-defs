@@ -102,7 +102,7 @@ Skills about the skill system itself.
 
 ## Skills by Context Type
 
-**Inline (30):** bug, gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
+**Inline (31):** bug, domain, gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
 
 **Fork (9):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, tracer
 
