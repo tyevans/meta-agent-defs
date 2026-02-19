@@ -74,7 +74,7 @@ Based on the above, recommend ONE of:
 | **Continue** | Light-moderate load, on-topic, quality fine | Keep working |
 | **Compact** | Heavy load but good progress, want to keep context | `/compact` — preserves key context, frees space |
 | **Checkpoint & Continue** | Moderate load, mid-batch work, or want a save point | Commit current work, write intermediate results to `memory/scratch/<slug>.md` if mid-batch, `bd sync`, then continue |
-| **Fresh session** | Overloaded, scope has drifted, or quality degrading | Commit all work, `bd sync`, push, then `/clear` or new session |
+| **Fresh session** | Overloaded, scope has drifted, or quality degrading | Run /handoff to capture context, commit all work, `bd sync`, push, then `/clear` or new session |
 | **Break into subagents** | Remaining work is parallelizable | Dispatch independent tasks to subagents to avoid further context fill |
 
 ## Output Format
@@ -108,3 +108,10 @@ Based on the above, recommend ONE of:
 - Committing and syncing before any session change is mandatory
 - When in doubt, checkpoint (commit + sync) before deciding — it's cheap insurance
 - A fresh session with good beads context (via `bd prime`) is often more productive than a degraded long session
+- Before starting a fresh session, run /handoff to capture in-progress tasks, decisions, and open questions in a structured handoff document
+
+## See Also
+
+- **/handoff** — structured session transition; captures context before clearing or starting fresh
+- **/status** — lightweight status card; use before /session-health for a quick pulse
+- **/retro** — end-of-session retrospective; run after recommending "Fresh session" to log learnings before closing

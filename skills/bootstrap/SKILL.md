@@ -163,3 +163,5 @@ Present the final bootstrap summary to the user:
 2. **Pass context forward.** Include the bootstrapper's findings in the agent generator's prompt so it doesn't re-discover what's already known.
 3. **Surface failures early.** If the bootstrapper fails, ask the user before proceeding rather than running the agent generator on a broken setup.
 4. **Respect existing setup.** Both agents check for existing `.claude/` configuration and avoid overwriting intentional customizations.
+
+See also: /assemble (create a persistent learning team after bootstrapping). /blossom (explore the newly set-up project to discover work and generate initial backlog). /sprint (execute the initial backlog items created during bootstrap).

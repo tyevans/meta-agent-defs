@@ -234,6 +234,7 @@ Check all expected files were created:
 - `memory/team/retro-history.md` — Retro history
 
 ### How to Use This Team
+- `/team-meeting [goal]` — Collaborative goal planning with the full team (run this first)
 - `/sprint` — Plan and dispatch work to team members (the learning loop)
 - `/standup` — Status sync from each member's perspective
 - `/meeting [topic]` — Multi-agent discussion using team roles

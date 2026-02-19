@@ -114,7 +114,7 @@ Each handler receives this prompt (fill in bracketed values):
 
 ### Goal-Fit Evaluation
 
-After each handler report, evaluate findings using the **assess** primitive's categorical rubric (ANSWER / DEEPEN / PRUNE):
+After each handler report, evaluate findings using the **/assess** primitive's categorical rubric (ANSWER / DEEPEN / PRUNE):
 
 ```markdown
 ## Assessed handler findings for goal-fit
@@ -249,7 +249,7 @@ git status
 3. **Depth over breadth.** 3 deep investigations beat 6 shallow ones. Start with 2-4 areas, not 6+.
 4. **Handlers are disposable.** They investigate and report. The orchestrator makes all strategic decisions.
 5. **Stop when valuable.** "Done" is when the goal dimensions are addressed, not when exploration is exhausted.
-6. **Show your reasoning.** The assess-style evaluation table makes pruning decisions visible and auditable.
+6. **Show your reasoning.** The /assess-style evaluation table makes pruning decisions visible and auditable.
 7. **No beads during exploration.** Fractal produces understanding. Beads are an optional output, not the workflow.
 8. **Density over length.** Handler reports under 500 words. Pipe format, not prose.
 

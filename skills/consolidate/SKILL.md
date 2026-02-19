@@ -38,7 +38,7 @@ Survey [gather]
 
 ---
 
-## Phase 1: Survey *(gather pattern — collect backlog info with sources)*
+## Phase 1: Survey *(/gather pattern — collect backlog info with sources)*
 
 ### 1a. Get the Full Picture
 
@@ -65,7 +65,7 @@ Group tasks into clusters by the area they touch (e.g., "domain/sandbox", "infra
 
 ---
 
-## Phase 2: Dedup *(filter pattern — criterion: "not duplicate")*
+## Phase 2: Dedup *(/filter pattern — criterion: "not duplicate")*
 
 ### 2a. Find Overlaps
 
@@ -100,7 +100,7 @@ Track: how many tasks closed, how many merged, how many clusters remain.
 
 ---
 
-## Phase 3: Vertical Slice Audit *(assess pattern — rubric: complete / missing-companion)*
+## Phase 3: Vertical Slice Audit *(/assess pattern — rubric: complete / missing-companion)*
 
 ### 3a. Discover the Project's Architecture
 
@@ -157,7 +157,7 @@ bd dep add <outer-task> <inner-task>
 
 ---
 
-## Phase 4: Stale Detection *(filter pattern — criterion: "not stale")*
+## Phase 4: Stale Detection *(/filter pattern — criterion: "not stale")*
 
 ### 4a. Identify Stale Tasks
 
@@ -190,7 +190,7 @@ bd close <stale-id> --reason="Already completed in commit <hash>"
 
 ---
 
-## Phase 5: Dependency Cleanup *(verify pattern — check dependency validity)*
+## Phase 5: Dependency Cleanup *(/verify pattern — check dependency validity)*
 
 ### 5a. Remove Redundant Transitive Dependencies
 
@@ -286,3 +286,5 @@ Emit the consolidation report in pipe format:
 - **Preserve context** — when closing or merging, always explain why in the reason
 - **Don't reprioritize aggressively** — small adjustments only, unless the user directs otherwise
 - **Focus on the target area** if `$ARGUMENTS` was provided — don't let scope creep into unrelated clusters
+
+See also: /gather, /filter, /assess, /verify, /rank, /sprint

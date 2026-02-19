@@ -197,3 +197,10 @@ Use the sharpened form as the title. The 3-test pattern ensures beads are immedi
 6. **DMs over broadcasts.** Direct messages reliably produce substantive engagement. Broadcasts often produce empty acknowledgments. Use DMs for all questions that need real answers.
 7. **Meetings are cheap.** If the first panel doesn't have the right perspectives, close it and start a new one with different roles.
 8. **Anonymize sources, preserve lenses.** When relaying arguments between panelists, describe the analytical frame ("from a structural-analysis perspective") rather than the source role ("the Architect argues"). This prevents authority bias and identity persistence (halo effects, commitment pressure across exchanges) while preserving the epistemic context that makes engagement meaningful. The facilitator maintains internal attribution for coverage tracking and thread coherence.
+
+## See also
+
+- `/rank` — rank options or action items produced by the meeting when prioritization is needed
+- `/diff-ideas` — structured alternative when comparing exactly two approaches; avoids the full panel setup
+- `/consensus` — similar multi-agent pattern but agents work independently and return written positions rather than conversing
+- `/spec` — formalize decisions reached in a meeting into a structured specification document

@@ -192,4 +192,4 @@ Only include suggestions that match the current state. Do not invent conditions.
 4. **Read-only.** No file writes, no bead creation, no git commits. Pure observation.
 5. **Graceful degradation.** Every section works independently. Missing data sources produce a one-line fallback, not an error.
 
-See also: /evolution (definition change tracking for deeper investigation of churn patterns).
+See also: /evolution (definition change tracking for deeper investigation of churn patterns). /standup (team-aware equivalent — use standup when a team is configured). /session-health (focused diagnostic when something feels off in the current session).

@@ -350,3 +350,12 @@ The testing workflow has a **15-20% overhead budget** on tool calls relative to 
 - **Match project conventions.** A test file that uses a different framework or assertion style than the surrounding tests will be ignored or deleted. Read before writing.
 - **Escape valve is not failure.** Three attempts and fall back to test-after is the designed behavior for hard cases, not a concession. Document what was attempted so the next agent or human has context.
 - **Provenance is non-optional.** Every assertion traces to a source (spec line, acceptance criterion, or discovered behavior). Untraceable assertions are deleted in review.
+
+---
+
+## See Also
+
+- **/spec** — produces acceptance criteria that test-strategy consumes; run /spec before /test-strategy when no written spec exists
+- **/tracer** — Phase 5 of /tracer hands off to /test-strategy for test planning on traced code paths
+- **/review** — evaluates implementation quality after the green suite passes; natural next step after Phase 3e
+- **/bug** — use for skipped tests produced by Phase 3c (the escape valve); each skip should become a tracked bug for human follow-up

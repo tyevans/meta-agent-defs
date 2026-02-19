@@ -185,3 +185,9 @@ If the project has a `memory/` directory, optionally write the handoff note ther
 - **Don't over-document** -- focus on context that would be lost, not things that are obvious from the code
 - **Commit before handing off** -- uncommitted work is the biggest risk in a session transition
 - **When in doubt, write it down** -- it is cheaper to ignore a handoff note than to rediscover lost context
+
+## See Also
+
+- /retro -- capture learnings and retrospective before handing off; run before /handoff to ensure insights are preserved
+- /status -- system orientation for the incoming session; the next session should run this first after reading a handoff note
+- /standup -- team status sync; use when the handoff involves a team to surface each member's current state

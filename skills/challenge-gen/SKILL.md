@@ -286,3 +286,5 @@ Strategy mix: <N edge-case, M commit-replay>
 7. **Do not show hidden traps to the agent.** The challenge file separates what the agent sees (scenario + acceptance criteria) from what the evaluator knows (hidden trap + ground truth). This separation is critical.
 8. **Cap at 5 challenges.** More than 5 creates evaluation overhead without proportional learning benefit. If many weaknesses exist, prioritize by severity.
 9. **Write provenance.** Record which profile items each challenge targets so /active-learn can track which weaknesses have been exercised and which remain untouched.
+
+See also: /challenge-run (execute the challenges produced here against the agent); /diagnose-agent (generate the struggle profile that feeds this skill); /active-learn (run a full training cycle using challenge sets).

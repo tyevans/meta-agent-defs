@@ -72,6 +72,14 @@ Check whether the goal maps to a known pipeline pattern. Known patterns (from `d
 | Manage a team | `/assemble` -> `/standup` -> `/sprint` |
 | Train an agent | `/diagnose-agent` -> `/challenge-gen` -> `/challenge-run` |
 | Prototype something | `/gather` -> `/distill` -> `/sketch` |
+| Build a feature iteratively | `/tracer` |
+| Define a testing approach | `/test-strategy` |
+| Identify failure modes before building | `/premortem` |
+| File a structured bug report | `/review` -> `/bug` |
+| Bootstrap a new project | `/bootstrap` |
+| Plan goals with a persistent team | `/team-meeting` -> `/sprint` |
+| Run full agent improvement cycle | `/diagnose-agent` -> `/challenge-gen` -> `/challenge-run` -> `/active-learn` |
+| Facilitate a requirements discussion | `/meeting` |
 
 If the goal maps to a pattern above, include the full pipeline in the output.
 

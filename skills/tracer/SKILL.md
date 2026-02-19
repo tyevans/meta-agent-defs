@@ -196,6 +196,8 @@ EOF
 
 ## Phase 5: Widen — Tests
 
+Use the `/test-strategy` workflow to plan and execute this phase. It covers test level selection, coverage mapping, and execution order appropriate for the feature.
+
 ### 5a. Determine Test Coverage
 
 Choose test levels appropriate for this feature (unit, integration, e2e). Follow project conventions. If the project has no tests, create at least basic integration tests for the core path.
@@ -357,3 +359,10 @@ bd create --title="[follow-up task]" --type=task --priority=[0-4] \
 8. **Widen one concern at a time.** Don't mix error handling and validation in the same pass -- each pass is focused.
 9. **Follow project conventions.** Match existing patterns for error handling, validation, testing, and file organization.
 10. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks (or in `TODO.md` if `.beads/` is not present).
+
+## See Also
+
+- `/test-strategy` — test level selection, coverage mapping, and execution planning (used in Phase 5)
+- `/spec` — formalize requirements before starting the tracer when the feature is ambiguous
+- `/premortem` — identify failure modes before Phase 2 on high-risk integrations
+- `/review` — code review of the completed tracer implementation

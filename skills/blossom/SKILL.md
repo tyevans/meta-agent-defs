@@ -162,7 +162,7 @@ After the team is created (see Team Lifecycle), spike teammates are already runn
 
 Each spike agent (whether background Task or team teammate) receives these instructions. The spike report uses **pipe format** (see `/rules/pipe-format.md`) so downstream primitives can consume spike output directly.
 
-> You are executing a discovery spike for the Blossom workflow. This is a **/gather**-style investigation — collect findings with sources and confidence levels.
+> You are executing a discovery spike for the Blossom workflow. This is an investigation using the **/gather** pattern — collect findings with sources and confidence levels.
 >
 > **Your area:** [spike description]
 >
@@ -495,4 +495,4 @@ Write `memory/epics/<epic-id>/epic.md` with this structure:
 
 **If `.beads/` does not exist**, write the same file but use TODO.md task names instead of BD IDs in the Task IDs table.
 
-See also: /meeting (discuss blossom findings with multiple perspectives before committing to a direction).
+See also: /meeting (discuss blossom findings with multiple perspectives before committing to a direction); /review (evaluate the implementations that result from executing blossom tasks).

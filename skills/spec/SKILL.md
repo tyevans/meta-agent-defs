@@ -316,3 +316,10 @@ The spec is ready for review. The design uses existing patterns from `lib/core/`
 8. **Incremental population** — Populate, validate, refine, guard -- don't try to perfect in one pass
 9. **Reuse over reinvention** — The guardian enforces use of existing patterns and abstractions
 10. **Fresh context for each phase** — Background agents run independently to avoid bloating the orchestrator's context
+
+## See also
+
+- `/meeting` — decisions from meetings often feed into specs; run meeting first to resolve design disagreements
+- `/test-strategy` — consumes the acceptance criteria produced by spec; run after spec is finalized
+- `/premortem` — risk analysis companion; run before finalizing spec to surface failure modes while the design is still malleable
+- `/critique` — adversarial review of the draft spec; useful between guardian iterations or before sharing with stakeholders

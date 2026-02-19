@@ -154,3 +154,5 @@ Present the board and offer options:
 3. **Actionable.** The output should make the next action obvious.
 4. **Learning-aware.** Surface learning health alongside work status -- a member with stale learnings may need a retro.
 5. **Lightweight.** No beads creation during standup. No file writes. Pure read-only status check.
+
+See also: /status (solo equivalent — use when no team is configured or you want a faster individual view).

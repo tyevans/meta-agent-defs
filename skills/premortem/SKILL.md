@@ -337,3 +337,9 @@ Create the feature task if it doesn't exist yet.
 - **No false confidence**: If a scenario is POSSIBLE but not CONFIRMED, say so and recommend a deeper spike
 - **Verify mitigations**: Every mitigation needs prevention (code), detection (monitoring), and verification (test)
 - **Fail safely**: Design mitigations to fail closed (deny by default) not open (allow by default)
+
+## See also
+
+- `/spec` — formalize the design before or after premortem; premortem findings become constraints in the spec
+- `/tracer` — trace mitigation tasks through implementation; feed the beads epic created by premortem into tracer
+- `/test-strategy` — failure modes identified by premortem become concrete test cases; run after mitigations are designed

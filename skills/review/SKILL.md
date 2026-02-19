@@ -140,7 +140,7 @@ Emit what you learned in pipe format for composability:
 
 ## Phase 3: Assess — Evaluate Across Dimensions
 
-Evaluate changes using the **assess** pattern: apply each dimension as a rubric, assign a categorical verdict (CRITICAL/WARNING/SUGGESTION/NITPICK) per finding.
+Evaluate changes using the /assess pattern: apply each dimension as a rubric, assign a categorical verdict (CRITICAL/WARNING/SUGGESTION/NITPICK) per finding.
 
 ### 3a. Correctness
 
@@ -190,7 +190,7 @@ Evaluate changes using the **assess** pattern: apply each dimension as a rubric,
 
 ## Phase 4: Filter — Produce Findings in Pipe Format
 
-Emit all findings as a pipe-format Items list, then apply the **filter** pattern to separate must-fix from optional.
+Emit all findings as a pipe-format Items list, then apply the /filter pattern to separate must-fix from optional.
 
 ### Severity Levels (Assess Rubric)
 
@@ -272,7 +272,7 @@ and recommended next actions.]
 
 ### 5b. Create Tasks for Findings
 
-For CRITICAL and WARNING findings, create beads tasks so they are tracked:
+For CRITICAL and WARNING findings, create beads tasks so they are tracked. Use /bug to file each finding as a tracked issue, or create tasks directly:
 
 ```bash
 bd create --title="[SEVERITY]: [finding title]" --type=task --priority=<1-for-critical,2-for-warning> \
@@ -290,3 +290,9 @@ bd create --title="[SEVERITY]: [finding title]" --type=task --priority=<1-for-cr
 - **Acknowledge what is done well** -- review is not just about finding faults
 - **One finding per issue** -- don't bundle unrelated problems into a single finding
 - **Focus on the change, not the codebase** -- pre-existing issues are out of scope unless the change makes them worse
+
+## See Also
+
+- /bug -- file CRITICAL and WARNING findings as tracked bug reports
+- /assess -- evaluate a codebase dimension standalone, outside a review
+- /filter -- filter a findings list by severity or category
