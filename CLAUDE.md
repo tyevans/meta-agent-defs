@@ -62,6 +62,7 @@ bd sync --flush-only            # Save state before session end
 | Research + prioritize | /gather -> /distill -> /rank |
 | Compare approaches | /diff-ideas or /consensus |
 | Plan before building | /decompose -> /plan -> /spec |
+| Test an implementation | /test-strategy |
 | Review code | /review |
 | Track definition changes | /evolution or /drift |
 | Run a session | /status -> ... -> /retro -> /handoff |
@@ -69,7 +70,7 @@ bd sync --flush-only            # Save state before session end
 | Discuss with panels | /meeting |
 | Plan a goal with your team | /team-meeting |
 
-All 40 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
+All 41 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
 
 ## Project Structure
 
