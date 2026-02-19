@@ -3,6 +3,8 @@ name: settings-editor
 description: Creates or updates settings.json files (global or project-local) for hooks, permissions, and environment configuration. Use when adding new hooks, modifying permissions, or changing environment variables in either the global settings.json or .claude/settings.json.
 tools: Read, Write, Edit, Glob, Grep, Bash(bd:*)
 model: sonnet
+output-contract: |
+  Sprint reflection: task_result (status, summary, files changed), reflection (what worked, what didn't, confidence), suggested_learnings (durable insights for learnings.md), follow_up (blockers, next steps, whether install.sh re-run needed). Parsed by /sprint Phase 4a.
 ---
 
 # Settings Editor

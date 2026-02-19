@@ -27,6 +27,32 @@ Seed epic (identify spike areas, count determines dispatch mode)
 
 ---
 
+## Phase 0: Session Health Gate
+
+Before dispatching spikes, check that the session has enough capacity for the work ahead. Do this inline — do not invoke `/session-health` as a subagent.
+
+**Assess the current session:**
+- Roughly how many files have you read this session?
+- How many agents have you dispatched?
+- How many distinct codebase areas have you touched?
+
+| Load Level | Files Read | Agents Dispatched | Signal |
+|------------|-----------|-------------------|--------|
+| Light | <10 | 0-1 | Healthy — proceed |
+| Moderate | 10-25 | 2-4 | Proceed, watch quality |
+| Heavy | 25-50 | 5+ | Warn user before dispatching |
+| Overloaded | 50+ | 8+ | Recommend handoff |
+
+**If load is Heavy or Overloaded:** Warn the user:
+
+> Session context is heavy (~X files read, ~Y agents dispatched). Dispatching additional spike agents risks dropping results mid-workflow due to context compaction. Recommend running `/handoff` to capture current state and re-invoking `/blossom` in a fresh session. Continue anyway? (y/n)
+
+Wait for user confirmation before proceeding. If the user declines, stop here and run `/handoff`.
+
+**If load is Light or Moderate, or the user confirms they want to continue:** Proceed immediately to Phase 1.
+
+---
+
 ## Phase 1: Seed the Epic
 
 ### 1a. Clarify the Goal
@@ -35,11 +61,15 @@ If `$ARGUMENTS` is empty or too vague, ask the user one clarifying question. Oth
 
 ### 1b. Create the Epic
 
+**If `.beads/` exists in the project root:**
+
 ```bash
 bd create --title="EPIC: [goal description]" --type=epic --priority=2
 ```
 
 Save the returned epic ID. All subsequent beads will be wired as dependencies of this epic.
+
+**If `.beads/` does not exist:** Skip `bd` commands throughout this workflow. Track the epic and all spike/task beads in `TODO.md` instead, using a flat markdown list. Create or append to `TODO.md` at the project root with the epic title as a heading and each task as a checkbox item.
 
 ### 1c. Identify Initial Spike Areas
 
@@ -49,7 +79,7 @@ Decompose the goal into 3-6 bounded spike areas (a **/decompose** — MECE sub-p
 
 ### 1d. Create Spike Beads
 
-For each spike area, create as a child of the epic:
+**If `.beads/` exists**, for each spike area create as a child of the epic:
 
 ```bash
 bd create --title="SPIKE: [specific area to investigate]" --type=task --priority=2 \
@@ -58,6 +88,11 @@ bd create --title="SPIKE: [specific area to investigate]" --type=task --priority
 ```
 
 The `--parent` flag establishes the epic-child hierarchy, enabling `bd children`, `bd epic status`, and `bd epic close-eligible`.
+
+**If `.beads/` does not exist**, add each spike as a checkbox under the epic heading in `TODO.md`:
+```
+- [ ] SPIKE: [specific area to investigate]
+```
 
 ---
 
@@ -186,34 +221,44 @@ Each spike agent (whether background Task or team teammate) receives these instr
 
 ### After Each Spike Completes
 
-1. **Review the spike report** for quality. A passing report has: pipe format structure, an Items section with at least one CONFIRMED finding, and file:line citations from actual code reading.
+1. **Review the spike report** for quality. Run through these explicit checks before accepting the report:
 
-   **Quality gate:** If the report fails these checks:
-   - **Team mode:** Send ONE pushback message demanding concrete output (Items section, CONFIRMED findings with file:line citations, evidence from code reading). One retry only -- if still inadequate, log failure and move on.
-   - **Background mode:** Cannot re-prompt. Flag via `bd update <spike-id> --notes="QUALITY ISSUE: [problem]"`. Do not create firm tasks from low-quality reports.
+   - [ ] Response contains pipe-format structure: a `##` heading, a `**Source**:` line, and a `### Items` section
+   - [ ] At least one `CONFIRMED`, `LIKELY`, or `POSSIBLE` confidence tag is present in the Items section
+   - [ ] At least one `file:line` citation is present (evidence from actual code reading, not speculation)
+
+   **If any check fails:**
+   - **Team mode:** Send ONE pushback message naming which checks failed and demanding a corrected report (Items section with confidence tags and file:line citations from actual code reading). One retry only -- if still inadequate, log failure and move on.
+   - **Background mode:** Cannot re-prompt. If `.beads/` exists, flag via `bd update <spike-id> --notes="QUALITY ISSUE: [which checks failed]"`. If `.beads/` does not exist, note the quality failure in `TODO.md` next to the spike item. Do not create firm tasks from low-quality reports.
 
 2. **Create firm task beads** as children of the epic:
 
-```bash
-bd create --title="[title from spike report]" --type=task --priority=[P level as 0-4] \
-  --parent=<epic-id> \
-  --description="[confidence level]. [evidence and scope from spike report]"
-```
+   **If `.beads/` exists:**
+   ```bash
+   bd create --title="[title from spike report]" --type=task --priority=[P level as 0-4] \
+     --parent=<epic-id> \
+     --description="[confidence level]. [evidence and scope from spike report]"
+   ```
+   **If `.beads/` does not exist:** Add to `TODO.md` under the epic heading as `- [ ] [title from spike report]`.
 
 3. **Create new spike beads** as children of the epic:
 
-```bash
-bd create --title="SPIKE: [deeper area]" --type=task --priority=2 \
-  --parent=<epic-id> \
-  --description="Deeper discovery spike spawned from SPIKE: [parent spike]. Reason: [why from report]. Look for: [specific questions]"
-```
+   **If `.beads/` exists:**
+   ```bash
+   bd create --title="SPIKE: [deeper area]" --type=task --priority=2 \
+     --parent=<epic-id> \
+     --description="Deeper discovery spike spawned from SPIKE: [parent spike]. Reason: [why from report]. Look for: [specific questions]"
+   ```
+   **If `.beads/` does not exist:** Add to `TODO.md` as `- [ ] SPIKE: [deeper area]`.
 
 4. **Close the completed spike** with findings summary:
 
-```bash
-bd close <spike-id>
-bd update <spike-id> --notes="Completed. Found N firm tasks (X confirmed, Y likely), M deeper spikes needed. Key findings: [1-2 sentence summary]"
-```
+   **If `.beads/` exists:**
+   ```bash
+   bd close <spike-id>
+   bd update <spike-id> --notes="Completed. Found N firm tasks (X confirmed, Y likely), M deeper spikes needed. Key findings: [1-2 sentence summary]"
+   ```
+   **If `.beads/` does not exist:** Mark the spike as done in `TODO.md` by checking its checkbox (`- [x] SPIKE: ...`) and appending a findings note inline.
 
 ### Recursion
 
@@ -229,11 +274,13 @@ After all spikes are complete and all firm tasks created, run consolidation to c
 
 ### Dispatch Mode A: Background Agents (no team active)
 
-Instruct the user to run:
+**If `.beads/` exists**, instruct the user to run:
 
 ```
 /consolidate [epic title or area]
 ```
+
+**If `.beads/` does not exist**, skip consolidation and proceed directly to Phase 3b. The TODO.md list serves as the backlog -- dedup and stale detection must be done manually by reviewing the file.
 
 Then proceed to Phase 3b.
 
@@ -282,9 +329,12 @@ When the consolidator's report arrives, review it and proceed to Phase 3b.
 
 After consolidation, tag each firm task with grounded agent assignment notes. The sharpening gate: name specific files the agent will touch (from spike findings), state concrete skills/knowledge needed (not just a role), and make it dispatchable.
 
+**If `.beads/` exists:**
 ```bash
 bd update <task-id> --notes="Recommended agent: <role> — touches <file-list>. Requires: <specific-skills>"
 ```
+
+**If `.beads/` does not exist:** Add agent hints as inline notes in `TODO.md` next to each task item.
 
 **Before:** `bd update abc1 --notes="Recommended agent: refactorer"`
 **After:** `bd update abc1 --notes="Recommended agent: refactorer — touches src/domain/auth/User.ts + src/domain/auth/Session.ts. Requires: DDD pattern knowledge, extract-interface refactoring"`
@@ -301,17 +351,25 @@ After consolidation completes and agent hints are assigned, shut down all teamma
 
 ### Cross-Task Dependencies
 
-Wire dependencies (`bd dep add <downstream> <upstream>`) where order matters: inner layers before outer layers, interfaces before implementations, shared files sequenced. Think bottom-up through the dependency graph.
+**If `.beads/` exists**, wire dependencies where order matters:
+```bash
+bd dep add <downstream> <upstream>
+```
+Inner layers before outer layers, interfaces before implementations, shared files sequenced. Think bottom-up through the dependency graph.
+
+**If `.beads/` does not exist**, note ordering constraints in `TODO.md` as inline comments next to each task item (e.g., `<!-- depends on: [task name] -->`).
 
 ### Priority Review
 
 Adjust priorities now that the full picture is visible. Upgrade tasks that block many others, downgrade inflated P1s, and bump quick wins (small scope + high value).
 
+**If `.beads/` exists:** Use `bd update <task-id> --priority=<N>` to adjust. **If `.beads/` does not exist:** Reorder items in `TODO.md` to reflect execution order.
+
 ---
 
 ## Phase 5: Verify
 
-Run `bd swarm validate <epic-id>` to check the epic structure. This validates:
+**If `.beads/` exists**, run `bd swarm validate <epic-id>` to check the epic structure. This validates:
 - Dependency cycles (and reports them)
 - Orphaned tasks (children with no dependencies wired)
 - Disconnected subgraphs
@@ -321,7 +379,11 @@ Run `bd swarm validate <epic-id>` to check the epic structure. This validates:
 bd swarm validate <epic-id>
 ```
 
-If validation reports issues, fix them before proceeding. Then manually verify: priority consistency (P0/P1 tasks must not depend on P3/P4 -- upgrade blockers), every task has testable acceptance criteria, and trace the critical path (longest dependency chain = minimum time to completion).
+If validation reports issues, fix them before proceeding.
+
+**If `.beads/` does not exist**, manually review `TODO.md` to verify: no duplicate items, all noted ordering constraints are consistent (no circular dependencies), and execution order is clear.
+
+Then manually verify: priority consistency (P0/P1 tasks must not depend on P3/P4 -- upgrade blockers), every task has testable acceptance criteria, and trace the critical path (longest dependency chain = minimum time to completion).
 
 ---
 
@@ -384,5 +446,53 @@ Present the final blossom report in **pipe format** so downstream primitives (/r
 9. **Depth limit.** Stop at 20 total spikes (including reused teammates) and reassess with the user if the goal is too broad.
 10. **Confidence levels.** Every finding is CONFIRMED, LIKELY, or POSSIBLE. Possible triggers a deeper spike.
 11. **Clean shutdown.** After consolidation, shut down all teammates before proceeding to final phases. The orchestrator works solo for prioritization, verification, and reporting.
+
+12. **Persist epic state.** After reporting, write `memory/epics/<epic-id>/epic.md` so downstream skills (/sprint) can load context across sessions.
+
+## Phase 7: Persist Epic State
+
+After the Phase 6 report, write epic state to `memory/epics/<epic-id>/epic.md` so that `/sprint` and other downstream skills can load blossom findings in a later session without re-exploring.
+
+**Create the directory and file:**
+
+```bash
+mkdir -p memory/epics/<epic-id>
+```
+
+Write `memory/epics/<epic-id>/epic.md` with this structure:
+
+```markdown
+# Epic: [epic title]
+
+**Epic ID**: [epic-id]
+**Created**: [date]
+**Source**: /blossom
+**Goal**: [original $ARGUMENTS]
+
+## Spike Findings
+
+[Copy the Phase 6 pipe-format Items section here verbatim — numbered list with source, confidence, priority, depends-on, and agent fields per item.]
+
+## Priority Order
+
+[Ordered list of task IDs/titles from highest to lowest priority, reflecting final Phase 4 ordering.]
+
+## Task IDs
+
+| BD ID | Title | Priority | Status | Assigned Agent |
+|-------|-------|----------|--------|----------------|
+| [id]  | [title] | P[N]  | open   | [agent hint]   |
+| ...   | ...   | ...      | ...    | ...            |
+
+## Critical Path
+
+[Copy the Phase 6 Critical Path section.]
+
+## Parallel Opportunities
+
+[Copy the Phase 6 Parallel Opportunities section.]
+```
+
+**If `.beads/` does not exist**, write the same file but use TODO.md task names instead of BD IDs in the Task IDs table.
 
 See also: /meeting (discuss blossom findings with multiple perspectives before committing to a direction).

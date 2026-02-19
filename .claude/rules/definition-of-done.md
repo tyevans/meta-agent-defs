@@ -9,6 +9,7 @@ What "done" means for each type of change in this repo.
 - [ ] Includes Investigation Protocol, Context Management, and Knowledge Transfer sections
 - [ ] Model selection matches task complexity (opus for high, sonnet for medium, haiku for low)
 - [ ] Tools list is minimal -- read-only agents should not have Write/Edit
+- [ ] `output-contract` included if output is parsed by another skill or agent (optional otherwise)
 - [ ] Agent catalog (AGENTS.md in target project) updated if applicable
 - [ ] `install.sh` re-run to verify symlink creation
 

@@ -4,7 +4,11 @@ Portable Claude Code workflow definitions (agents, skills, hooks, settings) main
 
 ## Operating Mode: Orchestrator
 
-**The primary Claude Code session operates as an orchestrator only.** Do not directly implement tasks -- dispatch work to specialized subagents and manage the beads backlog.
+**Posture depends on project type:**
+- **Content-only projects** (no `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, or `Makefile` at root): prefer direct implementation over subagent dispatch for simple edits.
+- **Code projects**: orchestrator-only. Dispatch all implementation to subagents and manage the beads backlog.
+
+This repo itself (meta-agent-defs) is content-only -- direct edits to `.md` and `.json` files are preferred over spawning agents for trivial changes.
 
 ### Orchestrator Responsibilities
 
@@ -130,6 +134,7 @@ meta-agent-defs/
 - Hooks fail gracefully with `|| true` for optional tools (like `bd`)
 - Epic hierarchy via `--parent`: `bd create --parent=<epic-id>` (not `bd dep add`). Use `bd dep add` only for cross-task ordering
 - Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE
+- If `memory/project/domain.md` exists, it contains project-specific terminology; consult it when a term is ambiguous
 
 ## Do Not Modify
 
