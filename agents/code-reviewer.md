@@ -3,6 +3,8 @@ name: code-reviewer
 description: Reviews staged diffs or PR diffs for correctness, security, style consistency, and architectural coherence. Use when reviewing code before merging, after an implementation agent completes work, or when auditing existing code quality.
 tools: Read, Glob, Grep, Bash
 model: sonnet
+output-contract: |
+  Structured report with sections: Summary, Findings (Critical/Warning/Suggestion/Nitpick with file:line references), Verdict (APPROVE/REQUEST CHANGES/NEEDS DISCUSSION). Orchestrator reads Verdict to decide merge readiness.
 ---
 
 # Code Reviewer

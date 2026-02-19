@@ -3,6 +3,8 @@ name: agent-author
 description: Writes or updates agent definition files with emphasis on producing genuinely effective instructions, not just structurally compliant ones. Use when a new agent needs to be written, or an existing agent definition needs substantive revision.
 tools: Read, Write, Edit, Glob, Grep, WebSearch, Bash(bd:*)
 model: opus
+output-contract: |
+  Sprint reflection: task_result (status, summary, files changed), reflection (what worked, what didn't, confidence), suggested_learnings (durable insights for learnings.md), follow_up (blockers, next steps). Parsed by /sprint Phase 4a and /active-learn challenge evaluator.
 ---
 
 # Agent Author

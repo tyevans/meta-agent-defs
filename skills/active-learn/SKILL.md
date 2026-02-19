@@ -1,6 +1,6 @@
 ---
 name: active-learn
-description: "Run the full adversarial training loop for a team agent: diagnose weaknesses, generate challenges, execute rounds, and update learnings. The capstone of the active learning system. Keywords: active-learn, training, adversarial, improve, agent, loop, capability, tuning."
+description: "Run the full adversarial training loop for a team agent or in solo mode (no team required): diagnose weaknesses, generate challenges, execute rounds, and update learnings. The capstone of the active learning system. Keywords: active-learn, training, adversarial, improve, agent, loop, capability, tuning, solo."
 argument-hint: "<agent-name> [rounds=3]"
 disable-model-invocation: false
 user-invocable: true
@@ -52,24 +52,37 @@ If `$ARGUMENTS` is empty:
 2. Ask the user: "Which agent should I train? Available: [names]"
 3. Stop and wait for response
 
-### 0b. Validate Agent
+### 0b. Validate Agent (Team Mode or Solo Mode)
 
-1. Read `.claude/team.yaml` and confirm the agent name exists in the `members` list
-2. Extract the agent's `role`, `model`, and `owns` patterns
-3. Read `memory/agents/<name>/learnings.md` if it exists -- note current line count as the baseline
-4. If agent not found in team.yaml: "Agent '<name>' not found in .claude/team.yaml. Available agents: [list]." Stop.
+Determine operating mode by attempting to read `.claude/team.yaml`:
+
+**If `.claude/team.yaml` exists AND the agent name is found in `members`:**
+- Extract the agent's `role`, `model`, and `owns` patterns from the file
+- Operating in **TEAM MODE** -- proceed normally
+
+**If `.claude/team.yaml` does not exist OR the agent name is not found in it:**
+- Operating in **SOLO MODE**
+- Print to the user: "SOLO MODE: .claude/team.yaml not found or agent '<name>' not in team. Running as 'main-session'."
+- Set learner persona to `main-session` for this run
+- All file paths that would reference `memory/agents/<name>/` now use `memory/agents/solo/` instead
+- The `role` is "main session", `model` is the current model, and `owns` is treated as the full project (no pattern filtering in git analysis)
+- If `$ARGUMENTS` was empty and team.yaml also does not exist, skip listing available agents -- instead prompt: "Which topic or skill area should I train on? (No team.yaml found -- running in solo mode.)"
+
+Read `memory/agents/<name>/learnings.md` (team mode) or `memory/agents/solo/learnings.md` (solo mode) if it exists -- note current line count as the baseline.
 
 ### 0c. Load Prior Capability Data
 
 Check for existing capability tracking:
-- Read `memory/agents/<name>/capability.yaml` if it exists -- this is the baseline for measuring improvement
-- Read any prior evaluation files: `memory/agents/<name>/challenges/*-evaluation.md`
+- Team mode: Read `memory/agents/<name>/capability.yaml` if it exists
+- Solo mode: Read `memory/agents/solo/capability.yaml` if it exists
+- Read any prior evaluation files from the appropriate challenges directory
 - Note which weaknesses have been previously targeted (to avoid re-exercising resolved weaknesses)
 
 ### 0d. Prerequisite Gate
 
 Do not proceed until:
-- [ ] Agent exists in team.yaml with role, model, and owns known
+- [ ] Mode determined (TEAM MODE or SOLO MODE) and announced to user
+- [ ] Learner persona established: agent name (team) or `solo` (solo mode)
 - [ ] Learnings file read (or confirmed absent for new agents)
 - [ ] Round count established (parsed or default 3)
 - [ ] Prior capability data loaded (or confirmed absent for first run)
@@ -101,7 +114,7 @@ Parse the diffs to extract:
 
 ### 1b. Task Performance Signals
 
-Read `.claude/team.yaml` to extract the agent's `owns` patterns.
+In team mode, read `.claude/team.yaml` to extract the agent's `owns` patterns. In solo mode, no `owns` filtering applies -- analyze all project files.
 
 **If git-intel exists (`tools/git-intel/target/release/git-intel`):**
 
@@ -219,10 +232,11 @@ Calibrate difficulty to the Difficulty Calibration level from Phase 1d.
 ### 2e. Write Challenge File
 
 ```bash
-mkdir -p memory/agents/<name>/challenges
+mkdir -p memory/agents/<name>/challenges   # team mode
+mkdir -p memory/agents/solo/challenges     # solo mode
 ```
 
-Write challenges to `memory/agents/<name>/challenges/<timestamp>-round-<N>-challenges.md`:
+Write challenges to `memory/agents/<name>/challenges/<timestamp>-round-<N>-challenges.md` (team mode) or `memory/agents/solo/challenges/<timestamp>-round-<N>-challenges.md` (solo mode):
 
 ```markdown
 # Round <N> Challenges for <agent-name>
@@ -265,7 +279,12 @@ For each challenge, compose a self-contained prompt and dispatch via Task.
 
 **Compose the prompt:**
 
-> You are **<agent-name>**, a <role> on the team.
+In team mode use the agent name and role from team.yaml. In solo mode, substitute:
+- Agent name: `main-session`
+- Role: `main session practitioner`
+- Learnings path: `memory/agents/solo/learnings.md`
+
+> You are **<agent-name or "main-session">**, a <role> on the team.
 >
 > ## Your Learnings
 >
@@ -292,10 +311,20 @@ For each challenge, compose a self-contained prompt and dispatch via Task.
 
 **Dispatch:**
 
+Team mode:
 ```
 Task({
   subagent_type: "general-purpose",
   model: "<agent's model from team.yaml>",
+  prompt: "<composed prompt>"
+})
+```
+
+Solo mode (no team.yaml): use the current session model:
+```
+Task({
+  subagent_type: "general-purpose",
+  model: "claude-sonnet-4-6",
   prompt: "<composed prompt>"
 })
 ```
@@ -345,7 +374,7 @@ Every rating MUST cite specific evidence from the agent's output. "MISSED" witho
 
 ### 3c. Write Round Evaluation
 
-Write to `memory/agents/<name>/challenges/<timestamp>-round-<N>-evaluation.md`:
+Write to `memory/agents/<name>/challenges/<timestamp>-round-<N>-evaluation.md` (team mode) or `memory/agents/solo/challenges/<timestamp>-round-<N>-evaluation.md` (solo mode):
 
 ```markdown
 # Round <N> Evaluation: <agent-name>
@@ -391,7 +420,7 @@ From the round evaluation, extract learnings the agent should retain:
 
 ### 4b. Update Learnings File
 
-Read `memory/agents/<name>/learnings.md`. Append new entries tagged with challenge provenance:
+Read `memory/agents/<name>/learnings.md` (team mode) or `memory/agents/solo/learnings.md` (solo mode). Append new entries tagged with challenge provenance:
 
 ```markdown
 - <learning description> (source: /active-learn round N, challenge: <title>, <date>)
@@ -404,13 +433,13 @@ Rules:
 
 ### 4c. Write Capability YAML
 
-Write or update `memory/agents/<name>/capability.yaml`:
+Write or update `memory/agents/<name>/capability.yaml` (team mode) or `memory/agents/solo/capability.yaml` (solo mode):
 
 ```yaml
-# Capability tracking for <agent-name>
+# Capability tracking for <agent-name or "solo">
 # Updated by /active-learn on <date>
 
-agent: <name>
+agent: <name or "solo">   # "solo" when running without a team
 last_updated: <ISO date>
 total_rounds: <cumulative across all /active-learn runs>
 total_challenges: <cumulative>
@@ -484,11 +513,16 @@ After the loop completes (early stop or max rounds), emit the final summary.
 
 ### 6a. Pipe Format Output
 
+In solo mode, prepend the SOLO MODE label to the summary block so the user knows which mode was active.
+
 ```markdown
-## Training Summary: <agent-name>
+<!-- Solo mode only: -->
+> **SOLO MODE** -- No team.yaml found. Ran as 'main-session'. Results written to memory/agents/solo/.
+
+## Training Summary: <agent-name or "solo (main-session)">
 
 **Source**: /active-learn
-**Input**: <agent-name> rounds=<N>
+**Input**: <agent-name or "solo"> rounds=<N>
 **Pipeline**: /active-learn (<rounds-completed> rounds, <total-challenges> challenges)
 
 ### Items (N)
@@ -534,7 +568,9 @@ Early stopped: <yes/no, reason>
 
 Ensure capability.yaml is up to date with the final state (written in Phase 4c of the last round).
 
-Report the file path so the user can review: `memory/agents/<name>/capability.yaml`
+Report the file path so the user can review:
+- Team mode: `memory/agents/<name>/capability.yaml`
+- Solo mode: `memory/agents/solo/capability.yaml`
 
 ---
 

@@ -283,13 +283,64 @@ Produce a final report:
 - [Limitation 2 and why it exists]
 ```
 
-### 6b. Create Follow-Up Tasks
+### 6b. Persist Architectural Insights to Domain Memory
 
-If follow-up work was identified, create beads tasks:
+After completing the report, extract architectural findings discovered during implementation and persist them to `memory/project/domain.md`.
+
+**What to extract** — look for concepts that emerged during the tracer that are project-specific and would help a future session understand this codebase:
+- Layer names or boundary names specific to this project (e.g., "the service layer means X here, not Y")
+- Naming conventions or patterns that differ from common usage
+- Architectural terms that have a specific meaning in this codebase
+- Data flow or integration patterns that are non-obvious
+- Constraints or invariants discovered during implementation
+
+**What NOT to extract**:
+- General programming concepts with standard meanings
+- Findings that are only relevant to the specific feature implemented (not the broader codebase)
+- Speculation — only persist what was confirmed by reading actual code
+
+**Format** — for each extracted concept, use the domain format exactly:
+
+```
+## <Term>
+**Definition**: <one sentence — what this term means in this project>
+**Disambiguation**: <how this meaning differs from common use, if applicable — omit line if not ambiguous>
+**Added**: YYYY-MM-DD
+```
+
+**Process**:
+1. Read `memory/project/domain.md` if it exists. If it does not, create it with the header:
+   ```markdown
+   # Project Domain Terminology
+
+   Terms and disambiguation rules for this project. Maintained by `/domain`.
+
+   ---
+
+   ```
+2. For each concept to persist:
+   - Check if a `## <Term>` heading already exists (case-insensitive). If it does, skip — do not duplicate.
+   - If new, append the entry below the last entry in the file.
+3. If no architectural insights were found worth persisting, skip this step entirely — do not write an empty or placeholder entry.
+4. After writing, confirm in the report output: "Persisted N domain concepts to `memory/project/domain.md`." (or "No new domain concepts to persist." if none).
+
+### 6c. Create Follow-Up Tasks
+
+If follow-up work was identified:
+
+**If `.beads/` exists in the project root**, create beads tasks:
 
 ```bash
 bd create --title="[follow-up task]" --type=task --priority=[0-4] \
   --description="Follow-up from tracer: [feature name]. [Details and context.]"
+```
+
+**If `.beads/` does not exist**, write follow-up tasks to `TODO.md` in the project root:
+
+```markdown
+## Follow-up from tracer: [feature name]
+
+- [ ] [follow-up task] — [details and context]
 ```
 
 ---
@@ -305,4 +356,4 @@ bd create --title="[follow-up task]" --type=task --priority=[0-4] \
 7. **Stop at any phase.** If the session ends early, you have working code at the last committed phase.
 8. **Widen one concern at a time.** Don't mix error handling and validation in the same pass -- each pass is focused.
 9. **Follow project conventions.** Match existing patterns for error handling, validation, testing, and file organization.
-10. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks.
+10. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks (or in `TODO.md` if `.beads/` is not present).

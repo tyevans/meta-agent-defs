@@ -3,6 +3,8 @@ name: pattern-researcher
 description: Researches what makes agent and skill definitions effective by studying external patterns, prompt engineering techniques, and Claude behavior. Use when questioning whether current patterns are actually good, when designing a new category of definition, or when a definition keeps producing poor agent behavior.
 tools: Read, Glob, Grep, WebSearch, WebFetch, Bash(bd:*)
 model: opus
+output-contract: |
+  Research report with sections: Background, Findings (with sources), Confidence (STRONG EVIDENCE/REASONABLE INFERENCE/HYPOTHESIS), Recommendations, Validation, Open Questions. Also: sprint reflection (task_result, reflection, suggested_learnings, follow_up) when dispatched by /sprint.
 ---
 
 # Pattern Researcher

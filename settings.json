@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bd sync --flush-only 2>/dev/null || true"
+            "command": "bd sync --flush-only 2>/dev/null || true; mkdir -p memory/sessions && { NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ); printf '## Pre-Compact Snapshot\\n**Time**: %s\\n\\n### In-Progress Tasks\\n' \"$NOW\"; bd list --status=in_progress 2>/dev/null || echo '(beads unavailable)'; printf '\\n### Recent Commits\\n'; git log --oneline -5 2>/dev/null || echo '(no git)'; printf '\\n### Working Tree\\n'; git status --short 2>/dev/null || echo '(no git)'; printf '\\n### Open Questions\\n(fill in before context is lost)\\n\\n### Working Theories\\n(fill in before context is lost)\\n\\n### Key Decisions\\n(fill in before context is lost)\\n'; } > memory/sessions/pre-compact.md 2>/dev/null || true"
           }
         ]
       }
@@ -97,13 +97,24 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"\nimport os, json, sys, re\ndomain = 'memory/project/domain.md'\nif not os.path.exists(domain): sys.exit(0)\ntry:\n    inp = json.loads(os.environ.get('CLAUDE_TOOL_INPUT', '{}'))\n    prompt = inp.get('prompt', '')\nexcept Exception: sys.exit(0)\nif not prompt: sys.exit(0)\ntext = open(domain).read()\nblocks = re.split(r'(?=^## )', text, flags=re.MULTILINE)\nmatched = [b for b in blocks if b.startswith('## ') and re.search(r'## (.+)', b) and re.search(re.escape(re.search(r'## (.+)', b).group(1)), prompt, re.IGNORECASE)]\nif not matched: sys.exit(0)\nprint('<!-- domain-context -->')\nfor b in matched:\n    print(b.strip())\n    print()\n\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
     "SessionEnd": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "mkdir -p memory/sessions && NOW=$(date '+%Y-%m-%d %H:%M') && echo \"## Last Session: $NOW\" > memory/sessions/last.md && echo '' >> memory/sessions/last.md && echo '### Commits' >> memory/sessions/last.md && COMMITS=$(git log --oneline -10 2>/dev/null); if [ -n \"$COMMITS\" ]; then echo \"$COMMITS\" >> memory/sessions/last.md; else echo '(none)' >> memory/sessions/last.md; fi && echo '' >> memory/sessions/last.md && echo '### Working Tree' >> memory/sessions/last.md && TREE=$(git status --short 2>/dev/null); if [ -n \"$TREE\" ]; then echo \"$TREE\" >> memory/sessions/last.md; else echo 'clean' >> memory/sessions/last.md; fi && echo '' >> memory/sessions/last.md && echo '### Backlog' >> memory/sessions/last.md && BACKLOG=$(bd stats --oneline 2>/dev/null || bd stats 2>/dev/null); if [ -n \"$BACKLOG\" ]; then echo \"$BACKLOG\" >> memory/sessions/last.md; else echo '(beads unavailable)' >> memory/sessions/last.md; fi && echo '' >> memory/sessions/last.md && echo '### In Progress' >> memory/sessions/last.md && INPROG=$(bd list --status=in_progress 2>/dev/null); if [ -n \"$INPROG\" ]; then echo \"$INPROG\" >> memory/sessions/last.md; else echo '(none)' >> memory/sessions/last.md; fi; bd sync --flush-only 2>/dev/null || true"
+            "command": "mkdir -p memory/sessions && NOW=$(date -u '+%Y-%m-%dT%H-%M-%SZ') && FILE=\"memory/sessions/${NOW}.md\" && echo \"## Session: $NOW\" > \"$FILE\" && echo '' >> \"$FILE\" && echo '### Commits' >> \"$FILE\" && COMMITS=$(git log --oneline -10 2>/dev/null); if [ -n \"$COMMITS\" ]; then echo \"$COMMITS\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Working Tree' >> \"$FILE\" && TREE=$(git status --short 2>/dev/null); if [ -n \"$TREE\" ]; then echo \"$TREE\" >> \"$FILE\"; else echo 'clean' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Backlog' >> \"$FILE\" && BACKLOG=$(bd stats --oneline 2>/dev/null || bd stats 2>/dev/null); if [ -n \"$BACKLOG\" ]; then echo \"$BACKLOG\" >> \"$FILE\"; else echo '(beads unavailable)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### In Progress' >> \"$FILE\" && INPROG=$(bd list --status=in_progress 2>/dev/null); if [ -n \"$INPROG\" ]; then echo \"$INPROG\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && cp \"$FILE\" memory/sessions/last.md 2>/dev/null || true && ls -t memory/sessions/[0-9]*.md 2>/dev/null | tail -n +4 | xargs rm -f 2>/dev/null || true; bd sync --flush-only 2>/dev/null || true"
           }
         ]
       }

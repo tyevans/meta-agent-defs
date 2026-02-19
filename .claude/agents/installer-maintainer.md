@@ -3,6 +3,8 @@ name: installer-maintainer
 description: Updates install.sh to handle new artifact types or fix edge cases in the symlink installation process. Use when a new artifact directory is added (e.g., skills/, rules/), when the installer needs to handle new file patterns, or when installation bugs are reported.
 tools: Read, Write, Edit, Glob, Grep, Bash(bd:*), Bash(ls:*), Bash(./install.sh:*)
 model: sonnet
+output-contract: |
+  Sprint reflection: task_result (status, summary, files changed), reflection (what worked, what didn't, confidence), suggested_learnings (durable insights for learnings.md), follow_up (blockers, next steps, whether install.sh re-run needed). Parsed by /sprint Phase 4a.
 ---
 
 # Installer Maintainer

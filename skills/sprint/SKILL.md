@@ -36,6 +36,32 @@ Load manifest + learnings + backlog
 
 ---
 
+## Phase 0: Session Health Gate
+
+Before loading context and dispatching agents, check that the session has enough capacity for the sprint.
+
+**Assess the current session inline:**
+- Roughly how many files have you read this session?
+- How many agents have you dispatched so far?
+- How many distinct codebase areas have you touched?
+
+| Load Level | Files Read | Agents Dispatched | Signal |
+|------------|-----------|-------------------|--------|
+| Light | <10 | 0-1 | Healthy — proceed |
+| Moderate | 10-25 | 2-4 | Proceed, watch quality |
+| Heavy | 25-50 | 5+ | Warn user before dispatching |
+| Overloaded | 50+ | 8+ | Recommend handoff |
+
+**If load is Heavy or Overloaded:** Warn the user:
+
+> Session context is heavy (~X files read, ~Y agents dispatched). Dispatching additional agents in this session risks degraded quality — agents may receive compressed or incomplete context. Recommend running `/handoff` to capture current state and starting a fresh session for the sprint. Continue anyway? (y/n)
+
+Wait for user confirmation before proceeding. If the user declines, stop here and run `/handoff`.
+
+**If load is Light or Moderate, or the user confirms they want to continue:** Proceed to Phase 1.
+
+---
+
 ## Phase 1: Load Context
 
 ### 1a. Read Team Manifest
@@ -46,7 +72,17 @@ Read `.claude/team.yaml`. If it doesn't exist, tell the user to run `/assemble` 
 
 For each member, read `memory/agents/<name>/learnings.md`. Note the current size (line count) and most recent entries.
 
-### 1c. Load Backlog (conditional)
+### 1c. Load Epic State (conditional)
+
+Check for epic state files written by `/blossom`:
+
+```bash
+ls memory/epics/*/epic.md 2>/dev/null
+```
+
+If any epic state files exist, read them. These contain spike findings, priority order, task IDs, critical path, and parallel opportunities from a prior blossom run. When matching tasks to members in Phase 2, use the spike findings (confidence levels, file scopes, agent hints) and priority order from the epic state to inform assignments. If `$ARGUMENTS` names a specific epic, load only that epic's state file.
+
+### 1d. Load Backlog (conditional)
 
 **If `.beads/` exists in the project root**, check the backlog:
 
@@ -60,11 +96,12 @@ If a focus area was provided via `$ARGUMENTS`, filter to relevant beads.
 
 **If `.beads/` does not exist**, skip this step. The sprint will accept manual task descriptions from the user instead of pulling from the backlog.
 
-### 1d. Prerequisite Gate (STOP if incomplete)
+### 1e. Prerequisite Gate (STOP if incomplete)
 
 Do not proceed to Phase 2 until all context is loaded:
 - [ ] team.yaml was read (not just referenced — Read tool returned its contents)
 - [ ] Every member's learnings.md was read
+- [ ] Epic state files checked (loaded if present)
 - [ ] Backlog state is known (bd ready output is in context, or user provided tasks)
 
 If any prerequisite is missing, go back and complete it now. Planning without loaded context produces wrong assignments.
