@@ -1,6 +1,6 @@
 # Primitives Cookbook
 
-Annotated walkthroughs of composable primitive chains applied to the meta-agent-defs repository. Each recipe shows FULL pipe-format output at every step with commentary explaining the transformations.
+Annotated walkthroughs of composable primitive chains applied to the tackline repository. Each recipe shows FULL pipe-format output at every step with commentary explaining the transformations.
 
 For chain patterns without annotations, see [primitives-recipes.md](./primitives-recipes.md).
 
@@ -23,31 +23,31 @@ For chain patterns without annotations, see [primitives-recipes.md](./primitives
 ### Items
 
 1. **gather skill** — has name, description, argument-hint, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob, WebSearch, WebFetch)
-   - source: /home/ty/workspace/meta-agent-defs/skills/gather/SKILL.md:1-8
+   - source: /home/ty/workspace/tackline/skills/gather/SKILL.md:1-8
    - confidence: CONFIRMED
 
 2. **distill skill** — has name, description, argument-hint, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob)
-   - source: /home/ty/workspace/meta-agent-defs/skills/distill/SKILL.md:1-8
+   - source: /home/ty/workspace/tackline/skills/distill/SKILL.md:1-8
    - confidence: CONFIRMED
 
 3. **assess skill** — has name, description, argument-hint, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob)
-   - source: /home/ty/workspace/meta-agent-defs/skills/assess/SKILL.md:1-8
+   - source: /home/ty/workspace/tackline/skills/assess/SKILL.md:1-8
    - confidence: CONFIRMED
 
 4. **blossom skill** — has name, description, argument-hint, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob, Bash(bd:*), Task, TeamCreate, TaskCreate, SendMessage), PLUS context: fork
-   - source: /home/ty/workspace/meta-agent-defs/skills/blossom/SKILL.md:1-11
+   - source: /home/ty/workspace/tackline/skills/blossom/SKILL.md:1-11
    - confidence: CONFIRMED
 
 5. **retro skill** — has name, description, disable-model-invocation (true), user-invocable (true), allowed-tools (Read, Grep, Glob, Write, Bash(bd:*)), NO argument-hint
-   - source: /home/ty/workspace/meta-agent-defs/skills/retro/SKILL.md:1-8
+   - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:1-8
    - confidence: CONFIRMED
 
 6. **sprint skill** — has name, description, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob, Task, Bash(bd:*)), NO argument-hint
-   - source: /home/ty/workspace/meta-agent-defs/skills/sprint/SKILL.md:1-8
+   - source: /home/ty/workspace/tackline/skills/sprint/SKILL.md:1-8
    - confidence: CONFIRMED
 
 7. **assemble skill** — has name, description, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Write, Edit, Grep, Glob, Bash(bd:*), TeamCreate, SendMessage), NO argument-hint
-   - source: /home/ty/workspace/meta-agent-defs/skills/assemble/SKILL.md:1-8
+   - source: /home/ty/workspace/tackline/skills/assemble/SKILL.md:1-8
    - confidence: CONFIRMED
 
 ### Summary
@@ -164,27 +164,27 @@ Use this chain (gather → assess → filter) when auditing compliance with stan
 ### Items
 
 1. **Serialize by default** — dispatch one task at a time via Task tool, review output, then dispatch next to avoid API throttling and allow each task to benefit from prior findings
-   - source: /home/ty/workspace/meta-agent-defs/CLAUDE.md:18
+   - source: /home/ty/workspace/tackline/CLAUDE.md:18
    - confidence: CONFIRMED
 
 2. **Teams enable parallelization** — use TeamCreate + SendMessage for independent tasks when teams are enabled, running in separate contexts to avoid throttling and context bloat
-   - source: /home/ty/workspace/meta-agent-defs/CLAUDE.md:20
+   - source: /home/ty/workspace/tackline/CLAUDE.md:20
    - confidence: CONFIRMED
 
 3. **Task tool with run_in_background** — for parallel dispatch without teams, use Task(..., run_in_background: true) to launch agents concurrently
-   - source: /home/ty/workspace/meta-agent-defs/.claude/rules/fan-out-protocol.md:14-19
+   - source: /home/ty/workspace/tackline/.claude/rules/fan-out-protocol.md:14-19
    - confidence: CONFIRMED
 
 4. **Teams for coordination** — when agents need to respond to each other (meeting, blossom with teams), use Teams; for independent parallel work, background Task agents are simpler
-   - source: /home/ty/workspace/meta-agent-defs/.claude/rules/fan-out-protocol.md:52-62
+   - source: /home/ty/workspace/tackline/.claude/rules/fan-out-protocol.md:52-62
    - confidence: CONFIRMED
 
 5. **Concurrency limit** — launch up to 4 agents at once; more risks API throttling
-   - source: /home/ty/workspace/meta-agent-defs/.claude/rules/fan-out-protocol.md:20
+   - source: /home/ty/workspace/tackline/.claude/rules/fan-out-protocol.md:20
    - confidence: CONFIRMED
 
 6. **Subagents cannot invoke skills** — all workflow logic must be embedded in the agent's prompt; Skill tool is not available to subagents
-   - source: /home/ty/workspace/meta-agent-defs/.claude/rules/fan-out-protocol.md:42
+   - source: /home/ty/workspace/tackline/.claude/rules/fan-out-protocol.md:42
    - confidence: CONFIRMED
 
 ### Summary
@@ -207,13 +207,13 @@ The repo defines three dispatch patterns: serialize (one-at-a-time Task calls), 
 ### Items
 
 1. **Serialize (default)** — one Task at a time, each benefits from prior findings; avoids API throttling; slower but safer
-   - source: /home/ty/workspace/meta-agent-defs/CLAUDE.md:18
+   - source: /home/ty/workspace/tackline/CLAUDE.md:18
 
 2. **Parallel background Tasks** — launch up to 4 agents concurrently with run_in_background: true; for independent work only (agents can't coordinate); faster but risks throttling
-   - source: /home/ty/workspace/meta-agent-defs/.claude/rules/fan-out-protocol.md:14-20
+   - source: /home/ty/workspace/tackline/.claude/rules/fan-out-protocol.md:14-20
 
 3. **Teams** — TeamCreate + SendMessage for coordination between agents; separate contexts prevent bloat; best for complex multi-agent dialogue (meeting, blossom); adds orchestration overhead
-   - source: /home/ty/workspace/meta-agent-defs/CLAUDE.md:20, fan-out-protocol.md:52-62
+   - source: /home/ty/workspace/tackline/CLAUDE.md:20, fan-out-protocol.md:52-62
 
 ### Summary
 
@@ -235,10 +235,10 @@ Three dispatch patterns trade off speed, coordination capability, and complexity
 ### Items
 
 1. **Parallel background Tasks** — Task tool with run_in_background: true; agents run concurrently, results collected via TaskOutput; agents are isolated, cannot coordinate; simpler orchestration (just collect results); capped at 4 concurrent to avoid throttling
-   - source: /home/ty/workspace/meta-agent-defs/.claude/rules/fan-out-protocol.md:14-20
+   - source: /home/ty/workspace/tackline/.claude/rules/fan-out-protocol.md:14-20
 
 2. **Teams** — TeamCreate + SendMessage; agents run in separate contexts, can coordinate via messages; supports complex dialogue (agents respond to each other); higher orchestration cost (manage team lifecycle, message routing); no hard concurrency cap (separate contexts avoid throttling)
-   - source: /home/ty/workspace/meta-agent-defs/CLAUDE.md:20, fan-out-protocol.md:52-62
+   - source: /home/ty/workspace/tackline/CLAUDE.md:20, fan-out-protocol.md:52-62
 
 ### Comparison
 
@@ -295,7 +295,7 @@ Use this chain (gather → distill → diff-ideas) when making technical decisio
    - confidence: LIKELY
 
 4. **Hook precedence untested** — global vs project-local settings.json hook precedence is undocumented and untested
-   - source: /home/ty/workspace/meta-agent-defs/CLAUDE.md gotchas section (inferred from memory)
+   - source: /home/ty/workspace/tackline/CLAUDE.md gotchas section (inferred from memory)
    - confidence: POSSIBLE
 
 5. **No OTel/cost tracking** — remaining gap in system maturity, no observability or outcome measurement

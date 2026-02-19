@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# meta-agent-defs installer
+# Tackline installer
 # Creates symlinks from ~/.claude/ to this repo's files.
 # Re-running is idempotent — existing symlinks are refreshed, regular files are backed up.
 
@@ -20,17 +20,17 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 # --- Argument parsing ---
 PROJECT_DIR=""
 USE_HARDLINKS=false
-SKIP_RUST=false
+BUILD_GIT_INTEL=false
 
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--skip-rust] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--with-git-intel] [--help]
 
 Options:
-  project_dir   Install to project_dir/.claude/ instead of ~/.claude/
-  --hardlink    Use hardlinks instead of symlinks
-  --skip-rust   Skip optional git-intel Rust CLI build
-  --help, -h    Show this help message
+  project_dir      Install to project_dir/.claude/ instead of ~/.claude/
+  --hardlink       Use hardlinks instead of symlinks
+  --with-git-intel Build optional git-intel Rust CLI (requires cargo)
+  --help, -h       Show this help message
 EOF
     exit 0
 }
@@ -44,8 +44,8 @@ while [[ $# -gt 0 ]]; do
             USE_HARDLINKS=true
             shift
             ;;
-        --skip-rust)
-            SKIP_RUST=true
+        --with-git-intel)
+            BUILD_GIT_INTEL=true
             shift
             ;;
         -*)
@@ -78,7 +78,7 @@ else
 fi
 
 # Define manifest file location and tracking array
-MANIFEST_FILE="$TARGET_DIR/.meta-agent-defs.manifest"
+MANIFEST_FILE="$TARGET_DIR/.tackline.manifest"
 INSTALLED_FILES=()
 
 # --- Cross-filesystem check for hardlinks ---
@@ -181,8 +181,8 @@ link_dir() {
 }
 
 echo ""
-echo "Workbench installer"
-echo "==================="
+echo "Tackline installer"
+echo "=================="
 echo "Source: $SCRIPT_DIR"
 echo "Target: $TARGET_DIR"
 if [ "$USE_HARDLINKS" = true ]; then
@@ -224,6 +224,13 @@ if [ -z "$PROJECT_DIR" ]; then
     if [ -d "$SCRIPT_DIR/templates" ]; then
         mkdir -p "$TARGET_DIR/templates"
     fi
+fi
+
+# --- Migrate old manifest name ---
+OLD_MANIFEST="$TARGET_DIR/.meta-agent-defs.manifest"
+if [ -f "$OLD_MANIFEST" ] && [ ! -f "$MANIFEST_FILE" ]; then
+    mv "$OLD_MANIFEST" "$MANIFEST_FILE"
+    log "Migrated manifest: .meta-agent-defs.manifest -> .tackline.manifest"
 fi
 
 # --- Stale cleanup ---
@@ -371,7 +378,7 @@ fi
 # --- Write manifest ---
 info "Writing installation manifest..."
 {
-    echo "# meta-agent-defs manifest - installed files"
+    echo "# tackline manifest - installed files"
     if [ "$USE_HARDLINKS" = true ]; then
         LINK_MODE="hardlink"
     else
@@ -386,38 +393,26 @@ log "Manifest written: $MANIFEST_FILE ($(wc -l < "$MANIFEST_FILE") entries)"
 
 echo ""
 
-# --- git-intel Rust CLI (optional) ---
-if [ "$SKIP_RUST" = false ]; then
+# --- git-intel Rust CLI (optional, opt-in) ---
+if [ "$BUILD_GIT_INTEL" = true ]; then
     GIT_INTEL_DIR="$SCRIPT_DIR/tools/git-intel"
     if [ -d "$GIT_INTEL_DIR" ] && [ -f "$GIT_INTEL_DIR/Cargo.toml" ]; then
-        info "Checking for git-intel build prerequisites..."
-
         if command -v cargo &>/dev/null; then
-            # cargo is available - offer to build
-            log "Found cargo — git-intel can be built"
-            info "git-intel provides: Rust CLI for churn analysis, pattern detection, and file lifecycle tracking"
-            echo ""
-            read -p "Build git-intel now? [y/N] " -n 1 -r
-            echo ""
-
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                info "Building git-intel in $GIT_INTEL_DIR..."
-                if (cd "$GIT_INTEL_DIR" && cargo build --release 2>&1); then
-                    log "git-intel built successfully"
-                    info "Binary available at: $GIT_INTEL_DIR/target/release/git-intel"
-                else
-                    warn "git-intel build failed (see output above)"
-                    warn "Skills using git-intel will fall back gracefully"
-                fi
+            info "Building git-intel in $GIT_INTEL_DIR..."
+            if (cd "$GIT_INTEL_DIR" && cargo build --release 2>&1); then
+                log "git-intel built successfully"
+                info "Binary available at: $GIT_INTEL_DIR/target/release/git-intel"
             else
-                info "Skipping git-intel build (you can build later with: cd $GIT_INTEL_DIR && cargo build --release)"
+                warn "git-intel build failed (see output above)"
+                warn "Skills using git-intel will fall back gracefully"
             fi
         else
-            # cargo not available - print friendly skip message
-            warn "git-intel (optional Rust CLI for churn/pattern analysis) requires cargo"
-            info "Install rustup (https://rustup.rs) to enable it. All skills work without it."
+            warn "git-intel requires cargo (https://rustup.rs)"
+            exit 1
         fi
         echo ""
+    else
+        warn "git-intel source not found at $GIT_INTEL_DIR"
     fi
 fi
 

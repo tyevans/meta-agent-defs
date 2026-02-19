@@ -1,6 +1,6 @@
 # Agent Catalog (Project-Level)
 
-Agents for working on the meta-agent-defs repo itself. These evaluate, research, and improve the definitions — not just maintain them.
+Agents for working on the tackline repo itself. These evaluate, research, and improve the definitions — not just maintain them.
 
 Note: The **global** agents in `agents/` (agent-generator, project-bootstrapper) are for use in other projects. These **project-level** agents in `.claude/agents/` are for working on this repo.
 

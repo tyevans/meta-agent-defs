@@ -1,10 +1,10 @@
 # Demo: OSS Audit with Primitives
 
-**Target**: meta-agent-defs skill definitions
+**Target**: tackline skill definitions
 **Chain**: gather → assess → filter → sketch
 **Scenario**: External contributor doing a first-pass quality audit of skill files
 
-This demo shows how composable primitives apply to ANY codebase, not just meta-agent-defs. We're treating this repo as if we're auditing an OSS project for quality and consistency issues.
+This demo shows how composable primitives apply to ANY codebase, not just tackline. We're treating this repo as if we're auditing an OSS project for quality and consistency issues.
 
 ---
 
@@ -343,4 +343,4 @@ Nine skeleton fixes address both CRITICAL issues. Items 1-8 add ASCII workflow d
 
 ## Outcome
 
-The 4-step primitive chain **gather → assess → filter → sketch** successfully audited the meta-agent-defs skill library, identifying 8 quality patterns, categorizing them by compliance severity, filtering to 4 actionable issues (2 CRITICAL, 2 WARNING), and producing fix skeletons for the CRITICAL items. The audit process was grounded in actual file reading (all CONFIRMED findings with file:line citations) and composed naturally — each primitive consumed the prior primitive's pipe-format output without manual data transformation. This demonstrates that primitives work equally well on external OSS projects as on the meta-agent-defs repo itself.
+The 4-step primitive chain **gather → assess → filter → sketch** successfully audited the tackline skill library, identifying 8 quality patterns, categorizing them by compliance severity, filtering to 4 actionable issues (2 CRITICAL, 2 WARNING), and producing fix skeletons for the CRITICAL items. The audit process was grounded in actual file reading (all CONFIRMED findings with file:line citations) and composed naturally — each primitive consumed the prior primitive's pipe-format output without manual data transformation. This demonstrates that primitives work equally well on external OSS projects as on the tackline repo itself.

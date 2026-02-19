@@ -49,7 +49,7 @@ Before writing:
 
 ### 2. Study Existing Skills
 
-Read all skills in `/home/ty/workspace/meta-agent-defs/skills/`:
+Read all skills in `/home/ty/workspace/tackline/skills/`:
 
 | Skill | Pattern | Context |
 |-------|---------|---------|
@@ -133,7 +133,7 @@ skills/<name>/SKILL.md
 
 ## Investigation Protocol
 
-1. READ existing skills in `/home/ty/workspace/meta-agent-defs/skills/` to understand the format and quality bar
+1. READ existing skills in `/home/ty/workspace/tackline/skills/` to understand the format and quality bar
 2. If modifying an existing skill, READ the git history: `git log --oneline skills/<name>/SKILL.md`
 3. VERIFY that `allowed-tools` matches what the skill body actually instructs
 4. WALK THROUGH the skill mentally: follow the instructions as Claude would, step by step

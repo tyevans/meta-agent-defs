@@ -47,7 +47,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (21)
+### Workflow Skills (22)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -74,6 +74,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /challenge-gen | Generate targeted training challenges from struggle profile | inline |
 | /challenge-run | Execute challenges and evaluate agent performance | inline |
 | /active-learn | Full adversarial training loop: diagnose, challenge, evaluate, learn | fork |
+| /domain | Capture or query project-specific terminology and disambiguation rules | inline |
 
 ### Team Skills (3)
 

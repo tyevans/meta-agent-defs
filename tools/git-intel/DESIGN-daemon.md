@@ -216,7 +216,7 @@ git-intel daemon start
 
 Output:
 ```
-Daemon started for repo /home/ty/workspace/meta-agent-defs
+Daemon started for repo /home/ty/workspace/tackline
 Socket: /tmp/git-intel-3f8a9bcd.sock
 PID: 12345
 ```

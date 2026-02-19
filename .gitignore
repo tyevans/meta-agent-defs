@@ -5,8 +5,8 @@
 .claude/settings.local.json
 CLAUDE.local.md
 
-# Ephemeral session state (overwritten each session)
-memory/sessions/
+# Runtime state (created by hooks and skills, not distributable)
+memory/
 
 # Rust build artifacts
 tools/git-intel/target/
@@ -22,9 +22,8 @@ tools/repos/
 # Training data and model artifacts
 tools/data/
 
-# Scratch files (ephemeral per-session)
-memory/scratch/
-
-# ML experiment results and checkpoints
-tools/commit-labeler/results/
-tools/commit-labeler/memory/
+# Internal tooling (ships separately via git-intel repo)
+tools/commit-labeler/
+tools/learnings-coverage/
+tools/difficulty-calibration/
+tools/knowledge-transfer/

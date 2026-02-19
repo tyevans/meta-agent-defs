@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# meta-agent-defs linter
+# tackline linter
 # Validates agent frontmatter, required sections, JSON configs, and command structure.
 # Exit 0 if all checks pass, exit 1 if any fail.
 
@@ -33,7 +33,7 @@ check_fail() {
 }
 
 echo ""
-echo "meta-agent-defs linter"
+echo "tackline linter"
 echo "======================"
 echo ""
 
