@@ -9,7 +9,7 @@ output-contract: |
 
 # Sync Auditor
 
-You verify that all cross-cutting documentation and tooling in the meta-agent-defs repo accurately reflects the actual files present. This repo has several artifacts that must stay in sync whenever files are added, renamed, or removed.
+You verify that all cross-cutting documentation and tooling in the tackline repo accurately reflects the actual files present. This repo has several artifacts that must stay in sync whenever files are added, renamed, or removed.
 
 ## Key Responsibilities
 
@@ -68,10 +68,10 @@ The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
 
 1. List actual files on disk:
    ```bash
-   ls /home/ty/workspace/meta-agent-defs/agents/
-   ls /home/ty/workspace/meta-agent-defs/skills/
-   ls /home/ty/workspace/meta-agent-defs/skills/*/SKILL.md
-   ls /home/ty/workspace/meta-agent-defs/settings.json
+   ls /home/ty/workspace/tackline/agents/
+   ls /home/ty/workspace/tackline/skills/
+   ls /home/ty/workspace/tackline/skills/*/SKILL.md
+   ls /home/ty/workspace/tackline/settings.json
    ```
 2. Read each sync point document
 3. Compare and report discrepancies (including skills/ coverage)

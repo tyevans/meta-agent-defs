@@ -722,25 +722,25 @@ This requires ONNX Runtime installed on your system. See ML / ONNX Configuration
 The root-level `install.sh` script can optionally build git-intel during installation:
 
 ```bash
-# Interactive prompt (local install)
+# Install without git-intel (default)
 ./install.sh
 
-# Skip git-intel build (e.g., in CI)
-./install.sh --skip-rust
+# Include git-intel build (requires cargo)
+./install.sh --with-git-intel
 ```
 
-When cargo is detected and `--skip-rust` is not used, the installer prompts to build git-intel. If you skip the build, skills that use git-intel will fall back gracefully to raw git commands.
+By default, the installer does not build git-intel. Pass `--with-git-intel` to build it (requires cargo). Skills that use git-intel fall back gracefully to raw git commands when it's not installed.
 
 ### Cross-Project Usage
 
-The binary location is `tools/git-intel/target/release/git-intel` (relative to the meta-agent-defs repository root). Other projects that install this workbench access the binary via absolute path resolution.
+The binary location is `tools/git-intel/target/release/git-intel` (relative to the tackline repository root). Other projects that install this tackline access the binary via absolute path resolution.
 
 **Path resolution order** (from `bin/git-pulse.sh`):
 
 1. `tools/git-intel/target/release/git-intel` (relative to current repo root)
 2. `$SCRIPT_DIR/../tools/git-intel/target/release/git-intel` (derived from script's own location via `BASH_SOURCE`)
 
-This allows cross-project access when meta-agent-defs is installed globally via symlinks.
+This allows cross-project access when tackline is installed globally via symlinks.
 
 ## ML / ONNX Configuration
 
@@ -763,7 +763,7 @@ export ORT_DYLIB_PATH=/home/user/.cache/uv/archive-*/onnxruntime-*/onnxruntime/c
 
 ### Model Directory
 
-The ONNX model lives at `tools/data/onnx-model/` (relative to meta-agent-defs repository root) and contains:
+The ONNX model lives at `tools/data/onnx-model/` (relative to tackline repository root) and contains:
 
 - `model.onnx` — The ONNX-exported transformer model
 - `tokenizer.json` — HuggingFace tokenizer config
@@ -780,7 +780,7 @@ git-intel metrics --ml --model-dir tools/data/onnx-model
 The `bin/git-pulse.sh` script automatically detects and enables ML features when all of the following are true:
 
 1. `git-intel` binary is found at one of the fallback paths
-2. The ONNX model exists at `tools/data/onnx-model/model.onnx` (checked in current repo root first, then meta-agent-defs root)
+2. The ONNX model exists at `tools/data/onnx-model/model.onnx` (checked in current repo root first, then tackline root)
 3. `git-intel --help` output includes `--ml` flag (confirms ML feature compiled in)
 4. A runtime validation test succeeds (runs `git-intel metrics --ml` on a small dataset to verify ONNX Runtime is accessible)
 
@@ -896,7 +896,7 @@ How the 6 integrated skills adapt based on available tier:
 
 ### Checking Your Tier
 
-Run `bin/git-pulse.sh` from your project root (or `~/.claude/bin/git-pulse.sh` if meta-agent-defs is installed globally):
+Run `bin/git-pulse.sh` from your project root (or `~/.claude/bin/git-pulse.sh` if tackline is installed globally):
 
 - **Full tier**: Output includes lines starting with `git-intel:` AND mentions ML model path
 - **Standard tier**: Output includes `git-intel:` lines but no ML model path

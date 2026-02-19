@@ -54,7 +54,7 @@ Uncapped learnings would grow until they consumed significant prompt budget, deg
 **Date:** 2025-01
 **Context:** Some definitions (rules, skills, agents) should apply everywhere. Others are specific to this repo.
 
-Global artifacts (`rules/`, `skills/`, `agents/`, `settings.json`) are symlinked to `~/.claude/` by `install.sh` and load in every project. Project-local artifacts (`.claude/agents/`, `.claude/rules/`, `.claude/skills/`) only load when working in this repo. This separation means a skill like /gather works in any project, while a project-local agent like `skill-author` only appears when editing this repo. The alternative — everything global — would pollute other projects with meta-agent-defs-specific tooling.
+Global artifacts (`rules/`, `skills/`, `agents/`, `settings.json`) are symlinked to `~/.claude/` by `install.sh` and load in every project. Project-local artifacts (`.claude/agents/`, `.claude/rules/`, `.claude/skills/`) only load when working in this repo. This separation means a skill like /gather works in any project, while a project-local agent like `skill-author` only appears when editing this repo. The alternative — everything global — would pollute other projects with tackline-specific tooling.
 
 ---
 

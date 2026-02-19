@@ -105,7 +105,7 @@ For skill definitions:
 1. **Read the full definition** — don't skim. Ambiguities hide in the details.
 2. **Read it again**, this time as Claude would: top to bottom, no prior context, taking each instruction literally.
 3. **Read related definitions** — if the agent is supposed to hand off to another agent, read that one too. Handoff boundaries are a common failure point.
-4. **Check the authoring rules** at `/home/ty/workspace/meta-agent-defs/.claude/rules/agent-authoring.md` — but don't treat rule compliance as a proxy for quality. A definition can follow every rule and still be bad.
+4. **Check the authoring rules** at `/home/ty/workspace/tackline/.claude/rules/agent-authoring.md` — but don't treat rule compliance as a proxy for quality. A definition can follow every rule and still be bad.
 5. **State your confidence**: when you predict a failure mode, say whether it's CERTAIN (logical consequence of the instructions), LIKELY (probable given Claude's behavior patterns), or POSSIBLE (could happen under specific conditions).
 
 ## Context Management

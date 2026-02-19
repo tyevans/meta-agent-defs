@@ -1,146 +1,167 @@
-# Workbench
+# Tackline
 
-**Pre-built workflows that give structure to agent-driven development -- clone once, symlink into `~/.claude/`, use across every project.**
+**Composable workflows for agent-driven development.** Clone once, symlink into `~/.claude/`, use across every project.
 
-## What You Get
+*In naval semaphore, a tackline separates signal groups to prevent ambiguity. Here, it separates composed skill outputs -- each skill's result feeds the next through conversation context, like Unix pipes for knowledge work.*
 
-### Map an unfamiliar codebase in one command
+## What It Looks Like
 
-    /blossom audit the event sourcing pipeline for consistency gaps
+### Map an unfamiliar codebase
 
-Blossom spawns parallel spike agents that read actual source files, trace call chains, and tag each finding with a confidence level. It produces a prioritized backlog of concrete tasks, not summaries of what might be wrong.
+```
+/blossom audit the event sourcing pipeline for consistency gaps
+```
 
-    Seeding epic: "Event sourcing pipeline audit"
-    Dispatching 4 spikes: command-handlers, projections, event-store, saga-orchestration
+Blossom spawns parallel spike agents that read actual source files, trace call chains, and tag findings with confidence levels. Output is a prioritized task backlog, not a summary.
 
-    Spike results:
-    1. CONFIRMED — ProjectionRebuilder skips tombstoned events (projections/rebuild.ts:47)
-    2. CONFIRMED — No idempotency check on CommandBus.dispatch (handlers/bus.ts:112)
-    3. LIKELY   — Saga timeout defaults to 0, may cause silent drops (sagas/orchestrator.ts:88)
-    4. POSSIBLE — Event schema v2 migration has unused backward-compat shim
+```
+Seeding epic: "Event sourcing pipeline audit"
+Dispatching 4 spikes: command-handlers, projections, event-store, saga-orchestration
 
-    3/4 spikes complete, 1 timed out (saga-orchestration — codebase too deep, recommend follow-up /fractal)
-    Created 6 tasks under epic BL-42, dependency graph attached
+Spike results:
+1. CONFIRMED -- ProjectionRebuilder skips tombstoned events (projections/rebuild.ts:47)
+2. CONFIRMED -- No idempotency check on CommandBus.dispatch (handlers/bus.ts:112)
+3. LIKELY    -- Saga timeout defaults to 0, may cause silent drops (sagas/orchestrator.ts:88)
+4. POSSIBLE  -- Event schema v2 migration has unused backward-compat shim
 
-### Hash out a design decision with an agent panel
+Created 6 tasks under epic BL-42, dependency graph attached
+```
 
-    /meeting should we use event sourcing or CQRS-lite for the new billing module?
+### Hash out a design decision
 
-Meeting assembles 2 panelists with genuinely opposed perspectives (here: a consistency advocate and a simplicity advocate) and a facilitator. You steer the conversation, ask follow-ups, and cut off threads that aren't productive. The panel produces a decision record, not a compromise.
+```
+/meeting should we use event sourcing or CQRS-lite for the new billing module?
+```
 
-    Assembling panel...
-      - Consistency Advocate: argues for full event sourcing with replay guarantees
-      - Simplicity Advocate: argues for CQRS-lite with snapshot-only persistence
+Assembles 2 panelists with genuinely opposed perspectives and a facilitator. You steer the conversation, ask follow-ups, cut threads that aren't productive. Output is a decision record, not a compromise.
 
-    [3 rounds of moderated discussion]
+### Research, distill, and prioritize
 
-    Decision record:
-      Recommendation: CQRS-lite for billing, with event log as audit trail (not source of truth)
-      Key tradeoff: lose replay capability, gain 60% less operational complexity
-      Dissent noted: Consistency Advocate flags audit log drift risk — mitigate with nightly reconciliation job
+```
+/gather authentication patterns in this codebase
+/distill
+/rank by security risk
+```
+
+Each skill's output feeds the next through conversation context. No file passing, no explicit piping -- context is the pipe.
 
 ## Install
 
 ```bash
-git clone https://github.com/tyevans/meta-agent-defs
-cd meta-agent-defs
+git clone https://github.com/tyevans/tackline
+cd tackline
 ./install.sh
 ```
 
-The installer symlinks everything into `~/.claude/`. It is idempotent -- rerun after pulling updates. Existing files are backed up with timestamps.
-
-### Install Options
+Zero dependencies. The installer symlinks everything into `~/.claude/`. Rerun after pulling updates -- it's idempotent, existing files are backed up.
 
 ```bash
-./install.sh                              # Global symlinks to ~/.claude/
-./install.sh /path/to/project             # Project-local (agents + skills only)
-./install.sh --hardlink                   # Hardlinks instead of symlinks
-./install.sh --help                       # Show usage
+./install.sh /path/to/project    # Project-local install (agents + skills only)
+./install.sh --hardlink           # Hardlinks instead of symlinks
+./install.sh --with-git-intel     # Build optional Rust CLI for git analysis
 ```
 
 ### Uninstall
 
 ```bash
-xargs rm -f < ~/.claude/.meta-agent-defs.manifest
+xargs rm -f < ~/.claude/.tackline.manifest
 ```
-
-To also remove MCP servers, see [docs/reference.md](docs/reference.md).
 
 ## Getting Started
 
-**New project:**
+**New project:** Run the `project-bootstrapper` agent to set up CLAUDE.md, hooks, and rules. Then run `agent-generator` to create project-specific agents. Start exploring with `/blossom`.
 
-1. Run the `project-bootstrapper` agent to set up CLAUDE.md, hooks, permissions, and rules
-2. Run the `agent-generator` agent to create project-specific agents tailored to the codebase
-3. Use `/blossom` to explore any area you want to understand or improve
+**Existing project:** Type `/blossom <what you want to explore>` to map the territory. Use `/consolidate` when the backlog grows noisy. Use `/session-health` for a context quality gut-check.
 
-**Existing project:**
+**New machine:** Clone, install, go. Your entire Claude Code workflow travels with you.
 
-1. Type `/blossom <what you want to explore>` and let it map the territory
-2. Use `/consolidate` when the backlog feels noisy
-3. Use `/session-health` when you want a gut check on context quality
+## Skills (40)
 
-**New machine:**
+### Composable Primitives
 
-```bash
-git clone https://github.com/tyevans/meta-agent-defs
-cd meta-agent-defs && ./install.sh
+Stateless skills that chain through conversation context. Output of any feeds the next.
+
+| Skill | Purpose |
+|-------|---------|
+| `/gather` | Collect findings with sources and confidence levels |
+| `/distill` | Reduce to essentials |
+| `/rank` | Score and order by criteria |
+| `/filter` | Binary keep/drop |
+| `/assess` | Categorize by rubric (critical/warning/ok) |
+| `/verify` | Check claims against evidence |
+| `/critique` | Adversarial review -- what's wrong, missing, risky |
+| `/diff-ideas` | Side-by-side tradeoff analysis |
+| `/decompose` | Break into bounded sub-parts |
+| `/plan` | Dependency-aware execution sequence |
+| `/sketch` | Code skeleton with TODOs |
+| `/merge` | Combine multiple outputs into one |
+
+### Workflows
+
+Orchestrated multi-step workflows with side effects.
+
+| Skill | Purpose |
+|-------|---------|
+| `/blossom` | Spike-driven exploration -- produces epic + prioritized tasks |
+| `/fractal` | Goal-directed recursive exploration with dead-end pruning |
+| `/meeting` | Live multi-agent discussion with opposed perspectives |
+| `/consensus` | Three independent proposals, synthesized |
+| `/tracer` | Iterative implementation -- thinnest working path first |
+| `/review` | Structured code review across 5 dimensions |
+| `/sprint` | Dispatch work to agents with a learning loop |
+| `/spec` | Progressive specification document |
+| `/premortem` | Failure analysis before building |
+| `/bootstrap` | Full project setup: infrastructure + agents |
+| `/active-learn` | Adversarial training loop for agent improvement |
+
+### Session & Team
+
+| Skill | Purpose |
+|-------|---------|
+| `/status` | Unified dashboard: backlog, activity, team, last session |
+| `/advise` | Proactive recommendations from git state, history, and signals |
+| `/assemble` | Create a persistent learning team |
+| `/standup` | Sync status, surface blockers |
+| `/retro` | Session retrospective with persistent learnings |
+| `/handoff` | Session transition capture |
+| `/session-health` | Context load and drift diagnostic |
+
+[Full catalog with decision tree and chain patterns](docs/INDEX.md)
+
+## Common Chains
+
+```
+/gather -> /distill -> /rank           Research -> condense -> prioritize
+/decompose -> /rank -> /plan           Break down -> prioritize -> sequence
+/gather -> /critique -> /rank          Research -> stress-test -> prioritize
+/assemble -> /standup -> /sprint       Form team -> sync -> dispatch
+/blossom -> pick tasks -> /tracer      Explore -> build
+/meeting -> /fractal -> /spec          Discuss -> deep-dive -> specify
 ```
 
-Your entire Claude Code workflow travels with you.
+## How It Actually Works
 
-## Skill Highlights
+**Skills are LLM-driven, not deterministic.** The same input may produce different findings across runs. Confidence levels (CONFIRMED, LIKELY, POSSIBLE) help you calibrate trust. Output quality scales directly with input specificity -- a precise goal with file paths produces better results than a vague one.
 
-| Skill | What it does |
-|-------|-------------|
-| `/blossom <goal>` | Spawns parallel spikes to explore a codebase area; produces a prioritized task backlog with confidence levels |
-| `/fractal <goal>` | Goal-directed recursive exploration that prunes dead ends; produces a focused synthesis |
-| `/meeting <topic>` | Live multi-agent discussion with opposed perspectives; you steer, it produces a decision record |
-| `/consensus <decision>` | Three independent proposals optimized for simplicity, performance, and maintainability; synthesized into a recommendation |
-| `/tracer <feature>` | Iterative implementation -- thinnest working path first, then widens pass by pass |
-| `/sprint [focus]` | Sprint planning with dispatch; assigns tasks to agents and tracks progress with a learning loop |
-| `/session-health` | Self-diagnostic for context load, scope drift, and quality degradation; recommends continue, compact, or restart |
-| `/review [target]` | Structured code review across correctness, security, style, architecture, and testing |
+**Fork-context skills spawn subagents.** `/blossom`, `/consensus`, and `/premortem` each dispatch agents that read source files independently. On large codebases, expect meaningful API usage. Inline skills (primitives, `/meeting`, `/status`) are lightweight.
 
-See the [full skill & agent catalog](docs/INDEX.md) for all 28 skills, 3 agents, and a decision tree.
-
-## Common Workflows
-
-Skills chain together into natural workflows:
-
-```
- /assemble ──> /standup ──> /sprint ──> dispatch work ──> /standup ──> ...
-  (form team)  (sync)       (plan)      (any skill)       (sync again)
-
- /blossom ─────────────> backlog ──────> pick a task ──> /tracer
-   (explore)                                               (build)
-
- /meeting ──> /fractal ──────────> synthesis ──> /spec or /tracer
-  (discuss)   (deep-dive)                        (design or build)
-```
-
-## Good to Know
-
-- **Output quality scales with input specificity.** A vague goal produces vague findings; a precise goal with file paths or module names produces actionable ones.
-- **Fork-context skills consume significant tokens.** `/blossom`, `/consensus`, and `/premortem` spawn subagents that each read source files. On large codebases, expect meaningful API usage.
-- **These are LLM-driven workflows, not deterministic tools.** The same input may produce different findings across runs. Confidence levels (CONFIRMED, LIKELY, POSSIBLE) help you calibrate trust.
-- **Everything works without beads installed.** You just lose backlog tracking. All exploration, coordination, and session skills function independently.
+**Everything works without extras.** No beads, no git-intel, no MCP servers required. You just get fewer features. Hooks degrade gracefully with `|| true`.
 
 ## Extending
 
-**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`, `allowed-tools`, `context`). Set `context: fork` for heavy workflows, omit it for inline. Rerun `./install.sh`.
+**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter. Rerun `./install.sh`.
 
-**Add an agent:** Create `agents/<name>.md` with YAML frontmatter (`name`, `description`, `tools`, `model`). Rerun `./install.sh`.
+**Add an agent:** Create `agents/<name>.md` with YAML frontmatter. Rerun `./install.sh`.
 
-**Add an MCP server:** Add an entry to `mcp-servers.json` with `command` and `args`. Rerun `./install.sh`.
-
-**Add a hook:** Edit `settings.json` and add to the appropriate hook array (`SessionStart`, `PreCompact`, `PreToolUse`, `PostToolUse`, `SessionEnd`). Use `|| true` for any tool that might not be installed.
-
-Global workflows, local expertise.
+**Add a hook:** Edit `settings.json`. Use `|| true` for tools that might not be installed.
 
 ## Learn More
 
-- [Full skill & agent catalog](docs/INDEX.md) -- all 28 skills, 3 agents, decision tree
-- [Hooks, MCP servers, project structure, design philosophy](docs/reference.md)
-- [Composable primitive patterns](docs/primitives-cookbook.md)
-- [Team system guide](docs/team-system-guide.md)
+- [Full skill & agent catalog](docs/INDEX.md) -- 40 skills, 3 agents, decision tree, chain patterns
+- [Technical reference](docs/reference.md) -- hooks, MCP servers, project structure, design philosophy
+- [Composable primitive patterns](docs/primitives-cookbook.md) -- annotated walkthroughs
+- [Team system guide](docs/team-system-guide.md) -- persistent learning teams
+
+## License
+
+[MIT](LICENSE)

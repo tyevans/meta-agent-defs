@@ -8,7 +8,7 @@ Portable Claude Code workflow definitions (agents, skills, hooks, settings) main
 - **Content-only projects** (no `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, or `Makefile` at root): prefer direct implementation over subagent dispatch for simple edits.
 - **Code projects**: orchestrator-only. Dispatch all implementation to subagents and manage the beads backlog.
 
-This repo itself (meta-agent-defs) is content-only -- direct edits to `.md` and `.json` files are preferred over spawning agents for trivial changes.
+This repo itself (tackline) is content-only -- direct edits to `.md` and `.json` files are preferred over spawning agents for trivial changes.
 
 ### Orchestrator Responsibilities
 
@@ -38,7 +38,7 @@ This repo itself (meta-agent-defs) is content-only -- direct edits to `.md` and 
 ./install.sh --hardlink
 
 # Uninstall (uses manifest written during install)
-xargs rm -f < ~/.claude/.meta-agent-defs.manifest
+xargs rm -f < ~/.claude/.tackline.manifest
 
 # Beads
 bd stats                        # Backlog overview
@@ -69,12 +69,12 @@ bd sync --flush-only            # Save state before session end
 | Discuss with panels | /meeting |
 | Plan a goal with your team | /team-meeting |
 
-All 31 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
+All 40 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
 
 ## Project Structure
 
 ```
-meta-agent-defs/
+tackline/
 ├── agents/
 │   ├── agent-generator.md      # Generates project-specific agents
 │   ├── project-bootstrapper.md # Bootstraps projects with full Claude Code setup

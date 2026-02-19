@@ -247,4 +247,4 @@ Key patterns from these scenarios:
 
 Try running these chains in a Claude Code session. The primitives will parse the source code, apply the analysis, and emit structured findings in pipe format that you can review and act on.
 
-For more primitive combinations, see `/home/ty/workspace/meta-agent-defs/rules/primitives-cookbook.md`.
+For more primitive combinations, see `/home/ty/workspace/tackline/rules/primitives-cookbook.md`.

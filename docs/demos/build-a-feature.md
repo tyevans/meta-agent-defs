@@ -54,17 +54,17 @@ Adding /recap requires four bounded sub-parts: determining what data to collect 
 ### Items
 
 1. **Git activity via bash** — /retro and /handoff read git log
-   - source: /home/ty/workspace/meta-agent-defs/skills/retro/SKILL.md:40
+   - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:40
    - confidence: CONFIRMED
    - Detail: Both skills use `git log --oneline -N` to get recent commits. Retro uses -20, handoff uses -10.
 
 2. **Beads activity via bd commands** — /retro, /handoff, /session-health query backlog
-   - source: /home/ty/workspace/meta-agent-defs/skills/session-health/SKILL.md:62-65
+   - source: /home/ty/workspace/tackline/skills/session-health/SKILL.md:62-65
    - confidence: CONFIRMED
    - Detail: `bd stats` for overview, `bd list --status=closed` for completed work, `bd ready` for available work. All use `2>/dev/null` for graceful failure when .beads/ doesn't exist.
 
 3. **Conversation context via self-reflection** — All three skills review conversation turns
-   - source: /home/ty/workspace/meta-agent-defs/skills/retro/SKILL.md:60-65
+   - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:60-65
    - confidence: CONFIRMED
    - Detail: Retro asks "review the current conversation for pivots, blockers, rework, surprises". No tool calls — LLM reads its own context directly.
 
@@ -74,7 +74,7 @@ Adding /recap requires four bounded sub-parts: determining what data to collect 
    - Detail: Could use `git diff --stat` or `git diff --name-status` to show which files were modified. Would complement git log's commit messages.
 
 5. **Conditional beads support** — Skills check for .beads/ existence before running bd
-   - source: /home/ty/workspace/meta-agent-defs/skills/retro/SKILL.md:46-57
+   - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:46-57
    - confidence: CONFIRMED
    - Detail: Retro explicitly says "If `.beads/` exists... check backlog activity. If not, skip this step and rely on git + context alone."
 
@@ -279,13 +279,13 @@ The sketch shows /recap's file structure, frontmatter, and three-phase workflow 
 1. **Claim: install.sh auto-symlinks skills/ directories**
    - Status: VERIFIED
    - Evidence: install.sh lines 89-95 use `find skills/ -name SKILL.md` and creates symlinks to ~/.claude/skills/
-   - source: /home/ty/workspace/meta-agent-defs/install.sh:89-95
+   - source: /home/ty/workspace/tackline/install.sh:89-95
    - confidence: CONFIRMED
 
 2. **Claim: /retro uses conditional beads support**
    - Status: VERIFIED
    - Evidence: Retro Phase 1b explicitly checks "If `.beads/` exists in the project root" before running bd commands
-   - source: /home/ty/workspace/meta-agent-defs/skills/retro/SKILL.md:46-57
+   - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:46-57
    - confidence: CONFIRMED
 
 3. **Claim: /session-health is ~100 lines, /handoff is ~180 lines**
@@ -297,19 +297,19 @@ The sketch shows /recap's file structure, frontmatter, and three-phase workflow 
 4. **Claim: allowed-tools Bash(git:*) restricts to git commands only**
    - Status: VERIFIED
    - Evidence: Existing skills use Bash(bd:*) and Bash(git:*) syntax. settings.json hook matcher uses similar prefix patterns.
-   - source: /home/ty/workspace/meta-agent-defs/skills/retro/SKILL.md:7, /home/ty/workspace/meta-agent-defs/settings.json
+   - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:7, /home/ty/workspace/tackline/settings.json
    - confidence: CONFIRMED
 
 5. **Claim: disable-model-invocation: false makes skills auto-discoverable**
    - Status: VERIFIED
    - Evidence: Skills with false can be invoked by Claude automatically when keywords in description match user intent. Skills with true require explicit /command invocation only.
-   - source: /home/ty/workspace/meta-agent-defs/.claude/rules/skill-authoring.md:23-26
+   - source: /home/ty/workspace/tackline/.claude/rules/skill-authoring.md:23-26
    - confidence: CONFIRMED
 
 6. **Claim: /recap should NOT include Next Steps section (leave that to /handoff)**
    - Status: UNCERTAIN
    - Evidence: /handoff does include detailed "Recommended Next Steps" (line 150-152), and its purpose is session transitions. However, /session-health (a diagnostic, not a transition tool) ALSO includes "suggested next steps" (line 93-95). So the boundary isn't as clear-cut as assumed.
-   - source: /home/ty/workspace/meta-agent-defs/skills/handoff/SKILL.md:150-152, /home/ty/workspace/meta-agent-defs/skills/session-health/SKILL.md:93-95
+   - source: /home/ty/workspace/tackline/skills/handoff/SKILL.md:150-152, /home/ty/workspace/tackline/skills/session-health/SKILL.md:93-95
    - confidence: POSSIBLE
 
 ### Summary

@@ -1,6 +1,6 @@
 # Reference
 
-Detailed reference material for the Workbench toolkit. For a quick overview, see the [README](../README.md). For skill and agent details, see the [INDEX](INDEX.md).
+Detailed reference material for the Tackline toolkit. For a quick overview, see the [README](../README.md). For skill and agent details, see the [INDEX](INDEX.md).
 
 ## Hooks and Safety
 
@@ -33,7 +33,7 @@ MCP servers are defined in `mcp-servers.json`. Add or remove entries there and r
 ## Project Structure
 
 ```
-workbench/
+tackline/
   agents/
     agent-generator.md        # Generates project-specific agents from codebase analysis
     project-bootstrapper.md   # Full project setup for Claude Code + Beads
