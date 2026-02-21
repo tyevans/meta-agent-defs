@@ -28,7 +28,8 @@ Load context (team manifest, learnings, upcoming work, rules inventory)
   -> Phase 1: /curate agents (per agent — optimize learnings for upcoming work)
     -> Phase 2: /curate rules (audit project rules for health)
       -> Phase 3: /promote (cross-agent — graduate patterns to rules)
-        -> Phase 4: Summary report
+        -> Phase 4: Demotion pass (downgrade stale rules)
+          -> Phase 5: Summary report
 ```
 
 ---
@@ -161,7 +162,53 @@ Note:
 
 ---
 
-## Phase 4: Summary Report
+## Phase 4: Demotion Pass
+
+After promotion, check existing rules for staleness and consider strength downgrades. This is the bidirectional lifecycle — rules can be promoted (via /promote) and demoted (via this pass).
+
+### 4a. Scan Rule Freshness
+
+For each rule file with `strength:` and `freshness:` frontmatter:
+
+```bash
+git log --oneline --since="90 days ago" -- rules/*.md .claude/rules/*.md 2>/dev/null
+```
+
+Cross-reference each rule's `freshness:` date with git activity on files the rule governs (using `paths:` patterns if present).
+
+### 4b. Identify Demotion Candidates
+
+| Condition | Action |
+|-----------|--------|
+| `freshness:` >90 days AND no git activity in governed files | Downgrade strength one level: `must` → `should` → `may` |
+| `strength: may` AND `freshness:` >180 days | Flag for retirement review |
+
+A rule is "governed" by the files matching its `paths:` patterns. Rules without `paths:` (unconditional) use their topic area — check if any files in that domain had recent commits.
+
+### 4c. Apply Demotions (with confirmation)
+
+Present demotion candidates:
+
+```markdown
+### Demotion Candidates
+
+| Rule | Current Strength | Freshness | Governed Activity | Proposed Action |
+|------|-----------------|-----------|-------------------|-----------------|
+| [filename] | [strength] | [date] | [last activity] | downgrade to [new strength] |
+| [filename] | may | [date] | [last activity] | flag for retirement review |
+```
+
+Ask: "Apply these demotions? (y/n/select)"
+
+If approved, update the `strength:` field in each rule's frontmatter and set `freshness:` to today's date (the demotion is itself a freshness event).
+
+### 4d. Report
+
+Note how many rules were demoted, how many flagged for retirement, and how many were unchanged.
+
+---
+
+## Phase 5: Summary Report
 
 Present a unified report of the full lifecycle run:
 
@@ -193,9 +240,15 @@ Present a unified report of the full lifecycle run:
 - **Promoted to rules**: [n] ([list rule names/files])
 - **Deferred**: [n] ([brief reasons])
 
+### Demotion Results
+- **Rules demoted**: [n] ([list: filename strength→strength])
+- **Flagged for retirement**: [n] ([list filenames])
+- **Unchanged**: [n]
+
 ### Net Effect
 - **Learnings optimized**: [total items curated across all agents]
 - **New rules created**: [count]
+- **Rules demoted**: [count]
 - **Knowledge gaps flagged**: [count] (create beads with /bug or bd create if actionable)
 
 ### Recommended Next Steps

@@ -20,8 +20,6 @@ Known paths under `memory/` where persistent state lives. Skills that read syste
 | `memory/agents/<name>/archive.md` | Archived stale learnings (>21 days) | /retro, /curate |
 | `memory/agents/<name>/challenges/` | Challenge definitions and outcome history for active learning | /active-learn |
 | `memory/agents/<name>/capability.yaml` | Agent capability profile (strengths/weaknesses with scores) | /active-learn, /diagnose-agent |
-| `memory/team/decisions.md` | Team decisions log (dormant — no skill currently reads this) | /meeting, manual |
-| `memory/team/retro-history.md` | Retrospective summaries (dormant — no skill currently reads this) | /retro |
 | `memory/epics/<epic-id>/epic.md` | Epic state: spike findings, priority order, task IDs, critical path | /blossom |
 | `memory/project/domain.md` | Project domain terminology and disambiguation rules | /domain |
 | `memory/MEMORY.md` | Project-level persistent memory | auto-memory system |
