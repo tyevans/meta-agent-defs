@@ -179,6 +179,8 @@ For each entry in `learnings.md`:
 
 **PASSIVE:** The entry states something already enforced by a rule in `rules/` or `CLAUDE.md`. Example: an entry "use conventional commits" is PASSIVE if `rules/commits.md` already covers this. When marking PASSIVE, cite the specific rule file.
 
+**Cross-references:** While scoring, note entries that reference similar concepts to other entries (in the same file or across agents). For each such pair, add a `related:` annotation in the output. These links improve knowledge discovery and feed `/promote`'s cross-agent detection. Example: an entry about "frontmatter fields" in agent A relates to "skill YAML conventions" in agent B.
+
 ### Rules Mode Scoring
 
 For each rule file:
@@ -269,11 +271,13 @@ Emit in pipe format per `rules/pipe-format.md`. The format depends on artifact t
    - score: HIGH
    - reason: <why this is HIGH — reference to specific upcoming task or file>
    - source: memory/agents/<name>/learnings.md
+   - related: <comma-separated list of related entry titles, if any>
 
 2. **KEEP (MEDIUM): <entry title>** — <full entry text>
    - score: MEDIUM
    - reason: <why MEDIUM>
    - source: memory/agents/<name>/learnings.md
+   - related: <comma-separated list of related entry titles, if any>
 
 3. **ARCHIVE (LOW): <entry title>** — <full entry text>
    - score: LOW
@@ -295,6 +299,7 @@ Emit in pipe format per `rules/pipe-format.md`. The format depends on artifact t
    - reason: <gap area this fills; note if same entry exists in 2+ agents — promote candidate>
    - source: memory/agents/<other-name>/learnings.md
    - cross-agent: true
+   - related: <comma-separated list of related entry titles from any agent, if detected>
 
 ### Gaps (M)
 
@@ -461,6 +466,8 @@ This manifest is a checklist for human review, not an automation target.
 6. **Cite specific rules.** When scoring an entry PASSIVE, name the exact rule file. "covered by a rule" is vague; "covered by rule: rules/commits.md" is actionable.
 
 7. **Respect the 60-line cap.** After write-back, learnings.md must fit within 30 Core + 30 Task-Relevant lines. If ADD candidates would push over the cap, prioritize by score (HIGH before MEDIUM) and note what was deferred.
+
+7b. **Add `related:` cross-references.** While scoring, annotate entries that reference similar concepts with `related:` links. These are optional metadata — omit when no meaningful relationship exists. Cross-references improve `/promote`'s ability to detect cross-agent patterns and help agents discover related knowledge.
 
 8. **Rules mode is conservative.** Flag rules for review, never delete or modify them automatically. REVIEW replaces ARCHIVE — rules are human-maintained artifacts with higher change cost than learnings.
 

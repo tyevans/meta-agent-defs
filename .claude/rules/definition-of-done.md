@@ -1,3 +1,8 @@
+---
+strength: should
+freshness: 2026-02-21
+---
+
 # Definition of Done
 
 What "done" means for each type of change in this repo.

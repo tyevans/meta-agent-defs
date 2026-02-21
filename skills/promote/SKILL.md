@@ -301,9 +301,22 @@ If the file exists, stop and ask: "A file already exists at <target-path>. Overw
 
 Do not overwrite without explicit confirmation.
 
-### 6c. Verify After Write
+### 6c. Mark Source Learnings
 
-Read each written file and confirm:
+After writing a rule, update the source learnings entries that were promoted:
+
+For each contributing agent's `learnings.md`, find the entry that was promoted and append `(promoted to: <target-path>)` to the entry text. This marks the entry as graduated so the next `/curate` run scores it PASSIVE and archives it.
+
+Example:
+```markdown
+- Skill frontmatter must include allowed-tools restricted to minimum needed (added: 2026-01-15, dispatch: sprint-manual) (promoted to: rules/skill-constraints.md)
+```
+
+If the source learnings file cannot be found or the entry text has changed since evaluation, skip this step for that entry and note the discrepancy.
+
+### 6d. Verify After Write
+
+Read each written rule file and confirm:
 - The content matches the approved draft
 - The file is valid markdown with a proper heading
 

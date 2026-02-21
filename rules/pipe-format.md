@@ -1,3 +1,8 @@
+---
+strength: should
+freshness: 2026-02-21
+---
+
 # Pipe Format: Composable Skill Output Contract
 
 All composable primitives (gather, distill, rank, diff-ideas, sketch, verify, filter, assess, decompose, critique, plan, merge) follow this output format so any primitive's output can feed another primitive's input.

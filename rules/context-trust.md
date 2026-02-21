@@ -1,3 +1,8 @@
+---
+strength: must
+freshness: 2026-02-21
+---
+
 # Context Trust
 
 When the user provides ticket content, requirements, or scoped context for a task:

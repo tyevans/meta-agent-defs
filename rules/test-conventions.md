@@ -1,3 +1,8 @@
+---
+strength: should
+freshness: 2026-02-21
+---
+
 # Test Conventions
 
 When writing tests, follow these conventions. They apply regardless of language or framework.

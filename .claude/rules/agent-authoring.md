@@ -1,6 +1,8 @@
 ---
 paths:
   - "agents/**/*.md"
+strength: should
+freshness: 2026-02-21
 ---
 
 # Agent Authoring Rules

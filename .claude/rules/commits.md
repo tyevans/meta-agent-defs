@@ -1,3 +1,8 @@
+---
+strength: must
+freshness: 2026-02-21
+---
+
 # Commit Message Convention
 
 This project uses conventional commits.

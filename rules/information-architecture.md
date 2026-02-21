@@ -1,3 +1,8 @@
+---
+strength: should
+freshness: 2026-02-21
+---
+
 # Information Architecture Principles
 
 How to organize knowledge, configuration, and documentation in Claude Code projects so that context reaches the model at the right time with minimal retrieval cost.

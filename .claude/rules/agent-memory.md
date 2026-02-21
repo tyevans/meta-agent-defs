@@ -2,6 +2,8 @@
 paths:
   - "agents/**/*.md"
   - "skills/**/*.md"
+strength: should
+freshness: 2026-02-21
 ---
 
 # Agent Memory Protocol

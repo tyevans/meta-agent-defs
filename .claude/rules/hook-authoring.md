@@ -2,6 +2,8 @@
 paths:
   - "settings.json"
   - ".claude/settings.json"
+strength: should
+freshness: 2026-02-21
 ---
 
 # Hook Authoring Rules

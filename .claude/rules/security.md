@@ -1,3 +1,8 @@
+---
+strength: must
+freshness: 2026-02-21
+---
+
 # Security Rules
 
 Rules for preventing secrets leakage, unauthorized access, and unsafe operations.

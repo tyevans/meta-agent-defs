@@ -2,6 +2,8 @@
 paths:
   - "skills/**/*.md"
   - "agents/**/*.md"
+strength: should
+freshness: 2026-02-21
 ---
 
 # Team Protocol

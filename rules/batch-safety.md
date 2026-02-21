@@ -1,3 +1,8 @@
+---
+strength: should
+freshness: 2026-02-21
+---
+
 # Batch Safety
 
 When processing a numbered collection of items (audit findings, files to review, migrations to run, tickets to close):

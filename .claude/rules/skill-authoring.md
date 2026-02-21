@@ -1,6 +1,8 @@
 ---
 paths:
   - "skills/**/*.md"
+strength: should
+freshness: 2026-02-21
 ---
 
 # Skill Authoring Rules
