@@ -101,6 +101,12 @@ ls rules/*.md .claude/rules/*.md 2>/dev/null
 
 Read each rule file. Read `CLAUDE.md`. Build a topic map of what is already covered passively — these are used in Phase 3 for overlap detection.
 
+### 1d. Load Domain Index
+
+If `docs/domains.md` exists, read it. Use the domain-to-rule mapping to enrich the topic map from 1c — domains that already have Rule entries indicate well-covered areas where promotion would add redundancy. Domains with Learnings entries but no Rule entries indicate areas where promotion is most valuable.
+
+If `docs/domains.md` does not exist, skip this step.
+
 ---
 
 ## Phase 2: Collect Raw Candidates

@@ -153,6 +153,15 @@ If `.claude/team.yaml` exists, read it and extract the target agent's entry:
 
 If team.yaml does not exist, skip this step.
 
+### 1e. Domain Index (both modes)
+
+If `docs/domains.md` exists, read it. The domain index maps work areas to their relevant rules, learnings, and skills. Use it to:
+- **Improve gap detection (Phase 3)**: domains whose "Rule" or "Learnings" rows are empty indicate knowledge coverage gaps for that work area
+- **Improve relevance scoring (Phase 2)**: entries that appear in domains overlapping with upcoming work get a relevance boost
+- **Improve PASSIVE detection**: entries that duplicate knowledge already mapped to a domain via another artifact type are stronger PASSIVE candidates
+
+If `docs/domains.md` does not exist, skip this step.
+
 ---
 
 ## Phase 2: Score Each Entry

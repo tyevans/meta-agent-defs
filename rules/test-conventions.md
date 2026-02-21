@@ -1,8 +1,12 @@
 ---
 paths:
   - "tests/**"
-  - "**/*test*"
-  - "**/*spec*"
+  - "**/*_test.*"
+  - "**/*test_*"
+  - "**/test_*"
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "**/*_spec.*"
 strength: should
 freshness: 2026-02-21
 ---
