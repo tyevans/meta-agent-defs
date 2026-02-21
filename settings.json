@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "SS=\"$HOME/.claude/bin/session-start.sh\"; if [ -x \"$SS\" ]; then \"$SS\"; else echo '=== Session Start (lite) ==='; git status --short 2>/dev/null; bd stats 2>/dev/null || true; bd prime 2>/dev/null || true; echo '=== ==='; fi"
+            "command": "echo '=== Session Start ==='; git log --oneline -3 2>/dev/null | sed 's/^/Last:    /'; git diff --stat --cached 2>/dev/null; echo \"Tree:    $(git status --short 2>/dev/null | wc -l) uncommitted files\"; bd stats --oneline 2>/dev/null || true; bd ready --count 2>/dev/null | sed 's/^/Ready:   /' || true; bd list --status=in_progress --count 2>/dev/null | sed 's/^/Active:  /' || true; bd prime 2>/dev/null || true; echo '=== ==='"
           }
         ]
       }
