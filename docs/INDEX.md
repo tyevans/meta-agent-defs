@@ -166,10 +166,7 @@ This pattern is especially useful for:
 
 | Tool | Purpose |
 |------|---------|
-| [git-intel](../tools/git-intel/README.md) | Git history analyzer outputting JSON for hooks, skills, and scripts. 7 subcommands: metrics, churn, lifecycle, patterns, hotspots, authors, trends. |
-| [learnings-coverage](../tools/learnings-coverage/) | Semantic coverage analysis: what % of an agent's commit-message space is captured in their learnings? Embeds with sentence-transformers, reports gaps and well-covered areas. |
-| [difficulty-calibration](../tools/difficulty-calibration/) | Track challenge outcomes and fit logistic regression to predict optimal difficulty level targeting ~70% success rate. 3 subcommands: record, recommend, report. |
-| [knowledge-transfer](../tools/knowledge-transfer/) | Detect cross-agent learning transfer opportunities via sentence embeddings. Finds learnings from agent A that are relevant to agent B's scope but absent from B's knowledge. |
+| [git-intel](https://github.com/tyevans/git-intel) | Git history analyzer outputting JSON for hooks, skills, and scripts. 7 subcommands: metrics, churn, lifecycle, patterns, hotspots, authors, trends. Maintained in a separate repo. |
 
 ## Agents
 

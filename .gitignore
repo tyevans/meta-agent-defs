@@ -8,22 +8,6 @@ CLAUDE.local.md
 # Runtime state (created by hooks and skills, not distributable)
 memory/
 
-# Rust build artifacts
-tools/git-intel/target/
-
 # Python artifacts
 __pycache__/
 .venv/
-
-# Research repos (cloned for analysis, not committed)
-research/
-tools/repos/
-
-# Training data and model artifacts
-tools/data/
-
-# Internal tooling (ships separately via git-intel repo)
-tools/commit-labeler/
-tools/learnings-coverage/
-tools/difficulty-calibration/
-tools/knowledge-transfer/

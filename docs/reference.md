@@ -38,8 +38,6 @@ tackline/
     agent-generator.md        # Generates project-specific agents from codebase analysis
     project-bootstrapper.md   # Full project setup for Claude Code + Beads
     code-reviewer.md          # Read-only code review across 4 quality dimensions
-  bin/
-    git-pulse.sh              # Shared entry point for git session metrics
   skills/
     blossom/SKILL.md          # /blossom -- spike-driven exploration (fork)
     fractal/SKILL.md          # /fractal -- goal-directed recursive exploration (inline)
@@ -78,8 +76,6 @@ tackline/
   rules/
     team-protocol.md          # Team manifest format, spawn protocol, reflection schema (global)
     pipe-format.md            # Composable primitive output contract (global)
-  tools/
-    git-intel/                # Rust CLI for git metrics (metrics, churn, lifecycle, patterns)
   settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
   install.sh                  # Symlink installer (idempotent, non-destructive)

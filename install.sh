@@ -20,16 +20,13 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 # --- Argument parsing ---
 PROJECT_DIR=""
 USE_HARDLINKS=false
-BUILD_GIT_INTEL=false
-
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--with-git-intel] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--help]
 
 Options:
   project_dir      Install to project_dir/.claude/ instead of ~/.claude/
   --hardlink       Use hardlinks instead of symlinks
-  --with-git-intel Build optional git-intel Rust CLI (requires cargo)
   --help, -h       Show this help message
 EOF
     exit 0
@@ -42,10 +39,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --hardlink)
             USE_HARDLINKS=true
-            shift
-            ;;
-        --with-git-intel)
-            BUILD_GIT_INTEL=true
             shift
             ;;
         -*)
@@ -392,29 +385,6 @@ info "Writing installation manifest..."
 log "Manifest written: $MANIFEST_FILE ($(wc -l < "$MANIFEST_FILE") entries)"
 
 echo ""
-
-# --- git-intel Rust CLI (optional, opt-in) ---
-if [ "$BUILD_GIT_INTEL" = true ]; then
-    GIT_INTEL_DIR="$SCRIPT_DIR/tools/git-intel"
-    if [ -d "$GIT_INTEL_DIR" ] && [ -f "$GIT_INTEL_DIR/Cargo.toml" ]; then
-        if command -v cargo &>/dev/null; then
-            info "Building git-intel in $GIT_INTEL_DIR..."
-            if (cd "$GIT_INTEL_DIR" && cargo build --release 2>&1); then
-                log "git-intel built successfully"
-                info "Binary available at: $GIT_INTEL_DIR/target/release/git-intel"
-            else
-                warn "git-intel build failed (see output above)"
-                warn "Skills using git-intel will fall back gracefully"
-            fi
-        else
-            warn "git-intel requires cargo (https://rustup.rs)"
-            exit 1
-        fi
-        echo ""
-    else
-        warn "git-intel source not found at $GIT_INTEL_DIR"
-    fi
-fi
 
 log "Installation complete!"
 echo ""

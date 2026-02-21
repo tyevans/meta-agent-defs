@@ -22,13 +22,3 @@ members:
     tools: [Read, Write, Edit, Grep, Glob, "Bash(git:*)", "Bash(./install.sh:*)", "Bash(ls:*)"]
     owns: ["install.sh", "settings.json", "mcp-servers.json", ".claude/settings.json"]
 
-  - name: rust-dev
-    role: "Building and maintaining the git-intel Rust CLI tool — cargo project setup, git2-rs integration, JSON output, subcommand implementation"
-    model: opus
-    tools: [Read, Write, Edit, Grep, Glob, "Bash(cargo:*)", "Bash(rustc:*)", "Bash(git:*)", "Bash(ls:*)", "Bash(mkdir:*)"]
-    owns: ["tools/git-intel/**"]
-
-  - name: ml-eng
-    role: "Python ML pipeline for commit classification — training scripts, labeling, data processing, model evaluation, HuggingFace integration"
-    tools: [Read, Write, Edit, Grep, Glob, "Bash(uv:*)", "Bash(python:*)", "Bash(git:*)", "Bash(ls:*)", "Bash(mv:*)", "Bash(rm:*)", "Bash(mkdir:*)"]
-    owns: ["tools/commit-labeler/**", "research/**"]
