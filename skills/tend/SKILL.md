@@ -121,9 +121,9 @@ Use the Skill tool to invoke `/curate rules`. The curated learnings from Phase 1
 ### 2b. Collect Results
 
 Note from the rules curate output:
-- How many rules scored HIGH/MEDIUM/LOW/PASSIVE
+- Relevance distribution (high/medium/low/passive) and freshness distribution (fresh/aging/stale)
 - Total passive context budget (lines across all rule files)
-- Potential savings from LOW+PASSIVE rules
+- Potential savings from low-relevance or stale rules
 - Any gaps where upcoming work lacks guardrails
 
 ### 2c. Progress Check
@@ -134,8 +134,9 @@ Note from the rules curate output:
 | Metric | Value |
 |--------|-------|
 | Rules scored | [n] |
-| HIGH + MEDIUM | [n] |
-| LOW + PASSIVE (review) | [n] |
+| Relevance high + medium | [n] |
+| Relevance low + passive (review) | [n] |
+| Freshness stale | [n] |
 | Total lines | [n] |
 | Potential savings | [n] lines |
 | Gaps found | [n] |
@@ -180,8 +181,9 @@ Present a unified report of the full lifecycle run:
 | Metric | Value |
 |--------|-------|
 | Rules scored | [n] |
-| HIGH + MEDIUM | [n] |
-| LOW + PASSIVE (review) | [n] |
+| Relevance high + medium | [n] |
+| Relevance low + passive (review) | [n] |
+| Freshness stale | [n] |
 | Total passive context lines | [n] |
 | Potential savings | [n] lines |
 | Rule gaps | [n] |

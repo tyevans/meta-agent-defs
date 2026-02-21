@@ -1,4 +1,6 @@
 ---
+paths:
+  - "skills/**/SKILL.md"
 strength: should
 freshness: 2026-02-21
 ---

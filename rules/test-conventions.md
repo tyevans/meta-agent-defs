@@ -1,4 +1,8 @@
 ---
+paths:
+  - "tests/**"
+  - "**/*test*"
+  - "**/*spec*"
 strength: should
 freshness: 2026-02-21
 ---

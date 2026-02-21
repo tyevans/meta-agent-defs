@@ -31,13 +31,14 @@ You are running **curate** — scoring entries by relevance to upcoming tasks, f
 ```
 Detect artifact type (learnings or rules)
   -> Load entries + upcoming work + cross-references
-    -> Score each entry (HIGH / MEDIUM / LOW / PASSIVE)
-      -> Detect gaps (upcoming work domains vs. coverage)
-        -> [learnings] Pull candidates from archive or cross-agent sources
-        -> [rules] Compute passive context budget
-          -> Emit pipe-format report
-            -> [learnings] (Optional) Write back to learnings.md and archive.md
-            -> [rules] Write review manifest to memory/scratch/
+    -> Score each entry (relevance × freshness × scope)
+      -> Map dimensions to actions (keep / archive / review)
+        -> Detect gaps (upcoming work domains vs. coverage)
+          -> [learnings] Pull candidates from archive or cross-agent sources
+          -> [rules] Compute passive context budget
+            -> Emit pipe-format report
+              -> [learnings] (Optional) Write back to learnings.md and archive.md
+              -> [rules] Write review manifest to memory/scratch/
 ```
 
 ---
@@ -156,51 +157,84 @@ If team.yaml does not exist, skip this step.
 
 ## Phase 2: Score Each Entry
 
-For each entry in the primary artifact, assign one of four scores. The scoring table depends on artifact type.
+For each entry in the primary artifact, evaluate three independent dimensions. The composite of these dimensions drives the action (keep, archive, review).
 
-### Learnings Mode Scoring
+### Dimensions
 
-For each entry in `learnings.md`:
+| Dimension | Values | What It Measures |
+|-----------|--------|------------------|
+| **Relevance** | high / medium / low / passive | Connection to upcoming work |
+| **Freshness** | fresh / aging / stale | Time since last confirmed or modified |
+| **Scope** | agent / project / global | Breadth of applicability |
 
-| Score | Meaning | Action |
-|-------|---------|--------|
-| HIGH | Directly relates to files, domains, or tools in upcoming tasks | Keep |
-| MEDIUM | Related to the general area of upcoming work but not specific tasks | Keep |
-| LOW | No connection to upcoming work — relevant in general but not now | Archive |
-| PASSIVE | Already covered by an existing rule or CLAUDE.md (redundant) | Archive with note |
+### Relevance (both modes)
 
-**Scoring Heuristics (learnings):**
+| Value | Meaning |
+|-------|---------|
+| **high** | Directly relates to files, domains, or tools in upcoming tasks |
+| **medium** | Related to the general area of upcoming work but not specific tasks |
+| **low** | No connection to upcoming work — relevant in general but not now |
+| **passive** | Already covered by another artifact (rule covers learning, or rule duplicates another rule) |
 
-**HIGH:** The entry mentions a specific file, tool, command, or pattern that appears in upcoming task descriptions or epic state. Example: an entry about `bd create --parent` syntax is HIGH if epic management tasks are coming.
+**Learnings heuristics:**
+- **high**: Entry mentions a specific file, tool, command, or pattern in upcoming task descriptions or epic state
+- **medium**: Entry covers a category of upcoming work but doesn't match specific files
+- **low**: Entry is about a past domain area with no upcoming beads and no recent commits
+- **passive**: Entry states something already enforced by a rule. Cite the specific rule file
 
-**MEDIUM:** The entry covers a category of work that's coming but doesn't match specific files. Example: entries about skill authoring conventions are MEDIUM when new skills are on the backlog.
+**Rules heuristics:**
+- **high**: Rule covers a domain area in upcoming tasks, or addresses a recently observed failure mode
+- **medium**: Rule provides useful guardrails across many session types but isn't tied to upcoming work
+- **low**: Rule covers a domain with no upcoming beads, no in-progress work, and no recent git activity (last 30 days)
+- **passive**: Rule's constraints are duplicated by another rule or CLAUDE.md, or internalized by 3+ agents' learnings. Cite the source
 
-**LOW:** The entry is about a past domain area no longer in scope, or is general background that won't be needed soon. Example: entries about a feature area with no upcoming beads and no recent commits.
+### Freshness (both modes)
 
-**PASSIVE:** The entry states something already enforced by a rule in `rules/` or `CLAUDE.md`. Example: an entry "use conventional commits" is PASSIVE if `rules/commits.md` already covers this. When marking PASSIVE, cite the specific rule file.
+Check the entry's provenance date or the file's last git modification:
 
-**Cross-references:** While scoring, note entries that reference similar concepts to other entries (in the same file or across agents). For each such pair, add a `related:` annotation in the output. These links improve knowledge discovery and feed `/promote`'s cross-agent detection. Example: an entry about "frontmatter fields" in agent A relates to "skill YAML conventions" in agent B.
+| Value | Learnings | Rules |
+|-------|-----------|-------|
+| **fresh** | `added:` or `dispatch:` date within 14 days | `freshness:` frontmatter date within 30 days, or modified in git within 30 days |
+| **aging** | 14-60 days old | 30-90 days since freshness date or last git modification |
+| **stale** | >60 days old with no recent references | >90 days since freshness date and no git activity |
 
-### Rules Mode Scoring
+For learnings without `added:` dates, check git blame for the line's last modification date. For rules with `freshness:` frontmatter, use that date as the baseline.
 
-For each rule file:
+### Scope (both modes)
 
-| Score | Meaning | Action |
-|-------|---------|--------|
-| HIGH | Covers domains in upcoming work or addresses known failure modes | Keep |
-| MEDIUM | Broadly useful across sessions, not specific to upcoming work | Keep |
-| LOW | No upcoming work in the covered domain, no recent git activity in covered files | Review |
-| PASSIVE | Duplicated by another rule, or internalized in 3+ agents' learnings | Review |
+| Value | Meaning |
+|-------|---------|
+| **agent** | Applies only to one specific agent's workflow or owned files |
+| **project** | Applies across agents within this project |
+| **global** | Applies to any Claude Code project |
 
-**Scoring Heuristics (rules):**
+For learnings, scope informs `/promote` — entries with `project` or `global` scope and `high` relevance in 2+ agents are strong promotion candidates. For rules, scope validates placement — `global` rules belong in `rules/`, `project` rules in `.claude/rules/`.
 
-**HIGH:** The rule covers a domain area that upcoming tasks will operate in, or addresses a failure mode that has been observed recently. Example: `rules/pipe-format.md` is HIGH when composable primitives are being written or revised.
+### Action Mapping
 
-**MEDIUM:** The rule provides useful guardrails across many session types but isn't directly tied to upcoming work. Example: `rules/batch-safety.md` is MEDIUM when no batch operations are planned but the constraint prevents real damage.
+The action for each entry is derived from its dimension scores:
 
-**LOW:** The rule covers a domain with no upcoming beads, no in-progress work, and no recent git activity (last 30 days) in the files it governs. Example: a rule about database migrations when no migration work is planned or recent.
+**Learnings mode:**
 
-**PASSIVE:** The rule's constraints are either (a) duplicated by another rule file or CLAUDE.md content, or (b) internalized by 3+ agents in their learnings, making the passive context cost redundant. When marking PASSIVE, cite the duplicating source or the agents that have internalized it.
+| Action | Criteria |
+|--------|----------|
+| **KEEP** | relevance: high or medium (regardless of freshness) |
+| **KEEP** | relevance: low AND freshness: fresh (recently added, give it time) |
+| **ARCHIVE** | relevance: low AND freshness: aging or stale |
+| **ARCHIVE** | relevance: passive (regardless of freshness) |
+
+**Rules mode:**
+
+| Action | Criteria |
+|--------|----------|
+| **KEEP** | relevance: high or medium (regardless of freshness) |
+| **KEEP** | relevance: low AND freshness: fresh (recently added rule, give it time) |
+| **REVIEW** | relevance: low AND freshness: aging or stale |
+| **REVIEW** | relevance: passive (regardless of freshness) |
+
+### Cross-References
+
+While scoring, note entries that reference similar concepts to other entries (in the same file or across agents). For each such pair, add a `related:` annotation in the output. These links improve knowledge discovery and feed `/promote`'s cross-agent detection. Example: an entry about "frontmatter fields" in agent A relates to "skill YAML conventions" in agent B.
 
 ---
 
@@ -267,35 +301,32 @@ Emit in pipe format per `rules/pipe-format.md`. The format depends on artifact t
 
 ### Items (N)
 
-1. **KEEP (HIGH): <entry title or first clause>** — <full entry text>
-   - score: HIGH
-   - reason: <why this is HIGH — reference to specific upcoming task or file>
+1. **KEEP: <entry title or first clause>** — <full entry text>
+   - relevance: high | medium
+   - freshness: fresh | aging | stale
+   - scope: agent | project | global
+   - reason: <why this relevance — reference to specific upcoming task or file>
    - source: memory/agents/<name>/learnings.md
    - related: <comma-separated list of related entry titles, if any>
 
-2. **KEEP (MEDIUM): <entry title>** — <full entry text>
-   - score: MEDIUM
-   - reason: <why MEDIUM>
-   - source: memory/agents/<name>/learnings.md
-   - related: <comma-separated list of related entry titles, if any>
-
-3. **ARCHIVE (LOW): <entry title>** — <full entry text>
-   - score: LOW
-   - reason: <no upcoming tasks touch this area>
+2. **ARCHIVE: <entry title>** — <full entry text>
+   - relevance: low | passive
+   - freshness: aging | stale
+   - scope: agent | project | global
+   - reason: <why archived — no upcoming tasks, or covered by rule: filename>
    - source: memory/agents/<name>/learnings.md
 
-4. **ARCHIVE (PASSIVE): <entry title>** — <full entry text>
-   - score: PASSIVE
-   - reason: covered by rule: <rule filename>
-   - source: memory/agents/<name>/learnings.md
-
-5. **ADD (from archive): <entry title>** — <entry text>
-   - score: HIGH | MEDIUM
+3. **ADD (from archive): <entry title>** — <entry text>
+   - relevance: high | medium
+   - freshness: <from original added date>
+   - scope: agent | project | global
    - reason: <gap area this fills>
    - source: memory/agents/<name>/archive.md
 
-6. **ADD (cross-agent): <entry title>** — <entry text>
-   - score: HIGH | MEDIUM
+4. **ADD (cross-agent): <entry title>** — <entry text>
+   - relevance: high | medium
+   - freshness: <from original added date>
+   - scope: project | global
    - reason: <gap area this fills; note if same entry exists in 2+ agents — promote candidate>
    - source: memory/agents/<other-name>/learnings.md
    - cross-agent: true
@@ -309,10 +340,10 @@ For each gap with no fill candidate:
 
 ### Summary
 
-<One paragraph: how many entries scored HIGH/MEDIUM/LOW/PASSIVE, how many gaps were found, how many fill candidates were identified from archive or cross-agent sources, and whether any cross-agent entries appear in 2+ agents (promote signals). Note overall learnings health — is the file well-targeted or diffuse?>
+<One paragraph: relevance distribution (how many high/medium/low/passive), freshness distribution (fresh/aging/stale), scope distribution (agent/project/global), how many gaps found, fill candidates from archive or cross-agent sources, and promote signals (cross-agent entries in 2+ agents with project/global scope). Note overall learnings health — is the file well-targeted or diffuse?>
 ```
 
-Order items: ADD first (most valuable new context), then KEEP (HIGH before MEDIUM), then ARCHIVE (LOW before PASSIVE). This puts what changes at the top for easy review.
+Order items: ADD first (most valuable new context), then KEEP (sorted by relevance high before medium), then ARCHIVE (low before passive). This puts what changes at the top for easy review.
 
 ### Rules Mode Output
 
@@ -325,27 +356,19 @@ Order items: ADD first (most valuable new context), then KEEP (HIGH before MEDIU
 
 ### Items (N)
 
-1. **KEEP (HIGH): <rule title>** — <one-line summary of what the rule constrains>
-   - score: HIGH
+1. **KEEP: <rule title>** — <one-line summary of what the rule constrains>
+   - relevance: high | medium
+   - freshness: fresh | aging | stale
+   - scope: project | global
    - reason: <covers upcoming work domain or known failure mode>
    - source: <rules/filename.md or .claude/rules/filename.md>
    - lines: <line count>
 
-2. **KEEP (MEDIUM): <rule title>** — <summary>
-   - score: MEDIUM
-   - reason: <broadly useful, not specific to upcoming work>
-   - source: <path>
-   - lines: <line count>
-
-3. **REVIEW (LOW): <rule title>** — <summary>
-   - score: LOW
-   - reason: <no upcoming tasks in covered domain, no recent git activity>
-   - source: <path>
-   - lines: <line count>
-
-4. **REVIEW (PASSIVE): <rule title>** — <summary>
-   - score: PASSIVE
-   - reason: <duplicated by: rule/file or internalized by: agent1, agent2, agent3>
+2. **REVIEW: <rule title>** — <summary>
+   - relevance: low | passive
+   - freshness: aging | stale
+   - scope: project | global
+   - reason: <no upcoming tasks in covered domain; or duplicated by / internalized by>
    - source: <path>
    - lines: <line count>
 
@@ -367,10 +390,10 @@ For each gap:
 
 ### Summary
 
-<One paragraph: how many rules scored HIGH/MEDIUM/LOW/PASSIVE, total passive context load in lines, potential savings from reviewing LOW+PASSIVE rules, any gaps where upcoming work lacks guardrails, and whether any gaps have promote candidates from agent learnings.>
+<One paragraph: relevance distribution (high/medium/low/passive), freshness distribution (fresh/aging/stale), scope distribution (project/global), total passive context load in lines, potential savings from reviewing low-relevance or stale rules, any gaps where upcoming work lacks guardrails, and whether any gaps have promote candidates from agent learnings.>
 ```
 
-Order items: KEEP (HIGH before MEDIUM), then REVIEW (LOW before PASSIVE). Rules mode uses REVIEW instead of ARCHIVE — rules are flagged for human review, never auto-removed.
+Order items: KEEP (sorted by relevance high before medium), then REVIEW (low before passive). Rules mode uses REVIEW instead of ARCHIVE — rules are flagged for human review, never auto-removed.
 
 ---
 
@@ -387,9 +410,9 @@ If the user approves:
 **5a. Update learnings.md**
 
 Write the updated file with:
-- All KEEP (HIGH) and KEEP (MEDIUM) entries retained
+- All KEEP entries retained (relevance high or medium, or low + fresh)
 - All ADD entries inserted (from archive or cross-agent sources)
-- All ARCHIVE entries removed
+- All ARCHIVE entries removed (relevance low + aging/stale, or passive)
 - Entries organized into Core (30 lines max) and Task-Relevant (30 lines max) sections
 - Total must not exceed 60 lines
 
@@ -402,8 +425,8 @@ When re-organizing:
 Append each ARCHIVE entry to `memory/agents/<name>/archive.md`:
 
 ```markdown
-- <entry text> (archived: YYYY-MM-DD, reason: LOW — no upcoming tasks in this area)
-- <entry text> (archived: YYYY-MM-DD, reason: PASSIVE — covered by rule: rules/commits.md)
+- <entry text> (archived: YYYY-MM-DD, reason: relevance low, freshness stale — no upcoming tasks in this area)
+- <entry text> (archived: YYYY-MM-DD, reason: relevance passive — covered by rule: rules/commits.md)
 ```
 
 If `archive.md` does not exist, create it with a header line:
@@ -432,8 +455,7 @@ Generated by /curate rules on YYYY-MM-DD
 
 ## Review Checklist
 
-- [ ] **REVIEW (LOW): <rule title>** (<path>, <lines> lines) — <reason>
-- [ ] **REVIEW (PASSIVE): <rule title>** (<path>, <lines> lines) — <reason>
+- [ ] **REVIEW: <rule title>** (<path>, <lines> lines) — relevance: <low|passive>, freshness: <aging|stale> — <reason>
 ...
 
 ## Gaps to Address
@@ -453,9 +475,9 @@ This manifest is a checklist for human review, not an automation target.
 
 ## Guidelines
 
-1. **Score against upcoming work, not general value.** A learning can be deeply true and still score LOW because nothing in the upcoming sprint will trigger it. That's fine — archive it and re-evaluate after the next sprint.
+1. **Relevance scores against upcoming work, not general value.** A learning can be deeply true and still have low relevance because nothing in the upcoming sprint will trigger it. That's fine — archive it and re-evaluate after the next sprint.
 
-2. **PASSIVE is not wrong — it's covered.** Marking an entry PASSIVE is a compliment: the pattern graduated to a rule. Archive it without judgment.
+2. **Passive relevance is not wrong — it's covered.** Marking an entry passive is a compliment: the pattern graduated to a rule. Archive it without judgment.
 
 3. **Gaps are diagnostic, not failures.** A gap means the agent will work without relevant learnings in that area. It does not mean the agent will fail. Flag it so a learning can be captured after the dispatch.
 
@@ -463,7 +485,7 @@ This manifest is a checklist for human review, not an automation target.
 
 5. **Ask before writing.** Never modify learnings.md or archive.md without explicit user approval. The pipe-format output is the primary artifact — the write-back is optional.
 
-6. **Cite specific rules.** When scoring an entry PASSIVE, name the exact rule file. "covered by a rule" is vague; "covered by rule: rules/commits.md" is actionable.
+6. **Cite specific rules for passive entries.** When scoring relevance as passive, name the exact rule file. "covered by a rule" is vague; "covered by rule: rules/commits.md" is actionable.
 
 7. **Respect the 60-line cap.** After write-back, learnings.md must fit within 30 Core + 30 Task-Relevant lines. If ADD candidates would push over the cap, prioritize by score (HIGH before MEDIUM) and note what was deferred.
 

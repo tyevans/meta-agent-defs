@@ -48,7 +48,7 @@ State: "Reading curated learnings from /curate output above."
 
 Note from the curate output:
 - Which entries are tagged `cross-agent: true` — these are pre-flagged candidates
-- Which entries have `KEEP (HIGH)` scores — stable, valued entries
+- Which entries have `KEEP` action with `relevance: high` — stable, valued entries
 - The agent name from the header (for scoping survival checks)
 - Any `### Gaps` section (not relevant for promotion — skip it)
 
@@ -63,8 +63,8 @@ Scan for `## Curated Rules: ... / **Source**: /curate` pattern.
 State: "Reading curated rules from /curate output above."
 
 Note from the rules curate output:
-- Which rules scored PASSIVE — redundancy already detected, avoid promoting learnings that duplicate these rules
-- Which rules scored LOW — these cover dormant domains, avoid promoting learnings into these same domains
+- Which rules have `relevance: passive` — redundancy already detected, avoid promoting learnings that duplicate these rules
+- Which rules have `relevance: low` — these cover dormant domains, avoid promoting learnings into these same domains
 - The `### Passive Context Budget` section — use total line count and potential savings to inform placement decisions (prefer project-local `.claude/rules/` over global `rules/` when budget is already high)
 
 This context improves placement decisions and prevents promoting patterns into already-redundant areas.

@@ -1,4 +1,6 @@
 ---
+paths:
+  - "memory/**"
 strength: may
 freshness: 2026-02-21
 ---
