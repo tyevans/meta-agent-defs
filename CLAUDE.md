@@ -99,8 +99,6 @@ tackline/
 ├── docs/                        # Documentation (cookbook, recipes, team guide, INDEX)
 │   └── INDEX.md                 # Skill & agent navigator (decision tree, categories)
 ├── demos/                       # Demo projects for primitive walkthroughs
-├── knowledge/
-│   └── domains.md               # Domain cross-reference index (rules, learnings, skills per domain)
 ├── rules/                       # Global rules (symlinked to ~/.claude/rules/)
 │   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
 │   ├── pipe-format.md           # Composable primitive output contract (paths: skills/**/SKILL.md)
