@@ -408,6 +408,10 @@ Present the final blossom report in **pipe format** so downstream primitives (/r
 
 2. ...
 
+### Backlog Status
+
+> **All items above already exist as beads** under epic [epic-id]. Do NOT create duplicate beads for these tasks — they are tracked and ready for `/sprint` dispatch.
+
 ### Exploration
 
 - **Epic ID:** [epic-id]
@@ -448,6 +452,7 @@ Present the final blossom report in **pipe format** so downstream primitives (/r
 11. **Clean shutdown.** After consolidation, shut down all teammates before proceeding to final phases. The orchestrator works solo for prioritization, verification, and reporting.
 
 12. **Persist epic state.** After reporting, write `memory/epics/<epic-id>/epic.md` so downstream skills (/sprint) can load context across sessions.
+13. **Report that beads exist.** The Phase 6 report MUST include the Backlog Status callout stating that all items already exist as beads. The caller (primary session) should NOT create additional beads — blossom has already done this in Phases 2-4.
 
 ## Phase 7: Persist Epic State
 
