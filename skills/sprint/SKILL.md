@@ -119,7 +119,42 @@ If any prerequisite is missing, go back and complete it now. Planning without lo
 
 **If beads are not available**, ask the user to describe the tasks they want dispatched, then match tasks to members based on role and ownership fit.
 
-### 2b. Present Sprint Plan
+### 2b. Detect Shared-File Conflicts
+
+Before presenting the plan, scan for tasks that will likely touch the same files.
+
+**Detection heuristic**: For each task, estimate its file scope using:
+1. **Ownership patterns**: Which member is assigned? Their `owns` globs define the likely file territory.
+2. **Bead description keywords**: Does the description mention specific files, classes, or systems by name?
+3. **Cross-cutting signals**: Keywords like "autoload", "game_config", "project.godot", "test_launcher", or "signal" suggest files that many tasks may touch.
+
+**Cross-reference**: Build a map of `file/pattern -> [task-ids]`. Any entry with 2+ tasks is a conflict candidate.
+
+**If conflicts are found**, surface them before presenting the plan:
+
+```markdown
+### Shared-File Conflicts Detected
+
+The following files/areas are estimated to be modified by multiple tasks:
+
+| File / Area | Tasks | Risk |
+|-------------|-------|------|
+| scripts/autoload/game_config.gd | [id1], [id2] | Overwrite risk |
+| project.godot (autoload section) | [id1], [id3] | Overwrite risk |
+| tests/test_launcher.tscn | [id2], [id3] | Merge conflict |
+
+**Resolution options (choose one per conflict):**
+(a) **Batch** — assign all changes to that file to a single agent (recommended)
+(b) **Sequence + verify** — keep agents separate, but add an explicit merge/rebuild pass after the conflicting agents complete
+
+Which resolution do you prefer for each conflict?
+```
+
+Wait for the user's choice before proceeding. Apply the chosen resolution to the sprint plan assignments and dispatch order.
+
+**If no conflicts are found**, proceed silently to 2c.
+
+### 2c. Present Sprint Plan
 
 ```markdown
 ## Sprint Plan
@@ -299,4 +334,4 @@ After all tasks are dispatched (or the sprint is stopped):
 5. **Watch for bloat.** If a learnings file exceeds 120 lines during a sprint, flag it for pruning in the next `/retro`.
 6. **Context carries forward.** When dispatching the second+ task in a sprint, include a brief summary of what previous agents found/changed.
 
-See also: /review (structured code review after agent implementation), /retro (capture sprint learnings at session end).
+See also: /review (structured code review after agent implementation), /retro (capture sprint learnings at session end), /curate (optimize agent learnings before sprint dispatch), /tend (full learnings lifecycle: curate + promote).

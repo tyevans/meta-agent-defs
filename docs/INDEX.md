@@ -49,7 +49,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (24)
+### Workflow Skills (26)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -68,6 +68,8 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /bug | File structured bug reports to beads backlog | inline |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
 | /curate | Score agent learnings by relevance, archive stale entries, fill gaps from archive or cross-agent sources | inline |
+| /promote | Graduate durable cross-agent learnings to rules (survival, stability, universality criteria) | inline |
+| /tend | Orchestrate full learning lifecycle: /curate per agent then /promote cross-agent | inline |
 | /session-health | Context load and drift diagnostic | inline |
 | /retro | Session retrospective with persistent learnings | inline |
 | /handoff | Session transition capture | inline |
@@ -107,7 +109,7 @@ Skills about the skill system itself.
 
 ## Skills by Context Type
 
-**Inline (32):** bug, curate, domain, gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
+**Inline (34):** bug, curate, domain, gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, promote, tend, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
 
 **Fork (10):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, test-strategy, tracer
 
@@ -130,6 +132,8 @@ Common composition sequences (each step's output feeds the next via context):
 /diagnose-agent -> /challenge-gen     # Profile agent -> generate targeted challenges
 /diagnose-agent -> /challenge-gen -> /challenge-run  # Profile -> challenges -> evaluate
 /active-learn                                       # Full loop: diagnose -> challenge -> evaluate -> learn (all inline)
+/curate -> /promote                                 # Optimize learnings -> graduate to rules
+/tend                                               # Full lifecycle: curate all agents -> promote (orchestrates both)
 ```
 
 **Note**: Multi-step chains (3+ primitives) are best run in the main session. If dispatching to a subagent, set `max_turns: 40` to avoid turn limits.

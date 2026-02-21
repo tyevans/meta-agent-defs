@@ -9,8 +9,8 @@ Known paths under `memory/` where persistent state lives. Skills that read syste
 | `memory/sessions/YYYY-MM-DDThh-mm-ssZ.md` | Session state snapshot, rolling buffer; last 3 kept | SessionEnd hook |
 | `memory/sessions/last.md` | Copy of most recent session snapshot, for backward compat | SessionEnd hook |
 | `memory/sessions/pre-compact.md` | Pre-compaction snapshot: in-progress tasks, recent commits, open questions | PreCompact hook |
-| `memory/agents/<name>/learnings.md` | Agent-specific learnings (persistent, append-only) | /sprint, /retro |
-| `memory/agents/<name>/archive.md` | Archived stale learnings (>21 days) | /retro |
+| `memory/agents/<name>/learnings.md` | Agent-specific learnings (persistent, append-only) | /sprint, /retro, /curate |
+| `memory/agents/<name>/archive.md` | Archived stale learnings (>21 days) | /retro, /curate |
 | `memory/agents/<name>/challenges/` | Challenge definitions and outcome history for active learning | /active-learn |
 | `memory/agents/<name>/training-log.md` | Training session summaries and improvement trajectory | /active-learn |
 | `memory/agents/<name>/capability.yaml` | Agent capability profile (strengths/weaknesses with scores) | /active-learn, /diagnose-agent |
