@@ -166,7 +166,33 @@ Note:
 
 After promotion, check existing rules for staleness and consider strength downgrades. This is the bidirectional lifecycle — rules can be promoted (via /promote) and demoted (via this pass).
 
-### 4a. Scan Rule Freshness
+### 4a. Renew Freshness for Active Rules
+
+Before scanning for demotions, bump `freshness:` on rules whose governed files have recent activity. This prevents actively-relevant rules from being demoted just because no one edited the rule file itself.
+
+For each rule with `paths:` patterns, check if governed files had commits in the last 90 days:
+
+```bash
+git log --oneline --since="90 days ago" -- <paths patterns> 2>/dev/null
+```
+
+If there is activity, update the rule's `freshness:` frontmatter to today's date. This resets the 90-day demotion clock.
+
+Rules without `paths:` (unconditional rules) are not auto-renewed — they require manual review or edit to stay fresh.
+
+Report renewals:
+
+```markdown
+### Freshness Renewed
+
+| Rule | Governed Files Activity | Previous Freshness | New Freshness |
+|------|------------------------|--------------------|---------------|
+| [filename] | [n] commits in 90 days | [old date] | [today] |
+```
+
+If no rules qualify for renewal, note "No freshness renewals — no governed-file activity detected."
+
+### 4b. Scan Rule Freshness
 
 For each rule file with `strength:` and `freshness:` frontmatter:
 
@@ -174,9 +200,9 @@ For each rule file with `strength:` and `freshness:` frontmatter:
 git log --oneline --since="90 days ago" -- rules/*.md .claude/rules/*.md 2>/dev/null
 ```
 
-Cross-reference each rule's `freshness:` date with git activity on files the rule governs (using `paths:` patterns if present).
+Cross-reference each rule's `freshness:` date with git activity on files the rule governs (using `paths:` patterns if present). Rules renewed in 4a will naturally pass this check.
 
-### 4b. Identify Demotion Candidates
+### 4c. Identify Demotion Candidates
 
 | Condition | Action |
 |-----------|--------|
@@ -185,7 +211,7 @@ Cross-reference each rule's `freshness:` date with git activity on files the rul
 
 A rule is "governed" by the files matching its `paths:` patterns. Rules without `paths:` (unconditional) use their topic area — check if any files in that domain had recent commits.
 
-### 4c. Apply Demotions (with confirmation)
+### 4d. Apply Demotions (with confirmation)
 
 Present demotion candidates:
 
@@ -202,9 +228,9 @@ Ask: "Apply these demotions? (y/n/select)"
 
 If approved, update the `strength:` field in each rule's frontmatter and set `freshness:` to today's date (the demotion is itself a freshness event).
 
-### 4d. Report
+### 4e. Report
 
-Note how many rules were demoted, how many flagged for retirement, and how many were unchanged.
+Note how many rules had freshness renewed, how many were demoted, how many flagged for retirement, and how many were unchanged.
 
 ---
 
@@ -241,6 +267,7 @@ Present a unified report of the full lifecycle run:
 - **Deferred**: [n] ([brief reasons])
 
 ### Demotion Results
+- **Freshness renewed**: [n] ([list: filename old-date→today])
 - **Rules demoted**: [n] ([list: filename strength→strength])
 - **Flagged for retirement**: [n] ([list filenames])
 - **Unchanged**: [n]
