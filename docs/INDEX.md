@@ -22,6 +22,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Generate training challenges** -> /challenge-gen (targeted challenges from struggle profile)
 - **Run challenges and evaluate** -> /challenge-run (dispatch agent, evaluate performance)
 - **Improve agent capabilities** -> /active-learn (full adversarial training loop: diagnose -> challenge -> evaluate -> learn)
+- **Optimize agent learnings for upcoming work** -> /curate (score, prune, fill gaps) -> /promote (graduate to rules) — or use /tend to run both
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
@@ -48,7 +49,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Minimal code skeleton with TODOs | Output |
 
-### Workflow Skills (23)
+### Workflow Skills (24)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -66,6 +67,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /review | Structured code review (5 dimensions) | fork |
 | /bug | File structured bug reports to beads backlog | inline |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
+| /curate | Score agent learnings by relevance, archive stale entries, fill gaps from archive or cross-agent sources | inline |
 | /session-health | Context load and drift diagnostic | inline |
 | /retro | Session retrospective with persistent learnings | inline |
 | /handoff | Session transition capture | inline |
@@ -105,7 +107,7 @@ Skills about the skill system itself.
 
 ## Skills by Context Type
 
-**Inline (31):** bug, domain, gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
+**Inline (32):** bug, curate, domain, gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
 
 **Fork (10):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, test-strategy, tracer
 

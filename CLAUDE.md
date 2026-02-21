@@ -69,8 +69,9 @@ bd sync --flush-only            # Save state before session end
 | Manage a team | /assemble -> /standup -> /sprint |
 | Discuss with panels | /meeting |
 | Plan a goal with your team | /team-meeting |
+| Optimize agent learnings | /curate or /tend (curate + promote) |
 
-All 41 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
+All 42 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
 
 ## Project Structure
 
