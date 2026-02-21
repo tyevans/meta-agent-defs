@@ -74,7 +74,7 @@ xargs rm -f < ~/.claude/.tackline.manifest
 
 **New machine:** Clone, install, go. Your entire Claude Code workflow travels with you.
 
-## Skills (40)
+## Skills (44)
 
 ### Composable Primitives
 
@@ -112,6 +112,10 @@ Orchestrated multi-step workflows with side effects.
 | `/premortem` | Failure analysis before building |
 | `/bootstrap` | Full project setup: infrastructure + agents |
 | `/active-learn` | Adversarial training loop for agent improvement |
+| `/curate` | Score learnings/rules by relevance x freshness x scope, archive stale entries, detect gaps |
+| `/promote` | Graduate durable cross-agent learnings to project rules |
+| `/tend` | Full learning lifecycle: curate agents, curate rules, promote, demotion, summary |
+| `/test-strategy` | Classify spec type, write tests, enforce red-green gates |
 
 ### Session & Team
 
@@ -136,6 +140,8 @@ Orchestrated multi-step workflows with side effects.
 /assemble -> /standup -> /sprint       Form team -> sync -> dispatch
 /blossom -> pick tasks -> /tracer      Explore -> build
 /meeting -> /fractal -> /spec          Discuss -> deep-dive -> specify
+/curate -> /promote                    Optimize learnings -> graduate to rules
+/tend                                  Full lifecycle: curate -> promote -> demotion
 ```
 
 ## How It Actually Works
@@ -156,7 +162,7 @@ Orchestrated multi-step workflows with side effects.
 
 ## Learn More
 
-- [Full skill & agent catalog](docs/INDEX.md) -- 40 skills, 3 agents, decision tree, chain patterns
+- [Full skill & agent catalog](docs/INDEX.md) -- 44 skills, 3 agents, decision tree, chain patterns
 - [Technical reference](docs/reference.md) -- hooks, MCP servers, project structure, design philosophy
 - [Composable primitive patterns](docs/primitives-cookbook.md) -- annotated walkthroughs
 - [Team system guide](docs/team-system-guide.md) -- persistent learning teams

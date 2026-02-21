@@ -68,11 +68,11 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /review | Structured code review (5 dimensions) | fork |
 | /bug | File structured bug reports to beads backlog | inline |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
-| /curate | Score agent learnings or project rules by relevance, archive stale entries, fill gaps; rules mode adds passive context budget analysis | inline |
-| /promote | Graduate durable cross-agent learnings to rules (survival, stability, universality criteria) | inline |
-| /tend | Orchestrate full learning lifecycle: /curate per agent, /curate rules, then /promote cross-agent | inline |
+| /curate | Score agent learnings or project rules by multi-dimensional scoring (relevance x freshness x scope), archive stale entries, detect gaps with `related:` cross-references and domain index consultation, coalesce similar patterns | inline |
+| /promote | Graduate durable cross-agent learnings to rules (survival, stability, universality criteria); reads dimension-based curate output; marks source learnings after promotion | inline |
+| /tend | Orchestrate full learning lifecycle in 5 phases: /curate per agent, /curate rules, /promote cross-agent, demotion pass (downgrade stale rules), summary | inline |
 | /session-health | Context load and drift diagnostic | inline |
-| /retro | Session retrospective with persistent learnings | inline |
+| /retro | Session retrospective with persistent learnings; delegates promotion to /promote | inline |
 | /handoff | Session transition capture | inline |
 | /evolution | File change history, churn, stability analysis | inline |
 | /drift | Cross-definition convergence/divergence detection | inline |
@@ -135,7 +135,7 @@ Common composition sequences (each step's output feeds the next via context):
 /active-learn                                       # Full loop: diagnose -> challenge -> evaluate -> learn (all inline)
 /curate -> /promote                                 # Optimize learnings -> graduate to rules
 /curate rules                                       # Audit project rules: scores, budget, gaps
-/tend                                               # Full lifecycle: curate agents -> curate rules -> promote
+/tend                                               # Full lifecycle: curate agents -> curate rules -> promote -> demotion -> summary
 ```
 
 **Note**: Multi-step chains (3+ primitives) are best run in the main session. If dispatching to a subagent, set `max_turns: 40` to avoid turn limits.

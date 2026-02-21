@@ -16,7 +16,7 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 
 1. `/blossom <topic>` — Runs subagent spikes to explore the solution space. Produces an epic with child tasks written to the backlog via `bd create`. Each task includes a confidence level (CONFIRMED/LIKELY/POSSIBLE).
 2. `/sprint` — Reads the backlog (`bd ready`), selects the highest-priority tasks from the blossom epic, dispatches subagents to implement them. Produces learnings and a session summary.
-3. `/retro` — Reads session learnings and git activity. Produces a retrospective written to `memory/agents/<name>/learnings.md` and a summary for the team.
+3. `/retro` — Reads session learnings and git activity. Produces a retrospective written to `memory/agents/<name>/learnings.md`. Delegates promotion evaluation to `/promote` rather than doing inline assessment.
 
 ### State Flow
 
@@ -39,7 +39,7 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 1. `/assemble` — Creates or re-onboards a team from a `team.yaml` template. Assigns roles, surfaces each agent's current learnings, and establishes ownership of backlog areas.
 2. `/standup` — Syncs team status: reads each agent's `learnings.md`, surfaces blockers, reports backlog health. Produces a status summary used to focus the sprint.
 3. `/sprint` — Dispatches work to team members based on ownership and backlog priority. Runs the learning loop: agents record what they learned in `memory/agents/<name>/learnings.md`.
-4. `/retro` — Retrospective across the full team: what worked, what broke, what to change. Updates `memory/team/retro-history.md` and individual agent learnings.
+4. `/retro` — Retrospective across the full team: what worked, what broke, what to change. Updates individual agent learnings. Delegates promotion evaluation to `/promote`.
 5. `/handoff` — Captures end-of-session state to `memory/sessions/last.md` so the next session can resume cleanly.
 
 ### State Flow
@@ -49,6 +49,7 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 | `/assemble` | `/standup` | In-memory team roster + `memory/agents/<name>/learnings.md` |
 | `/standup` | `/sprint` | Standup summary in context — surfaces blockers and priority signals |
 | `/sprint` | `/retro` | `memory/agents/<name>/learnings.md` — written during sprint |
+| `/retro` | `/promote` | Context — retro notes promotion candidates; `/promote` evaluates them |
 | `/retro` | `/handoff` | Context — retro produces the session narrative handoff reads |
 | `/handoff` | next session `/status` | `memory/sessions/last.md` — last session state file |
 
@@ -137,7 +138,7 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 
 1. `/status` — Reads `memory/sessions/last.md`, `bd stats`, git activity, and team state. Produces a unified dashboard: what happened last session, what's ready now, what's blocked.
 2. **Work** — Use any skills appropriate to the tasks at hand. The middle of the session is unconstrained.
-3. `/retro` — Reflects on the session: what was completed, what was learned, what to change. Writes to `memory/agents/<name>/learnings.md` and `memory/team/retro-history.md`.
+3. `/retro` — Reflects on the session: what was completed, what was learned, what to change. Writes to `memory/agents/<name>/learnings.md`. Delegates promotion evaluation to `/promote`.
 4. `/handoff` — Captures current state to `memory/sessions/last.md`. Includes backlog state, open threads, and a one-paragraph summary for the next session's `/status` to read.
 5. **(Next session) `/status`** — Reads the handoff file. The cycle repeats.
 

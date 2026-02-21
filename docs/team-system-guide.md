@@ -183,28 +183,6 @@ EOF
 
 Repeat for each member. Optionally seed with 2-3 observations from your initial project exploration.
 
-#### Step 4: Create Shared Memory
-
-Create `memory/team/decisions.md`:
-
-```markdown
-# Team Decisions
-
-## Architecture
-- (none yet)
-
-## Conventions
-- (none yet)
-```
-
-Create `memory/team/retro-history.md`:
-
-```markdown
-# Retrospective History
-
-(No retrospectives yet. Run /retro to add entries.)
-```
-
 ### Role Templates
 
 Common role patterns to adapt:
@@ -603,8 +581,7 @@ The team system integrates with four primary skills: `/assemble`, `/standup`, `/
 2. Proposes roles and ownership patterns
 3. Creates `.claude/team.yaml`
 4. Creates `memory/agents/<name>/learnings.md` for each member
-5. Creates `memory/team/decisions.md` and `memory/team/retro-history.md`
-6. Optionally initializes a beads backlog
+5. Optionally initializes a beads backlog
 
 **Output:** A fully configured team ready for dispatch.
 
@@ -742,9 +719,9 @@ After user approval, `/sprint` dispatches each task, parses reflections, updates
 3. Extracts keep/stop/try learnings
 4. Prunes bloated learnings files (if team exists)
 5. Updates project memory (MEMORY.md)
-6. Appends to `memory/team/retro-history.md`
+6. Notes promotion candidates and recommends running `/promote` or `/tend` to evaluate them (does not promote inline)
 
-**Output:** Structured retrospective report + pruned learnings files + updated memory.
+**Output:** Structured retrospective report + pruned learnings files + updated memory. Run `/promote` or `/tend` after retro to evaluate promotion candidates.
 
 **Example:**
 ```
@@ -880,7 +857,7 @@ The learning loop works identically — beads just provide backlog structure and
 **Cause:** Too many learnings accumulated without pruning.
 
 **Fix:**
-- Run `/retro` to trigger automatic pruning
+- Run `/retro` to trigger automatic pruning, then `/tend` or `/curate` + `/promote` for the full lifecycle
 - Manually consolidate similar entries
 - Archive stale entries (>21 days) to `memory/agents/<name>/archive.md`
 - Promote high-value entries to `.claude/rules/` or `CLAUDE.md`
@@ -1011,7 +988,7 @@ The persistent learning team system transforms agent dispatch from stateless exe
 3. **The learning loop** ensures agents get smarter with every task
 4. **Cross-agent notes** route knowledge between team members
 5. **Pruning** keeps learnings focused and high-signal
-6. **Four skills** integrate the system: `/assemble`, `/standup`, `/sprint`, `/retro`
+6. **Seven skills** integrate the system: `/assemble`, `/standup`, `/sprint`, `/retro`, `/curate`, `/promote`, `/tend`
 7. **Beads are optional** — teams work with or without backlog tracking
 
 **Next steps:**

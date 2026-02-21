@@ -81,6 +81,8 @@ tackline/
 │   ├── agent-generator.md      # Generates project-specific agents
 │   ├── project-bootstrapper.md # Bootstraps projects with full Claude Code setup
 │   └── code-reviewer.md        # Read-only code review agent
+├── bin/
+│   └── rule-relevance.sh       # SessionStart hook: matches rules to file activity via paths: frontmatter
 ├── skills/                      # Skill definitions (symlinked to ~/.claude/skills/)
 │   ├── blossom/SKILL.md         # Spike-driven exploration (context: fork)
 │   ├── fractal/SKILL.md         # Goal-directed recursive exploration (inline)
@@ -97,11 +99,13 @@ tackline/
 ├── docs/                        # Documentation (cookbook, recipes, team guide, INDEX)
 │   └── INDEX.md                 # Skill & agent navigator (decision tree, categories)
 ├── demos/                       # Demo projects for primitive walkthroughs
+├── knowledge/
+│   └── domains.md               # Domain cross-reference index (rules, learnings, skills per domain)
 ├── rules/                       # Global rules (symlinked to ~/.claude/rules/)
 │   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
-│   ├── pipe-format.md           # Composable primitive output contract
+│   ├── pipe-format.md           # Composable primitive output contract (paths: skills/**/SKILL.md)
 │   ├── information-architecture.md  # IA principles for knowledge organization
-│   └── memory-layout.md         # Path registry for persistent state
+│   └── memory-layout.md         # Path registry for persistent state (paths: memory/**)
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
@@ -126,9 +130,10 @@ tackline/
 
 ## Key Patterns
 
-- All artifact files are Markdown with YAML frontmatter (agents, skills)
+- All artifact files are Markdown with YAML frontmatter (agents, skills, rules)
 - Agent frontmatter fields: `name`, `description`, `tools`, `model`, `permissionMode`
 - Skill frontmatter fields: `name`, `description`, `allowed-tools`, `context`, `disable-model-invocation`
+- Rule frontmatter fields: `strength` (must/should/may), `freshness` (date); some rules also have `paths` (glob patterns for conditional loading via `bin/rule-relevance.sh`)
 - Hooks fail gracefully with `|| true` for optional tools (like `bd`)
 - Epic hierarchy via `--parent`: `bd create --parent=<epic-id>` (not `bd dep add`). Use `bd dep add` only for cross-task ordering
 - Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE
