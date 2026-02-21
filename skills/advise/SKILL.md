@@ -4,7 +4,7 @@ description: "Proactive session recommendations by composing git state, session 
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)", "Bash(git-pulse.sh:*)"]
+allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)"]
 context: inline
 ---
 
@@ -73,10 +73,10 @@ Extract:
 - **In-progress items**: Work that was started but not finished
 - **Blocked items**: What's stuck and why
 
-### Layer 4: Signals (if `command -v git-pulse.sh` succeeds)
+### Layer 4: Signals (if `command -v git-intel` succeeds)
 
 ```bash
-git-pulse.sh 2>/dev/null
+git-intel patterns --repo . --since "30d"
 ```
 
 Extract:
@@ -118,7 +118,7 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 
 **Example:**
 - ❌ Before: "Consider addressing the high fix rate"
-- ✅ After: "Run /review on commits c752c8d..888d9f2 — fix rate is 45% (9/20 commits in last 30d), concentrated in tools/git-intel/src/integration.rs"
+- ✅ After: "Run /review on commits c752c8d..888d9f2 — fix rate is 45% (9/20 commits in last 30d), concentrated in src/integration.rs"
 
 ---
 

@@ -4,7 +4,7 @@ description: "Generate targeted challenges for agent improvement from a /diagnos
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, Write, WebSearch, WebFetch, "Bash(git:*)", "Bash(git-intel:*)", "Bash(git-pulse.sh:*)", "Bash(wc:*)", "Bash(mkdir:*)"]
+allowed-tools: [Read, Grep, Glob, Write, WebSearch, WebFetch, "Bash(git:*)", "Bash(git-intel:*)", "Bash(wc:*)", "Bash(mkdir:*)"]
 context: inline
 ---
 

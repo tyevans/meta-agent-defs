@@ -4,7 +4,7 @@ description: "Run the full adversarial training loop for a team agent or in solo
 argument-hint: "<agent-name> [rounds=3]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Write, Grep, Glob, Task, WebSearch, WebFetch, "Bash(git:*)", "Bash(git-intel:*)", "Bash(git-pulse.sh:*)", "Bash(mkdir:*)", "Bash(wc:*)"]
+allowed-tools: [Read, Write, Grep, Glob, Task, WebSearch, WebFetch, "Bash(git:*)", "Bash(git-intel:*)", "Bash(mkdir:*)", "Bash(wc:*)"]
 context: fork
 ---
 

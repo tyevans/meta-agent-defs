@@ -4,7 +4,7 @@ description: "Run an automated session retrospective to evaluate velocity, quali
 argument-hint: "[focus area or session topic]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(git-pulse.sh:*), Bash(wc:*), Bash(git-intel:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(wc:*), Bash(git-intel:*), Write, Edit
 ---
 
 # Retro: Automated Session Retrospective
@@ -38,21 +38,10 @@ Gather session data (git + backlog + conversation context)
 
 ### 1a. Git Activity
 
-**If `command -v git-pulse.sh` succeeds**, run:
+Run:
 
 ```bash
-git-pulse.sh --since="8 hours ago" 2>/dev/null
-```
-
-This provides structured metrics:
-- Total commits and breakdown by type (feat/fix/chore/docs/refactor)
-- Fix rate (percentage of commits that are fixes)
-- Top-5 churning files (most lines changed)
-
-**If the script does not exist**, fall back to raw git log:
-
-```bash
-git log --oneline -20
+git log --oneline --since="8 hours ago"
 ```
 
 Note which commits were made this session, how many files were touched, and the types of changes.
@@ -90,7 +79,7 @@ Evaluate the session across these five dimensions:
 - What was the ratio of planned work to discovered work?
 - Were any tasks significantly larger or smaller than expected?
 - How much time was spent on overhead (setup, debugging tools, context gathering) vs. actual work?
-- **Git pulse metrics** (if available from Phase 1a):
+- **Git activity metrics** (if available from Phase 1a):
   - Commit volume and type distribution (feat/fix/chore/docs/refactor)
   - Fix rate: what percentage of commits were corrections? (High fix rate may indicate insufficient verification before changes)
   - Churn concentration: are changes focused on a few files (targeted work) or scattered (exploratory work)?
@@ -357,7 +346,7 @@ Present a structured retrospective report:
 [1-2 sentence summary of what this session accomplished and its overall character]
 
 ### Git Session Stats
-[If git-pulse data was gathered in Phase 1a, include:]
+[If git activity data was gathered in Phase 1a, include:]
 - **Commits**: [total] ([feat] feat, [fix] fix, [chore] chore, [docs] docs, [refactor] refactor)
 - **Fix rate**: [percentage]% [interpretation: low/normal/high]
 - **Top churning files**: [list top 2-3 with change volume]

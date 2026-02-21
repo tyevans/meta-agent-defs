@@ -4,7 +4,7 @@ description: "Show unified system status: backlog, recent activity, team health,
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(git-pulse.sh:*)", "Bash(git-intel:*)"]
+allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(git-intel:*)"]
 context: inline
 ---
 
@@ -72,7 +72,7 @@ git status --short
 
 ### 1e. Hotspots (Churn Heatmap)
 
-Prefer git-intel when available, fall back to git-pulse.sh:
+Prefer git-intel when available, fall back to raw git:
 
 **If `command -v git-intel` succeeds**, run:
 
@@ -82,15 +82,13 @@ git-intel churn --repo . --limit 10
 
 Parse the JSON output to extract files sorted by `total_churn` (additions + deletions).
 
-**Else if `command -v git-pulse.sh` succeeds**, run:
+**Else**, fall back to raw git:
 
 ```bash
-git-pulse.sh --since="7 days ago" 2>/dev/null
+git log --oneline --since="7 days ago" | head -20
 ```
 
-Extract the `churn_N` lines from the output. These show files with highest modification frequency.
-
-**If neither tool exists**, skip this section.
+**If no churn data is available**, skip this section.
 
 ---
 
@@ -132,15 +130,6 @@ Present all collected data in this structure. Do not add commentary or analysis 
 ...
 
 Show top 5-10 files by total_churn.
-
-[Else if git-pulse.sh data collected:]
-| File | Edits (7d) |
-|------|------------|
-| [path] | [N] |
-| [path] | [N] |
-...
-
-Show top 5-10 churning files from the `churn_N` lines.
 
 [If no churn data available, omit this section entirely.]
 

@@ -4,7 +4,7 @@ description: "Profile a team agent's strengths and weaknesses from learnings evo
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(git-intel:*)", "Bash(git-pulse.sh:*)", "Bash(wc:*)"]
+allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(git-intel:*)", "Bash(wc:*)"]
 context: inline
 ---
 
