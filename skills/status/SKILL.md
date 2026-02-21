@@ -4,7 +4,7 @@ description: "Show unified system status: backlog, recent activity, team health,
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(bin/git-pulse.sh:*)", "Bash($HOME/.claude/bin/git-pulse.sh:*)", "Bash(tools/git-intel/target/release/git-intel:*)"]
+allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(git-pulse.sh:*)", "Bash(git-intel:*)"]
 context: inline
 ---
 
@@ -74,18 +74,18 @@ git status --short
 
 Prefer git-intel when available, fall back to git-pulse.sh:
 
-**If `tools/git-intel/target/release/git-intel` exists**, run:
+**If `command -v git-intel` succeeds**, run:
 
 ```bash
-tools/git-intel/target/release/git-intel churn --repo . --limit 10
+git-intel churn --repo . --limit 10
 ```
 
 Parse the JSON output to extract files sorted by `total_churn` (additions + deletions).
 
-**Else if `git-pulse.sh` is available** (check `bin/git-pulse.sh` or `$HOME/.claude/bin/git-pulse.sh`), run:
+**Else if `command -v git-pulse.sh` succeeds**, run:
 
 ```bash
-"$HOME/.claude/bin/git-pulse.sh" --since="7 days ago" 2>/dev/null || bin/git-pulse.sh --since="7 days ago" 2>/dev/null
+git-pulse.sh --since="7 days ago" 2>/dev/null
 ```
 
 Extract the `churn_N` lines from the output. These show files with highest modification frequency.

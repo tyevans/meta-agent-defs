@@ -4,7 +4,7 @@ description: "Proactive session recommendations by composing git state, session 
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)", "Bash(bin/git-pulse.sh:*)", "Bash($HOME/.claude/bin/git-pulse.sh:*)"]
+allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)", "Bash(git-pulse.sh:*)"]
 context: inline
 ---
 
@@ -73,10 +73,10 @@ Extract:
 - **In-progress items**: Work that was started but not finished
 - **Blocked items**: What's stuck and why
 
-### Layer 4: Signals (if `git-pulse.sh` is available)
+### Layer 4: Signals (if `command -v git-pulse.sh` succeeds)
 
 ```bash
-"$HOME/.claude/bin/git-pulse.sh" 2>/dev/null || bin/git-pulse.sh 2>/dev/null
+git-pulse.sh 2>/dev/null
 ```
 
 Extract:

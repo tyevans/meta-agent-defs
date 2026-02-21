@@ -4,7 +4,7 @@ description: "Plan and dispatch work to team members with the learning loop: ass
 argument-hint: "[task filter or focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Bash(tools/git-intel/target/release/git-intel:*), Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Bash(git-intel:*), Task
 ---
 
 # Sprint: Plan, Dispatch, Learn
@@ -196,9 +196,9 @@ Build the task prompt following the spawn protocol from team-protocol.md:
 
 #### Signal Enrichment (conditional)
 
-**If** `tools/git-intel/target/release/git-intel` exists:
+**If** `command -v git-intel` succeeds:
 
-1. Run `tools/git-intel/target/release/git-intel patterns --repo . --since "30d"` and parse the JSON output
+1. Run `git-intel patterns --repo . --since "30d"` and parse the JSON output
 2. Extract signals where `kind == "fix_after_refactor"` from the `signals` array
 3. For each fix_after_refactor signal, check if any of the signal's `files` match the member's `owns` glob patterns (from team.yaml)
 4. If there's overlap, add a signal warning section to the dispatch prompt:

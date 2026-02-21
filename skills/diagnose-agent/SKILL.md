@@ -4,7 +4,7 @@ description: "Profile a team agent's strengths and weaknesses from learnings evo
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(tools/git-intel/target/release/git-intel:*)", "Bash(bin/git-pulse.sh:*)", "Bash(wc:*)"]
+allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(git-intel:*)", "Bash(git-pulse.sh:*)", "Bash(wc:*)"]
 context: inline
 ---
 
@@ -93,7 +93,7 @@ Categories with few or no entries represent potential knowledge gaps. An agent w
 
 Read `.claude/team.yaml` to extract the agent's `owns` patterns (file globs defining ownership).
 
-### If git-intel exists (`tools/git-intel/target/release/git-intel`):
+### If `command -v git-intel` succeeds:
 
 ```bash
 # Fix-after-feat signals on owned files

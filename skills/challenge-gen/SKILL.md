@@ -4,7 +4,7 @@ description: "Generate targeted challenges for agent improvement from a /diagnos
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, Write, WebSearch, WebFetch, "Bash(git:*)", "Bash(tools/git-intel/target/release/git-intel:*)", "Bash(bin/git-pulse.sh:*)", "Bash(wc:*)", "Bash(mkdir:*)"]
+allowed-tools: [Read, Grep, Glob, Write, WebSearch, WebFetch, "Bash(git:*)", "Bash(git-intel:*)", "Bash(git-pulse.sh:*)", "Bash(wc:*)", "Bash(mkdir:*)"]
 context: inline
 ---
 
@@ -113,7 +113,7 @@ Identify real commits in the agent's ownership area that can be turned into repl
 
 ### 2a. Find Candidate Commits
 
-**If git-intel exists (`tools/git-intel/target/release/git-intel`):**
+**If `command -v git-intel` succeeds:**
 
 ```bash
 # Find fix-after-feat patterns — these are commits where getting it right was hard
@@ -131,7 +131,7 @@ Filter results to files matching the agent's `owns` patterns. Prioritize:
 - Commits touching high-churn files (areas where correctness is repeatedly hard)
 - Commits with detailed messages (better context for the challenge prompt)
 
-**If git-intel does not exist, fall back to raw git:**
+**If git-intel is not available, fall back to raw git:**
 
 ```bash
 # Recent fix commits in owned files

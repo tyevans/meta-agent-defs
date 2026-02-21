@@ -4,7 +4,7 @@ description: "Run an automated session retrospective to evaluate velocity, quali
 argument-hint: "[focus area or session topic]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(bin/git-pulse.sh:*), "Bash($HOME/.claude/bin/git-pulse.sh:*)", Bash(wc:*), Bash(tools/git-intel/target/release/git-intel:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(git-pulse.sh:*), Bash(wc:*), Bash(git-intel:*), Write, Edit
 ---
 
 # Retro: Automated Session Retrospective
@@ -38,10 +38,10 @@ Gather session data (git + backlog + conversation context)
 
 ### 1a. Git Activity
 
-**If `git-pulse.sh` is available** (check `bin/git-pulse.sh` or `$HOME/.claude/bin/git-pulse.sh`), run:
+**If `command -v git-pulse.sh` succeeds**, run:
 
 ```bash
-"$HOME/.claude/bin/git-pulse.sh" --since="8 hours ago" 2>/dev/null || bin/git-pulse.sh --since="8 hours ago" 2>/dev/null
+git-pulse.sh --since="8 hours ago" 2>/dev/null
 ```
 
 This provides structured metrics:
@@ -124,10 +124,10 @@ Evaluate the session across these five dimensions:
 
 ### Mistake Patterns
 
-**If `tools/git-intel/target/release/git-intel` exists**, detect fix-after-feat patterns:
+**If `command -v git-intel` succeeds**, detect fix-after-feat patterns:
 
 ```bash
-tools/git-intel/target/release/git-intel patterns --repo . --since "8 hours ago"
+git-intel patterns --repo . --since "8 hours ago"
 ```
 
 Parse the JSON output to identify:
@@ -234,13 +234,13 @@ Append a summary to `memory/team/retro-history.md`:
 
 ### 4f. Learning Lifecycle Analysis (conditional)
 
-**Only run if `tools/git-intel/target/release/git-intel` exists.** Skip if the tool is not available.
+**Only run if `command -v git-intel` succeeds.** Skip if the tool is not available.
 
 For each member with a learnings file (`memory/agents/<name>/learnings.md`):
 
 1. **Track learning survival** — Run lifecycle analysis:
    ```bash
-   tools/git-intel/target/release/git-intel lifecycle --repo . memory/agents/<name>/learnings.md
+   git-intel lifecycle --repo . memory/agents/<name>/learnings.md
    ```
    Parse the JSON output to identify:
    - **Survival count**: Learnings present in 3+ consecutive retro commits (entries that survived pruning)

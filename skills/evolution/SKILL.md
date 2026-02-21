@@ -4,7 +4,7 @@ description: "Track how any definition changed over time — edit history, churn
 argument-hint: "<file-path> [commit1..commit2]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(tools/git-intel/target/release/git-intel:*)"]
+allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(git-intel:*)"]
 ---
 
 # Evolution: File Change History
@@ -36,7 +36,7 @@ Verify file exists in working tree or git history. If not found, error: "File no
 
 ## Phase 1: Gather History
 
-Check for `tools/git-intel/target/release/git-intel`. If available, use `lifecycle` command. Otherwise fall back to raw git:
+Check if `command -v git-intel` succeeds. If available, use `lifecycle` command. Otherwise fall back to raw git:
 
 ```bash
 # Timeline

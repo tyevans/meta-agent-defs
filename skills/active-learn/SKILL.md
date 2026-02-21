@@ -4,7 +4,7 @@ description: "Run the full adversarial training loop for a team agent or in solo
 argument-hint: "<agent-name> [rounds=3]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Write, Grep, Glob, Task, WebSearch, WebFetch, "Bash(git:*)", "Bash(tools/git-intel/target/release/git-intel:*)", "Bash(bin/git-pulse.sh:*)", "Bash(mkdir:*)", "Bash(wc:*)"]
+allowed-tools: [Read, Write, Grep, Glob, Task, WebSearch, WebFetch, "Bash(git:*)", "Bash(git-intel:*)", "Bash(git-pulse.sh:*)", "Bash(mkdir:*)", "Bash(wc:*)"]
 context: fork
 ---
 
@@ -116,7 +116,7 @@ Parse the diffs to extract:
 
 In team mode, read `.claude/team.yaml` to extract the agent's `owns` patterns. In solo mode, no `owns` filtering applies -- analyze all project files.
 
-**If git-intel exists (`tools/git-intel/target/release/git-intel`):**
+**If `command -v git-intel` succeeds:**
 
 ```bash
 git-intel patterns --repo . --since 30d
@@ -129,7 +129,7 @@ Filter to files matching the agent's `owns` patterns. Look for:
 - **High churn on owned files**: instability in agent's domain
 - **Hotspots in owned area**: concentrated activity (focus or thrashing)
 
-**If git-intel does not exist, fall back to raw git:**
+**If git-intel is not available, fall back to raw git:**
 
 ```bash
 git log --oneline --since="30 days ago" -- <owns-patterns>
@@ -194,7 +194,7 @@ Verify each external finding applies to the codebase (check imports, packages, g
 
 ### 2c. Strategy B: Commit-Replay Candidates
 
-**If git-intel exists:**
+**If `command -v git-intel` succeeds:**
 
 ```bash
 git-intel patterns --repo . --since 60d
@@ -203,7 +203,7 @@ git-intel churn --repo . --since 60d
 
 Filter to owned files. Prioritize fix_after_feat commits and high-churn files.
 
-**If git-intel does not exist:**
+**If git-intel is not available:**
 
 ```bash
 git log --format="%H %s" --since="60 days ago" -- <owns-patterns>
