@@ -4,7 +4,7 @@ description: "Show unified system status: backlog, recent activity, team health,
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(git-intel:*)"]
+allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)"]
 context: inline
 ---
 
@@ -70,25 +70,13 @@ git status --short
 
 **If `.claude/team.yaml` does not exist**, note "No team configured."
 
-### 1e. Hotspots (Churn Heatmap)
-
-Prefer git-intel when available, fall back to raw git:
-
-**If `command -v git-intel` succeeds**, run:
-
-```bash
-git-intel churn --repo . --limit 10
-```
-
-Parse the JSON output to extract files sorted by `total_churn` (additions + deletions).
-
-**Else**, fall back to raw git:
+### 1e. Recent Activity Summary
 
 ```bash
 git log --oneline --since="7 days ago" | head -20
 ```
 
-**If no churn data is available**, skip this section.
+**If no recent activity**, skip this section.
 
 ---
 
@@ -120,18 +108,6 @@ Present all collected data in this structure. Do not add commentary or analysis 
 
 **Working tree**: [clean | N files modified/untracked]
 [If dirty, show git status --short output]
-
-### Hotspots
-[If git-intel data collected:]
-| File | Edits | +/- | Churn |
-|------|-------|-----|-------|
-| [path] | [commit_count] | +[additions]/-[deletions] | [total_churn] |
-| [path] | [commit_count] | +[additions]/-[deletions] | [total_churn] |
-...
-
-Show top 5-10 files by total_churn.
-
-[If no churn data available, omit this section entirely.]
 
 ### Team
 [Team name and member table:]
@@ -167,7 +143,6 @@ Generate 1-5 suggestions based purely on observed state. Use these rules:
 | In-progress tasks exist | "Resume in-progress work: [task titles]" |
 | Epics with all children complete | "Run `bd epic close-eligible` to auto-close completed epics" |
 | Everything is clean and no ready tasks | "Backlog is clear — create new tasks or run `/blossom` to explore" |
-| Any file has >3x the average churn count | "Review [file path] for stability — high churn may indicate design issues" |
 
 Only include suggestions that match the current state. Do not invent conditions.
 
@@ -181,4 +156,4 @@ Only include suggestions that match the current state. Do not invent conditions.
 4. **Read-only.** No file writes, no bead creation, no git commits. Pure observation.
 5. **Graceful degradation.** Every section works independently. Missing data sources produce a one-line fallback, not an error.
 
-See also: /evolution (definition change tracking for deeper investigation of churn patterns). /standup (team-aware equivalent — use standup when a team is configured). /session-health (focused diagnostic when something feels off in the current session).
+See also: /evolution (definition change tracking). /standup (team-aware equivalent — use standup when a team is configured). /session-health (focused diagnostic when something feels off in the current session).

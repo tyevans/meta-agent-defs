@@ -162,12 +162,6 @@ This pattern is especially useful for:
 - Preserving research findings across session boundaries
 - Sharing primitive output with subagents (pass file path in task prompt)
 
-## Tools
-
-| Tool | Purpose |
-|------|---------|
-| [git-intel](https://github.com/tyevans/git-intel) | Git history analyzer outputting JSON for hooks, skills, and scripts. 7 subcommands: metrics, churn, lifecycle, patterns, hotspots, authors, trends. Maintained in a separate repo. |
-
 ## Agents
 
 | Agent | Purpose | Scope |

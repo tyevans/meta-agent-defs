@@ -4,7 +4,7 @@ description: "Track how any definition changed over time — edit history, churn
 argument-hint: "<file-path> [commit1..commit2]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(git-intel:*)"]
+allowed-tools: [Read, Grep, Glob, "Bash(git:*)"]
 ---
 
 # Evolution: File Change History
@@ -35,8 +35,6 @@ Verify file exists in working tree or git history. If not found, error: "File no
 ---
 
 ## Phase 1: Gather History
-
-Check if `command -v git-intel` succeeds. If available, use `lifecycle` command. Otherwise fall back to raw git:
 
 ```bash
 # Timeline
@@ -102,8 +100,8 @@ If commit range provided, append diff (or `--stat` if >500 lines).
 ## Guidelines
 
 1. **Fast.** Git history queries should complete in <5 seconds for typical files. No heavy processing.
-2. **Honest.** Report actual data. If git-intel is unavailable, use fallback. If a metric cannot be computed (e.g., trend with <2 edits), say so.
+2. **Honest.** Report actual data. If a metric cannot be computed (e.g., trend with <2 edits), say so.
 3. **Mechanical.** Pattern detection uses simple rules (fix-after-feat = consecutive commits with type match). No LLM speculation.
 4. **Read-only.** No file writes, no git operations beyond read-only log/diff.
-5. **Graceful degradation.** If git-intel is missing, fall back to raw git. If commit messages lack conventional prefixes, show "unknown" for type.
+5. **Graceful degradation.** If commit messages lack conventional prefixes, show "unknown" for type.
 6. **Cite sources.** Every claim traces to a specific commit hash. The timeline table is the evidence.

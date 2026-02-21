@@ -1,16 +1,16 @@
 ---
 name: diagnose-agent
-description: "Profile a team agent's strengths and weaknesses from learnings evolution, commit history, and git-intel signals. Outputs a struggle profile in pipe format for downstream consumption by /challenge-gen or /active-learn. Use when you want to understand where an agent excels or struggles before generating training challenges. Keywords: diagnose, profile, agent, weakness, strength, capability, assessment."
+description: "Profile a team agent's strengths and weaknesses from learnings evolution and commit history. Outputs a struggle profile in pipe format for downstream consumption by /challenge-gen or /active-learn. Use when you want to understand where an agent excels or struggles before generating training challenges. Keywords: diagnose, profile, agent, weakness, strength, capability, assessment."
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(git-intel:*)", "Bash(wc:*)"]
+allowed-tools: [Read, Grep, Glob, "Bash(git:*)", "Bash(wc:*)"]
 context: inline
 ---
 
 # Diagnose Agent: Struggle Profile from Historical Evidence
 
-You are running **diagnose-agent** — profiling a team agent's strengths and weaknesses from learnings evolution, commit history, and git-intel signals. Target agent: **$ARGUMENTS**
+You are running **diagnose-agent** — profiling a team agent's strengths and weaknesses from learnings evolution and commit history. Target agent: **$ARGUMENTS**
 
 ## When to Use
 
@@ -24,7 +24,7 @@ You are running **diagnose-agent** — profiling a team agent's strengths and we
 ```
 Validate agent exists
   -> Gather learnings evolution (git log diffs)
-    -> Gather task performance signals (git-intel or raw git)
+    -> Gather task performance signals (raw git)
       -> Analyze dispatch provenance (if available)
         -> Synthesize struggle profile (pipe format)
 ```
@@ -93,35 +93,20 @@ Categories with few or no entries represent potential knowledge gaps. An agent w
 
 Read `.claude/team.yaml` to extract the agent's `owns` patterns (file globs defining ownership).
 
-### If `command -v git-intel` succeeds:
-
-```bash
-# Fix-after-feat signals on owned files
-git-intel patterns --repo . --since 30d
-
-# Churn on owned files
-git-intel churn --repo . --since 30d
-
-# Hotspots for volatility
-git-intel hotspots --repo . --since 30d
-```
-
-Filter results to files matching the agent's `owns` patterns. Look for:
-- **fix_after_feat on owned files**: agent ships features that need immediate fixes (quality signal)
-- **High churn on owned files**: instability in agent's domain (design signal)
-- **Hotspots in owned area**: files the agent touches frequently (focus signal — or thrashing signal if combined with fix_after_feat)
-
-### If git-intel does not exist, fall back to raw git:
-
 ```bash
 # Recent activity on owned files
 git log --oneline --since="30 days ago" -- <owns-patterns>
 
-# Check for fix-after-feat manually
+# Check for fix-after-feat patterns
 git log --oneline --since="30 days ago" -- <owns-patterns> | head -40
 ```
 
-Scan commit messages for `fix:` commits that follow `feat:` commits on the same files within 7 days. This is a rough approximation of git-intel's pattern detection.
+Scan commit messages for `fix:` commits that follow `feat:` commits on the same files within 7 days.
+
+Look for:
+- **fix_after_feat on owned files**: agent ships features that need immediate fixes (quality signal)
+- **High churn on owned files**: instability in agent's domain (design signal)
+- **Concentrated activity in owned area**: files the agent touches frequently (focus signal — or thrashing signal if combined with fix_after_feat)
 
 ---
 
@@ -208,8 +193,8 @@ Order items: WEAKNESS (HIGH first) -> GAP (HIGH first) -> STRENGTH (HIGH first).
 ## Guidelines
 
 1. **Read-only.** No file writes, no git operations beyond read-only log/diff/show. No modifications to learnings, team.yaml, or any other file.
-2. **Evidence-based.** Every item in the output must cite a specific source — a git diff, a git-intel signal, a learnings entry, or a file path. No speculation without evidence.
-3. **Graceful degradation.** Work with whatever is available. No git-intel? Use raw git. No dispatch provenance? Skip Phase 3. No learnings file? Produce a partial profile from git signals alone, and note the limitation in the Summary.
+2. **Evidence-based.** Every item in the output must cite a specific source — a git diff, a learnings entry, or a file path. No speculation without evidence.
+3. **Graceful degradation.** Work with whatever is available. No dispatch provenance? Skip Phase 3. No learnings file? Produce a partial profile from git signals alone, and note the limitation in the Summary.
 4. **Diagnose, do not prescribe.** The output describes what IS, not what to DO about it. Challenge generation is /challenge-gen's job. Training plans are /active-learn's job.
 5. **Honest calibration.** Do not inflate coverage estimates. If the agent has 5 learnings entries for a domain with 30+ files, coverage is low regardless of how good those 5 entries are.
 6. **Cite the diff, not the conclusion.** When reporting entry churn, quote the actual entry that was added and removed — not just "entries were churned in the Gotchas section."

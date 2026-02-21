@@ -24,7 +24,7 @@ You are generating **actionable recommendations** for what to do next, based on 
 ## How It Works
 
 ```
-Probe 4 layers (git → session → backlog → signals)
+Probe 3 layers (git → session → backlog)
   → Score what's available
     → Generate recommendations ranked by urgency
       → Nudge about missing layers that would improve advice
@@ -73,17 +73,6 @@ Extract:
 - **In-progress items**: Work that was started but not finished
 - **Blocked items**: What's stuck and why
 
-### Layer 4: Signals (if `command -v git-intel` succeeds)
-
-```bash
-git-intel patterns --repo . --since "30d"
-```
-
-Extract:
-- **Fix rate**: High fix rate suggests rushing or insufficient review
-- **Churn concentration**: Scattered churn suggests exploratory phase; focused churn suggests targeted work
-- **Signal count**: fix-after-feat patterns indicate incomplete rollouts
-
 ---
 
 ## Phase 2: Generate Recommendations
@@ -97,14 +86,13 @@ Based on available layers, generate 3-5 concrete recommendations. Each recommend
 
 1. **Uncommitted changes from a previous session** → Always recommend reviewing/committing first
 2. **In-progress beads** → Resume before starting new work
-3. **High fix rate (>30%)** → Suggest slowing down, adding review steps
-4. **Blocked items that could be unblocked** → Unblock before starting independent work
-5. **Ready backlog by priority** → Work highest-priority items first
-6. **No backlog** → Suggest /blossom or /meeting to discover work
+3. **Blocked items that could be unblocked** → Unblock before starting independent work
+4. **Ready backlog by priority** → Work highest-priority items first
+5. **No backlog** → Suggest /blossom or /meeting to discover work
 
 ### Focus Area Filter
 
-If `$ARGUMENTS` specifies a focus area, filter recommendations to that area. Still mention urgent items outside the focus (uncommitted changes, high fix rate) but deprioritize unrelated backlog items.
+If `$ARGUMENTS` specifies a focus area, filter recommendations to that area. Still mention urgent items outside the focus (uncommitted changes) but deprioritize unrelated backlog items.
 
 ### Sharpening Gate
 
@@ -129,7 +117,7 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 ```markdown
 ## Session Advice
 
-**Layers**: [git] [session] [backlog] [signals]
+**Layers**: [git] [session] [backlog]
 (Filled layers shown as bold, missing layers shown as dim/struck)
 
 ### Recommendations
@@ -148,14 +136,13 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 
 - **Session history**: Run a session with SessionEnd hook to get continuity advice next time
 - **Backlog**: Install beads (`bd init`) to get priority-aware recommendations
-- **Signals**: Install git-intel for pattern detection (fix-after-feat, churn hotspots)
 ```
 
 ### Layer Indicator
 
 Show which layers were available using a compact indicator:
-- All four: `**Layers**: **git** · **session** · **backlog** · **signals**`
-- Partial: `**Layers**: **git** · ~~session~~ · **backlog** · ~~signals~~`
+- All three: `**Layers**: **git** · **session** · **backlog**`
+- Partial: `**Layers**: **git** · ~~session~~ · **backlog**`
 
 ### Missing Layers Section
 

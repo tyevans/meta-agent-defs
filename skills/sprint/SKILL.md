@@ -4,7 +4,7 @@ description: "Plan and dispatch work to team members with the learning loop: ass
 argument-hint: "[task filter or focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Bash(git-intel:*), Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Task
 ---
 
 # Sprint: Plan, Dispatch, Learn
@@ -193,22 +193,6 @@ Build the task prompt following the spawn protocol from team-protocol.md:
    Agent: <computed-trailer-value>
    ```
    Make it clear the agent should use the LITERAL value provided in the prompt, not compute it themselves. This trailer goes alongside the existing `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` line.
-
-#### Signal Enrichment (conditional)
-
-**If** `command -v git-intel` succeeds:
-
-1. Run `git-intel patterns --repo . --since "30d"` and parse the JSON output
-2. Extract signals where `kind == "fix_after_refactor"` from the `signals` array
-3. For each fix_after_refactor signal, check if any of the signal's `files` match the member's `owns` glob patterns (from team.yaml)
-4. If there's overlap, add a signal warning section to the dispatch prompt:
-
-```markdown
-**Signal Warning**: Recent refactor-then-fix pattern detected on files you own:
-- [file path]: refactored in [first commit hash], then fixed in [second commit hash]. This area may need extra verification after changes.
-```
-
-**If** git-intel doesn't exist, skip this enrichment silently and proceed with the standard prompt composition
 
 ### 3b. Execute
 

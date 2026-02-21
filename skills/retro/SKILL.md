@@ -4,7 +4,7 @@ description: "Run an automated session retrospective to evaluate velocity, quali
 argument-hint: "[focus area or session topic]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(wc:*), Bash(git-intel:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(wc:*), Write, Edit
 ---
 
 # Retro: Automated Session Retrospective
@@ -111,27 +111,6 @@ Evaluate the session across these five dimensions:
 - New capabilities or limitations of tools/agents discovered?
 - Insights about project architecture or domain that were not documented before?
 
-### Mistake Patterns
-
-**If `command -v git-intel` succeeds**, detect fix-after-feat patterns:
-
-```bash
-git-intel patterns --repo . --since "8 hours ago"
-```
-
-Parse the JSON output to identify:
-
-1. **Fix-after-feat pairs from this session**: Commits where a `fix:` commit touched the same files as a preceding `feat:` commit within the session window
-2. **Recurring mistake files**: Files that appear in fix-after-feat pairs across git history (not just this session) -- these are files where mistakes keep happening
-3. **Impact assessment**: Number of fix commits per feat commit (higher ratio indicates more rework)
-
-Format findings for the Phase 7 report under `### Mistake Patterns`:
-- List fix-after-feat pairs found this session (if any) with file paths and commit SHAs
-- List files with recurring fix-after-feat history (3+ occurrences)
-- Suggested action: "Consider adding verification steps before committing changes to [file]"
-
-**If git-intel does not exist**, skip this analysis entirely.
-
 ---
 
 ## Phase 3: Extract Learnings
@@ -178,11 +157,7 @@ Read all `memory/agents/*/learnings.md` files. For each member, assess:
 
 If any learnings file exceeds 50 lines (warning threshold) or 60 lines (hard cap):
 1. **Merge similar entries** — Combine entries that say the same thing differently
-2. **Archive stale entries** — **If Phase 4f lifecycle data is available**, use survival scores to make archiving decisions:
-   - Only archive entries that are BOTH older than 21 days AND have low survival (0-1 retro cycles survived)
-   - DO NOT archive entries with 3+ retro survival even if old — proven valuable
-   - Immediately remove (not archive) same-session churn entries flagged in Phase 4f false-positive analysis
-   **If Phase 4f data is NOT available**, fall back to staleness-based heuristic: move entries older than 21 days (with no recent references) to `memory/agents/<name>/archive.md`
+2. **Archive stale entries** — Move entries older than 21 days (with no recent references) to `memory/agents/<name>/archive.md`
 3. **Note promotion candidates** — Do not promote entries inline. Instead, note entries that appear durable and cross-agent, and recommend running `/promote` or `/tend` after this retro to evaluate them with full graduation criteria
 4. **Validate cross-agent notes** — Notes older than 14 days must be acknowledged (merged), acted upon (integrated), or discarded (moved to archive with rationale)
 5. **Apply tiered structure** — Organize remaining entries into Core (30 lines max, high-reuse fundamentals) and Task-Relevant (30 lines max, context-specific)
@@ -220,48 +195,6 @@ Append a summary to `memory/team/retro-history.md`:
 - Pruned/archived: [count] entries
 - Key insight: [most significant learning from this session]
 ```
-
-### 4f. Learning Lifecycle Analysis (conditional)
-
-**Only run if `command -v git-intel` succeeds.** Skip if the tool is not available.
-
-For each member with a learnings file (`memory/agents/<name>/learnings.md`):
-
-1. **Track learning survival** — Run lifecycle analysis:
-   ```bash
-   git-intel lifecycle --repo . memory/agents/<name>/learnings.md
-   ```
-   Parse the JSON output to identify:
-   - **Survival count**: Learnings present in 3+ consecutive retro commits (entries that survived pruning)
-   - **Same-session churn**: Entries added and deleted within the same date (false positives)
-   - **Growth pattern**: Net additions vs deletions over the last 30 days
-
-2. **Compute learning velocity** — For each member:
-   - **Add rate**: Average new lines per retro session (from lifecycle history)
-   - **Remove rate**: Average deleted lines per retro session
-   - **Net velocity**: Add rate minus remove rate
-   - **Interpretation**:
-     - Net velocity > 2 lines/session → actively learning
-     - Net velocity 0-2 → steady state
-     - Net velocity < 0 → pruning phase (normal after sprint or consolidation)
-
-3. **Flag false positives** — Identify entries added and removed on the same date in git history. These indicate premature learning capture. If count > 2 in the last 7 days, suggest waiting 24h before persisting new learnings.
-
-4. **Flag promotion signals** — Note learnings that show promotion potential (survived 3+ retro cycles, stable 21+ days, not already a rule). Do not evaluate graduation criteria inline — delegate to `/promote` or `/tend` which apply the full 6-criterion evaluation. Format:
-   ```markdown
-   **Promotion Signals** (recommend running `/promote` or `/tend` to evaluate):
-   - [member]: [learning text excerpt] (first seen: [date], retro cycles: [n])
-   ```
-
-5. **Report lifecycle summary**:
-   ```markdown
-   ### Learning Lifecycle Analysis
-   | Member | Survival Rate | Add/Remove/Session | False Positives | Promotion Candidates |
-   |--------|---------------|-------------------|-----------------|---------------------|
-   | [name] | [%] | +[n]/-[m] | [count] | [count] |
-   ```
-
-   Survival rate = (learnings present in 3+ retro commits) / (total current learnings)
 
 ---
 
@@ -353,14 +286,6 @@ Present a structured retrospective report:
 ### What Could Improve
 - [specific item with evidence and suggested change]
 - [specific item with evidence and suggested change]
-
-### Mistake Patterns
-[If git-intel patterns analysis was run in Phase 2f, include:]
-- **Fix-after-feat pairs this session**: [count] ([list file paths if any])
-- **Files with recurring mistakes**: [list files appearing in 3+ historical fix-after-feat pairs]
-- **Suggested action**: Consider adding verification steps before committing changes to [file]
-
-[If git-intel was not available, omit this section entirely]
 
 ### Action Items
 - [ ] [bead ID]: [title] (P[priority])

@@ -4,7 +4,7 @@ description: "Run the full adversarial training loop for a team agent or in solo
 argument-hint: "<agent-name> [rounds=3]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Write, Grep, Glob, Task, WebSearch, WebFetch, "Bash(git:*)", "Bash(git-intel:*)", "Bash(mkdir:*)", "Bash(wc:*)"]
+allowed-tools: [Read, Write, Grep, Glob, Task, WebSearch, WebFetch, "Bash(git:*)", "Bash(mkdir:*)", "Bash(wc:*)"]
 context: fork
 ---
 
@@ -116,26 +116,16 @@ Parse the diffs to extract:
 
 In team mode, read `.claude/team.yaml` to extract the agent's `owns` patterns. In solo mode, no `owns` filtering applies -- analyze all project files.
 
-**If `command -v git-intel` succeeds:**
-
-```bash
-git-intel patterns --repo . --since 30d
-git-intel churn --repo . --since 30d
-git-intel hotspots --repo . --since 30d
-```
-
-Filter to files matching the agent's `owns` patterns. Look for:
-- **fix_after_feat on owned files**: agent ships features that need immediate fixes
-- **High churn on owned files**: instability in agent's domain
-- **Hotspots in owned area**: concentrated activity (focus or thrashing)
-
-**If git-intel is not available, fall back to raw git:**
-
 ```bash
 git log --oneline --since="30 days ago" -- <owns-patterns>
 ```
 
 Scan for `fix:` commits following `feat:` commits on the same files within 7 days.
+
+Look for:
+- **fix_after_feat on owned files**: agent ships features that need immediate fixes
+- **High churn on owned files**: instability in agent's domain
+- **Concentrated activity in owned area**: focus or thrashing
 
 ### 1c. Dispatch Provenance (Conditional)
 
@@ -194,20 +184,11 @@ Verify each external finding applies to the codebase (check imports, packages, g
 
 ### 2c. Strategy B: Commit-Replay Candidates
 
-**If `command -v git-intel` succeeds:**
-
-```bash
-git-intel patterns --repo . --since 60d
-git-intel churn --repo . --since 60d
-```
-
-Filter to owned files. Prioritize fix_after_feat commits and high-churn files.
-
-**If git-intel is not available:**
-
 ```bash
 git log --format="%H %s" --since="60 days ago" -- <owns-patterns>
 ```
+
+Scan for `fix:` commits following `feat:` commits on the same files. Prioritize fix_after_feat commits and frequently-changed files.
 
 For each candidate commit:
 ```bash
@@ -581,7 +562,7 @@ Report the file path so the user can review:
 3. **Evidence in every rating.** Every evaluation rating (result, trap detection, calibration) must cite specific evidence from the agent's output. Ratings without evidence are noise.
 4. **Honest calibration.** Do not inflate pass rates or downplay failures. The training loop's value comes from honest assessment -- a FAIL that leads to a good learning entry is a better outcome than a generous PARTIAL that teaches nothing.
 5. **Respect the learnings cap.** The 60-line cap (30 core + 30 task-relevant) exists for a reason. New entries must earn their place. When at capacity, compare value explicitly before displacing.
-6. **Graceful degradation.** No git-intel? Use raw git. No prior capability.yaml? Start fresh. No dispatch provenance? Skip Phase 1c. No WebSearch results? Use codebase-only edge cases. Always produce something useful.
+6. **Graceful degradation.** No prior capability.yaml? Start fresh. No dispatch provenance? Skip Phase 1c. No WebSearch results? Use codebase-only edge cases. Always produce something useful.
 7. **Early stop is success.** Reaching the early stop condition means the agent's capability frontier was found and exercised. Running all rounds is not inherently better than stopping at round 2.
 8. **Challenges, not tests.** The goal is growth through deliberate practice, not measurement. Err toward slightly above the agent's level. Struggle produces learning.
 9. **One weakness per challenge.** Compound challenges dilute the training signal. Each challenge targets exactly one WEAKNESS or GAP.

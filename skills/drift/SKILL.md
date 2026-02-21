@@ -4,7 +4,7 @@ description: "Detect skill/agent convergence and divergence patterns across defi
 argument-hint: "<category or glob pattern>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(git-intel:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*)
 ---
 
 # Drift: Definition Convergence/Divergence Analysis
@@ -129,12 +129,6 @@ For each recent commit that modified files in the target set:
 
 For significant divergences found in Phase 2, use git history to determine when the divergence started.
 
-Check if `command -v git-intel` succeeds. If available:
-```bash
-git-intel patterns --repo . --focus convergence --files <file1> <file2>
-```
-
-Fallback to raw git:
 ```bash
 # Find when a section was added to file1
 git log -p --all -S "<section header>" -- <file1>
@@ -195,7 +189,7 @@ Emit pipe-format output:
 1. **Compare apples to apples.** Only compare files in the same category (workflow skills to workflow skills, agents to agents). Don't flag divergence between unrelated file types.
 2. **Fuzzy section matching.** "When to Use" and "When To Use This" are the same section. Match on normalized form (lowercase, first 3 words).
 3. **Threshold for "shared".** A pattern is "shared" if it appears in ≥3 files OR ≥50% of files in the category, whichever is smaller.
-4. **Git timeline optional.** If git-intel is unavailable or git history is complex, skip timeline and focus on structural comparison.
+4. **Git timeline optional.** If git history is complex, skip timeline and focus on structural comparison.
 5. **No false positives on intentional differences.** If files have legitimately different structures (e.g., composable primitives vs workflow skills), don't flag as divergence.
 6. **Cite specific examples.** Every finding should reference actual file paths and section names, not abstract claims.
 7. **Actionable output.** The summary should suggest concrete next steps: "Consider factoring <pattern> into <rule-file>" or "Cross-pollinate <section> from <file1> to <file2>."

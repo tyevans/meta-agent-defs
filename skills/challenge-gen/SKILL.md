@@ -4,7 +4,7 @@ description: "Generate targeted challenges for agent improvement from a /diagnos
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, Write, WebSearch, WebFetch, "Bash(git:*)", "Bash(git-intel:*)", "Bash(wc:*)", "Bash(mkdir:*)"]
+allowed-tools: [Read, Grep, Glob, Write, WebSearch, WebFetch, "Bash(git:*)", "Bash(wc:*)", "Bash(mkdir:*)"]
 context: inline
 ---
 
@@ -25,7 +25,7 @@ You are running **challenge-gen** — generating targeted challenges to exercise
 Detect upstream /diagnose-agent output (or accept $ARGUMENTS)
   -> Validate agent exists, extract ownership areas
     -> Strategy A: Research domain edge cases (WebSearch + codebase)
-      -> Strategy B: Find commit-replay candidates (git-intel or raw git)
+      -> Strategy B: Find commit-replay candidates (raw git)
         -> Assemble 3-5 challenges with quality gate
           -> Write challenges to memory/agents/<name>/challenges/
             -> Emit pipe format output
@@ -113,26 +113,6 @@ Identify real commits in the agent's ownership area that can be turned into repl
 
 ### 2a. Find Candidate Commits
 
-**If `command -v git-intel` succeeds:**
-
-```bash
-# Find fix-after-feat patterns — these are commits where getting it right was hard
-git-intel patterns --repo . --since 60d
-
-# Find high-churn files — frequent changes suggest tricky areas
-git-intel churn --repo . --since 60d
-
-# Find hotspots for areas of concentrated activity
-git-intel hotspots --repo . --since 60d
-```
-
-Filter results to files matching the agent's `owns` patterns. Prioritize:
-- `fix_after_feat` commits (the fix is the challenge — can the agent get it right the first time?)
-- Commits touching high-churn files (areas where correctness is repeatedly hard)
-- Commits with detailed messages (better context for the challenge prompt)
-
-**If git-intel is not available, fall back to raw git:**
-
 ```bash
 # Recent fix commits in owned files
 git log --oneline --since="60 days ago" -- <owns-patterns> | head -30
@@ -142,6 +122,13 @@ git log --format="%H %s" --since="60 days ago" -- <owns-patterns>
 ```
 
 Scan for `fix:` commits. For each, check if a `feat:` commit on the same files preceded it within 7 days.
+
+Prioritize:
+- `fix_after_feat` commits (the fix is the challenge — can the agent get it right the first time?)
+- Commits touching frequently-changed files (areas where correctness is repeatedly hard)
+- Commits with detailed messages (better context for the challenge prompt)
+
+Filter results to files matching the agent's `owns` patterns.
 
 ### 2b. Extract Challenge Material
 
@@ -281,7 +268,7 @@ Strategy mix: <N edge-case, M commit-replay>
 2. **Real over hypothetical.** Every challenge must be grounded in real code, real CVEs, real commits, or real community knowledge. Hypothetical scenarios do not transfer to real work.
 3. **One weakness per challenge.** Each challenge targets exactly one WEAKNESS or GAP. Compound challenges dilute the training signal.
 4. **Hidden traps are essential.** A challenge without a non-obvious trap is just a task. The trap is what forces the agent to develop new patterns rather than applying existing ones.
-5. **Graceful degradation.** No git-intel? Use raw git. No upstream profile? Do basic profiling. No web search results? Use codebase-only edge cases. Always produce something useful.
+5. **Graceful degradation.** No upstream profile? Do basic profiling. No web search results? Use codebase-only edge cases. Always produce something useful.
 6. **Commit-replay integrity.** When extracting commit material, never modify the ground truth diff. The whole point is that the actual change is the answer.
 7. **Do not show hidden traps to the agent.** The challenge file separates what the agent sees (scenario + acceptance criteria) from what the evaluator knows (hidden trap + ground truth). This separation is critical.
 8. **Cap at 5 challenges.** More than 5 creates evaluation overhead without proportional learning benefit. If many weaknesses exist, prioritize by severity.
