@@ -36,9 +36,13 @@ Check context for /curate output
 
 ## Phase 0: Context Check
 
-Before loading from disk, scan conversation context for a prior `/curate` output block — the `## Curated Learnings: ... / **Source**: /curate` pattern.
+Before loading from disk, scan conversation context for prior `/curate` output blocks.
 
-**If /curate output is present in context:**
+### 0a. Curated Learnings Context
+
+Scan for `## Curated Learnings: ... / **Source**: /curate` pattern.
+
+**If curated learnings output is present:**
 
 State: "Reading curated learnings from /curate output above."
 
@@ -50,7 +54,22 @@ Note from the curate output:
 
 This pre-screening narrows the candidate pool before loading full learnings from disk.
 
-**If no /curate output is in context:**
+### 0b. Curated Rules Context
+
+Scan for `## Curated Rules: ... / **Source**: /curate` pattern.
+
+**If curated rules output is present:**
+
+State: "Reading curated rules from /curate output above."
+
+Note from the rules curate output:
+- Which rules scored PASSIVE — redundancy already detected, avoid promoting learnings that duplicate these rules
+- Which rules scored LOW — these cover dormant domains, avoid promoting learnings into these same domains
+- The `### Passive Context Budget` section — use total line count and potential savings to inform placement decisions (prefer project-local `.claude/rules/` over global `rules/` when budget is already high)
+
+This context improves placement decisions and prevents promoting patterns into already-redundant areas.
+
+**If no /curate output of either type is in context:**
 
 Proceed to Phase 1 without pre-screening. All learnings will be evaluated.
 

@@ -25,9 +25,10 @@ You are running **tend** — the full learning maintenance lifecycle. This orche
 
 ```
 Load context (team manifest, learnings, upcoming work, rules inventory)
-  -> Phase 1: /curate (per agent — optimize learnings for upcoming work)
-    -> Phase 2: /promote (cross-agent — graduate patterns to rules)
-      -> Phase 3: Summary report
+  -> Phase 1: /curate agents (per agent — optimize learnings for upcoming work)
+    -> Phase 2: /curate rules (audit project rules for health)
+      -> Phase 3: /promote (cross-agent — graduate patterns to rules)
+        -> Phase 4: Summary report
 ```
 
 ---
@@ -76,7 +77,7 @@ Read CLAUDE.md to understand what's already in passive context.
 
 ---
 
-## Phase 1: Curate
+## Phase 1: Curate Agent Learnings
 
 For each target agent, invoke `/curate` to optimize their learnings for upcoming work.
 
@@ -96,10 +97,10 @@ After each /curate invocation, note:
 
 ### 1c. Progress Check
 
-After curating all agents, summarize before moving to promote:
+After curating all agents, summarize before moving to rules:
 
 ```markdown
-### Curate Phase Complete
+### Agent Curate Phase Complete
 
 | Agent | Kept | Archived | Added | Gaps Found |
 |-------|------|----------|-------|------------|
@@ -109,15 +110,48 @@ After curating all agents, summarize before moving to promote:
 
 ---
 
-## Phase 2: Promote
+## Phase 2: Curate Rules
 
-After all agents are curated, run `/promote` to graduate durable cross-agent patterns to rules.
+After agent learnings are curated, audit the project rules for health and relevance.
 
-### 2a. Invoke /promote
+### 2a. Invoke /curate rules
 
-Use the Skill tool to invoke `/promote`. The curated learnings from Phase 1 are already in context, so /promote can read them.
+Use the Skill tool to invoke `/curate rules`. The curated learnings from Phase 1 are already in context, which helps /curate detect PASSIVE rules (internalized by agents) and gap-area promote candidates.
 
 ### 2b. Collect Results
+
+Note from the rules curate output:
+- How many rules scored HIGH/MEDIUM/LOW/PASSIVE
+- Total passive context budget (lines across all rule files)
+- Potential savings from LOW+PASSIVE rules
+- Any gaps where upcoming work lacks guardrails
+
+### 2c. Progress Check
+
+```markdown
+### Rules Curate Phase Complete
+
+| Metric | Value |
+|--------|-------|
+| Rules scored | [n] |
+| HIGH + MEDIUM | [n] |
+| LOW + PASSIVE (review) | [n] |
+| Total lines | [n] |
+| Potential savings | [n] lines |
+| Gaps found | [n] |
+```
+
+---
+
+## Phase 3: Promote
+
+After both agents and rules are curated, run `/promote` to graduate durable cross-agent patterns to rules.
+
+### 3a. Invoke /promote
+
+Use the Skill tool to invoke `/promote`. The curated learnings from Phase 1 and curated rules from Phase 2 are already in context, so /promote can read both.
+
+### 3b. Collect Results
 
 Note:
 - How many promotion candidates were identified
@@ -126,7 +160,7 @@ Note:
 
 ---
 
-## Phase 3: Summary Report
+## Phase 4: Summary Report
 
 Present a unified report of the full lifecycle run:
 
@@ -137,10 +171,20 @@ Present a unified report of the full lifecycle run:
 - **Agents tended**: [list]
 - **Upcoming work considered**: [count] ready tasks, [count] in-progress, [count] epics
 
-### Curate Results
+### Agent Curate Results
 | Agent | Before | After | Archived | Added | Gaps |
 |-------|--------|-------|----------|-------|------|
 | [name] | [n] | [n] | [n] | [n] | [n] |
+
+### Rules Curate Results
+| Metric | Value |
+|--------|-------|
+| Rules scored | [n] |
+| HIGH + MEDIUM | [n] |
+| LOW + PASSIVE (review) | [n] |
+| Total passive context lines | [n] |
+| Potential savings | [n] lines |
+| Rule gaps | [n] |
 
 ### Promote Results
 - **Candidates identified**: [n]

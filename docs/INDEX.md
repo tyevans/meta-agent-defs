@@ -22,7 +22,8 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Generate training challenges** -> /challenge-gen (targeted challenges from struggle profile)
 - **Run challenges and evaluate** -> /challenge-run (dispatch agent, evaluate performance)
 - **Improve agent capabilities** -> /active-learn (full adversarial training loop: diagnose -> challenge -> evaluate -> learn)
-- **Optimize agent learnings for upcoming work** -> /curate (score, prune, fill gaps) -> /promote (graduate to rules) — or use /tend to run both
+- **Optimize agent learnings for upcoming work** -> /curate (score, prune, fill gaps) -> /promote (graduate to rules) — or use /tend to run all three
+- **Audit project rules for health** -> /curate rules (score rules, passive context budget, gap detection)
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
@@ -67,9 +68,9 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /review | Structured code review (5 dimensions) | fork |
 | /bug | File structured bug reports to beads backlog | inline |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
-| /curate | Score agent learnings by relevance, archive stale entries, fill gaps from archive or cross-agent sources | inline |
+| /curate | Score agent learnings or project rules by relevance, archive stale entries, fill gaps; rules mode adds passive context budget analysis | inline |
 | /promote | Graduate durable cross-agent learnings to rules (survival, stability, universality criteria) | inline |
-| /tend | Orchestrate full learning lifecycle: /curate per agent then /promote cross-agent | inline |
+| /tend | Orchestrate full learning lifecycle: /curate per agent, /curate rules, then /promote cross-agent | inline |
 | /session-health | Context load and drift diagnostic | inline |
 | /retro | Session retrospective with persistent learnings | inline |
 | /handoff | Session transition capture | inline |
@@ -133,7 +134,8 @@ Common composition sequences (each step's output feeds the next via context):
 /diagnose-agent -> /challenge-gen -> /challenge-run  # Profile -> challenges -> evaluate
 /active-learn                                       # Full loop: diagnose -> challenge -> evaluate -> learn (all inline)
 /curate -> /promote                                 # Optimize learnings -> graduate to rules
-/tend                                               # Full lifecycle: curate all agents -> promote (orchestrates both)
+/curate rules                                       # Audit project rules: scores, budget, gaps
+/tend                                               # Full lifecycle: curate agents -> curate rules -> promote
 ```
 
 **Note**: Multi-step chains (3+ primitives) are best run in the main session. If dispatching to a subagent, set `max_turns: 40` to avoid turn limits.
