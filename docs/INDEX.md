@@ -58,8 +58,8 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 |-------|---------|---------|
 | /blossom | Spike-driven exploration, produces epic + tasks | fork |
 | /fractal | Goal-directed recursive exploration | inline |
-| /meeting | Multi-agent group discussion | inline |
-| /team-meeting | Goal-oriented planning with persistent team | inline |
+| /meeting | Multi-agent group discussion (uses native teams for real-time dialogue) | inline |
+| /team-meeting | Goal-oriented planning with persistent team (uses native teams) | inline |
 | /consensus | Three independent proposals + synthesis | fork |
 | /premortem | Failure analysis with mitigations | fork |
 | /spec | Progressive specification document | fork |
@@ -72,7 +72,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /promote | Graduate durable cross-agent learnings to rules (survival, stability, universality criteria); reads dimension-based curate output; marks source learnings after promotion | inline |
 | /tend | Orchestrate full learning lifecycle in 5 phases: /curate per agent, /curate rules, /promote cross-agent, demotion pass (downgrade stale rules), summary | inline |
 | /session-health | Context load and drift diagnostic | inline |
-| /retro | Session retrospective with persistent learnings; delegates promotion to /promote | inline |
+| /retro | Session retrospective with persistent learnings; delegates promotion to /promote (uses Task dispatch) | inline |
 | /handoff | Session transition capture | inline |
 | /evolution | File change history, churn, stability analysis | inline |
 | /drift | Cross-definition convergence/divergence detection | inline |
@@ -90,8 +90,8 @@ Manage persistent learning teams across sessions.
 | Skill | Purpose | Context |
 |-------|---------|---------|
 | /assemble | Create team with roles and ownership | inline |
-| /standup | Sync status, surface blockers | inline |
-| /sprint | Dispatch work with learning loop | inline |
+| /standup | Sync status, surface blockers (uses Task dispatch) | inline |
+| /sprint | Dispatch work with learning loop (uses Task dispatch) | inline |
 
 ### Session Skills (2)
 
