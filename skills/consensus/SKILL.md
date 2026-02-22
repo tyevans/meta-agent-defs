@@ -259,20 +259,48 @@ Propose which approach best fits the situation. Weight advocates by how strongly
 
 ### 4b. Structure the Report
 
-Present the synthesis to the user:
+Present the synthesis in pipe format so downstream skills (`/spec`, `/critique`, `/tracer`) can consume the decision:
 
 ```markdown
 ## Consensus Report: [Problem Title]
 
-### Problem Statement
-[Restate the problem from Phase 1]
+**Source**: /consensus
+**Input**: [problem from $ARGUMENTS]
+**Pipeline**: (none — working from direct input)
 
-### Selected Lenses
-- [Lens 1]: [description]
-- [Lens 2]: [description]
-- [Lens 3]: [description]
+### Items (N)
 
-### Three Proposals
+[Items are agreements, tensions, and the recommendation — each as a typed entry]
+
+1. **AGREEMENT: [point of consensus]** — [implication and why it matters]
+   - type: agreement
+   - confidence: CONFIRMED
+   - lenses: all three
+
+2. **AGREEMENT: [point of consensus]** — [implication]
+   - type: agreement
+   - confidence: CONFIRMED
+   - lenses: all three
+
+3. **TENSION: [title]** — [what the trade-off is]
+   - type: tension
+   - positions: [Lens 1]: [approach] / [Lens 2]: [approach] / [Lens 3]: [approach]
+   - confidence: LIKELY
+
+4. **TENSION: [title]** — [what the trade-off is]
+   - type: tension
+   - positions: [Lens 1]: [approach] / [Lens 2]: [approach] / [Lens 3]: [approach]
+   - confidence: LIKELY
+
+5. **RECOMMENDATION: [chosen approach]** — [rationale in one line]
+   - type: recommendation
+   - based-on: [lens name or "hybrid"]
+   - accepting: [key trade-offs]
+   - confidence: CONFIRMED | LIKELY
+
+[... agreements first, then tensions, then recommendation last]
+
+### Proposals
 
 **[Lens 1] Advocate**:
 - Initial approach: [1-2 sentence summary]
@@ -292,54 +320,15 @@ Present the synthesis to the user:
 - Key trade-offs: [what's sacrificed]
 - **If debate ran**: [revisions made or "held firm"]
 
----
-
-### Agreements (HIGH CONFIDENCE)
-
-| What | Why it Matters |
-|------|----------------|
-| [point of consensus] | [implication] |
-| [point of consensus] | [implication] |
-
----
-
-### Tensions (REQUIRES HUMAN DECISION)
-
-#### Tension 1: [title]
-**[Lens 1]**: [position and reason]
-**[Lens 2]**: [position and reason]
-**[Lens 3]**: [position and reason]
-
-**Trade-off**: [what you gain and lose with each]
-
-#### Tension 2: [title]
-[same structure]
-
----
-
-### Recommendation
-
-**Approach**: [which agent's proposal, or hybrid of multiple]
-
-**Rationale**: [why this approach best fits the constraints and success criteria]
-
-**What you're choosing**:
-- [benefit 1]
-- [benefit 2]
-
-**What you're accepting**:
-- [trade-off 1]
-- [trade-off 2]
-
-**Critical dependencies**: [anything that must be true for this to work]
-
----
-
 ### Next Steps
 
 1. [immediate next action -- usually "decide on unresolved tensions" or "proceed to /spec"]
 2. [second action]
 3. [third action]
+
+### Summary
+
+[One paragraph: the problem, the chosen approach, key agreements that drove the decision, trade-offs being accepted, and what the user needs to decide next.]
 ```
 
 ### 4c. Ask for Decision on Unresolved Tensions

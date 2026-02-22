@@ -3,7 +3,7 @@ name: promote
 description: "Analyze learnings across all agents to identify durable patterns ready to graduate to project rules. Applies graduation criteria: survival across 3+ retro cycles, 21+ day stability, cross-agent applicability, universality, actionability, and no overlap with existing rules. Outputs promotion candidates with draft rule content. Optionally writes new rule files. Use after /curate, /retro, or directly via /tend. Keywords: promote, rules, graduate, learnings, patterns, cross-agent, durable, rules, governance."
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(ls:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(ls:*), Write, Edit
 ---
 
 # Promote: Graduate Durable Patterns to Rules

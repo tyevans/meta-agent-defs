@@ -277,16 +277,92 @@ Launch with `run_in_background=true`. If PASS, proceed to Phase 5. If FAIL, appl
 
 Read the final spec, change status from `DRAFT` to `READY FOR REVIEW`.
 
-### 5b. Present to User
+### 5b. Create Beads (conditional)
 
-Show: spec location (absolute path), quality summary (sections populated, issues fixed, guardian iterations), and next steps (review, revise, or `/blossom` to generate implementation backlog).
+If `.beads/` exists, create a bead to track the spec:
+
+```bash
+bd create --title="SPEC: [Feature Name]" --type=task --priority=2 --description="Spec at .specs/<name>.md is READY FOR REVIEW. Key decisions: [1-2 sentence summary of proposed approach]. Next: /blossom to generate implementation backlog."
+```
+
+This ensures the spec is tracked in the backlog and linkable as a dependency for implementation tasks created by `/blossom`.
+
+### 5c. Emit Pipe-Format Summary
+
+Emit a pipe-format block summarizing the spec's key decisions and open items. This allows downstream skills (`/premortem`, `/critique`, `/blossom`) to consume the spec programmatically.
+
+```markdown
+## Spec Summary: [Feature Name]
+
+**Source**: /spec
+**Input**: [goal from $ARGUMENTS]
+**Pipeline**: (none — working from direct input)
+
+### Items (N)
+
+1. **[Key decision or design element]** — [one-line summary]
+   - source: .specs/<name>.md#proposed-approach
+   - confidence: CONFIRMED
+
+2. **[API/interface change]** — [one-line summary]
+   - source: .specs/<name>.md#api-interface-contract
+
+3. **[Open question or risk]** — [what needs resolution]
+   - source: .specs/<name>.md#open-questions
+   - confidence: POSSIBLE
+
+[... one item per key decision, interface change, and open question]
+
+### Summary
+
+[One paragraph synthesizing the spec: what is being built, the chosen approach, key constraints, and remaining open questions.]
+```
+
+Items should cover: each major design decision from Proposed Approach, each public interface from API Contract, each open question, and each non-trivial migration step. Aim for 5-10 items — enough to capture the spec's substance without reproducing it.
+
+### 5d. Present to User
+
+Show: spec location (absolute path), quality summary (sections populated, issues fixed, guardian iterations), bead ID (if created), and next steps (review, revise, or `/blossom` to generate implementation backlog).
 
 ### Example Output
 
 ```markdown
-## Spec Complete: [Feature Name]
+## Spec Summary: [Feature Name]
 
-**Location:** `/path/to/project/.specs/<name>.md`
+**Source**: /spec
+**Input**: Add real-time notifications to the dashboard
+**Pipeline**: (none — working from direct input)
+
+### Items (5)
+
+1. **WebSocket-based push architecture** — Server pushes events via WS; client reconnects with exponential backoff
+   - source: .specs/realtime-notifications.md#proposed-approach
+   - confidence: CONFIRMED
+
+2. **POST /notifications/subscribe endpoint** — Registers client for event types; returns WS connection URL
+   - source: .specs/realtime-notifications.md#api-interface-contract
+   - confidence: CONFIRMED
+
+3. **notifications table migration** — New table with user_id, event_type, payload, read_at columns
+   - source: .specs/realtime-notifications.md#data-model-changes
+   - confidence: CONFIRMED
+
+4. **Backward compatibility with polling clients** — Existing polling endpoint kept; deprecated after 2 releases
+   - source: .specs/realtime-notifications.md#migration-rollout-plan
+   - confidence: LIKELY
+
+5. **Rate limiting strategy undecided** — Per-user vs per-connection throttling needs benchmarking
+   - source: .specs/realtime-notifications.md#open-questions
+   - confidence: POSSIBLE
+
+### Summary
+
+The spec proposes a WebSocket-based notification system that pushes events to dashboard clients in real-time. The design reuses the existing event bus and adds a new notifications table. The polling API is preserved for backward compatibility. Rate limiting strategy remains an open question requiring load testing before implementation.
+
+---
+
+**Location:** `/path/to/project/.specs/realtime-notifications.md`
+**Bead:** tack-xxxx (SPEC: Real-time Notifications)
 
 ### Quality Summary
 - Sections populated: 9/9 ✓
@@ -297,9 +373,8 @@ Show: spec location (absolute path), quality summary (sections populated, issues
 ### Next Steps
 1. **Review the spec** — Read `.specs/<name>.md` and verify it matches your intent
 2. **Revise if needed** — Edit the spec directly or ask me to refine specific sections
-3. **Generate backlog** — When ready, run `/blossom` with the spec as context to create implementation tasks
-
-The spec is ready for review. The design uses existing patterns from `lib/core/` and follows the project's API conventions. No data migrations required.
+3. **Run /premortem** — Identify failure modes while the design is still malleable
+4. **Generate backlog** — When ready, run `/blossom` with the spec as context to create implementation tasks
 ```
 
 ---

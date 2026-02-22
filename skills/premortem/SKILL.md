@@ -259,46 +259,55 @@ If a mitigation item fails the gate, rewrite it until it passes. Each item must 
 
 ## Phase 5: Report and Create Tasks
 
-### 5a. Present Complete Report
+### 5a. Emit Pipe-Format Report
+
+Emit the report in pipe format so downstream skills (`/spec`, `/tracer`, `/test-strategy`, `/critique`) can consume prioritized failures and mitigations:
 
 ```markdown
-## Pre-Mortem Report: [Feature Name]
+## Pre-Mortem: [Feature Name]
 
-### Feature Summary
-[From Phase 1]
+**Source**: /premortem
+**Input**: [feature from $ARGUMENTS]
+**Pipeline**: (none — working from direct input)
+
+### Items (N)
+
+1. **[Scenario title]** — [one-line impact summary]
+   - lens: security | reliability | user-business
+   - severity: catastrophic | major | minor
+   - likelihood: high | medium | low
+   - mitigation: [one-line prevention summary]
+   - effort: S | M | L
+   - source: [file:line references from agent investigation]
+   - confidence: CONFIRMED | LIKELY | POSSIBLE
+
+2. **[Scenario title]** — [one-line impact summary]
+   - lens: security | reliability | user-business
+   - severity: catastrophic | major | minor
+   - likelihood: high | medium | low
+   - mitigation: [one-line prevention summary]
+   - effort: S | M | L
+   - source: [file:line references]
+   - confidence: CONFIRMED | LIKELY | POSSIBLE
+
+[... one item per prioritized scenario from Phase 3, ordered by severity × likelihood]
 
 ### Failure Analysis
-- **Total scenarios identified**: N
-- **Security failures**: X
-- **Reliability failures**: Y
-- **User/Business failures**: Z
+
+- **Total scenarios identified**: N (security: X, reliability: Y, user/business: Z)
 - **Prioritized for mitigation**: M
+- **Estimated total effort**: [sum of S/M/L estimates]
 
-### Prioritized Failure Scenarios
-[Table from Phase 3 with user's selected scenarios highlighted]
+### Mitigation Details
 
-### Mitigation Plan
-[Full mitigation plan from Phase 4]
+[Full mitigation plan from Phase 4 — one subsection per item with Prevention/Detection/Verification]
 
-### Implementation Recommendations
+### Summary
 
-**Order of implementation**:
-1. [Highest priority mitigation and why it comes first]
-2. [Next mitigation]
-3. ...
-
-**Architecture implications**:
-[Any cross-cutting concerns or architectural changes needed to support mitigations]
-
-**Testing strategy**:
-[How to verify all mitigations work together]
-
-**Rollout plan**:
-[Suggested phasing, feature flags, or gradual rollout strategy if applicable]
-
-### Next Steps
-[What to do with this report -- feed into /tracer, /spec, or direct implementation]
+[One paragraph synthesizing the risk landscape: dominant failure category, highest-impact scenario, key architectural implications, and recommended implementation order.]
 ```
+
+Items include only the prioritized scenarios (user-selected in Phase 3). Unprioritized scenarios are omitted from pipe-format output but referenced in the Failure Analysis counts.
 
 ### 5b. Create Beads Tasks
 

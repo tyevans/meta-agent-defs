@@ -284,27 +284,46 @@ If there are more tasks in the sprint, proceed to 3a for the next assignment. Th
 
 ## Phase 5: Sprint Report
 
-After all tasks are dispatched (or the sprint is stopped):
+After all tasks are dispatched (or the sprint is stopped), emit a pipe-format report so downstream skills (`/retro`, `/assess`, `/curate`) can consume sprint outcomes:
 
 ```markdown
 ## Sprint Report
 
-### Completed
-| Bead | Member | Status | Confidence | Learnings |
-|------|--------|--------|------------|-----------|
-| [id] | [name] | [status] | [confidence] | [count] new |
-| ... | ... | ... | ... | ... |
+**Source**: /sprint
+**Input**: [focus area from $ARGUMENTS, or "full sprint"]
+**Pipeline**: (none — working from direct input)
 
-### Learning Summary
-- **Total new learnings**: [count] across [members] members
+### Items (N)
+
+1. **[bead-title or task description]** — [1-line outcome summary]
+   - member: [agent name]
+   - status: completed | partial | blocked | failed
+   - confidence: [agent's self-assessed confidence]
+   - learnings: [count] new entries persisted
+   - bead: [bead-id if available]
+
+2. **[bead-title or task description]** — [1-line outcome summary]
+   - member: [agent name]
+   - status: completed | partial | blocked | failed
+   - confidence: [agent's self-assessed confidence]
+   - learnings: [count] new entries persisted
+   - bead: [bead-id if available]
+
+[... one item per dispatched task]
+
+### Learning Deltas
+
+- **Total new learnings**: [count] across [N] members
 - **Cross-agent notes delivered**: [count]
 - **Notable learnings**: [2-3 most significant new learnings]
 
 ### Blockers Encountered
+
 [List any blocked or failed tasks with their blockers. "None" if clean sprint.]
 
-### Suggested Next Sprint
-[Based on follow_up.suggested_next from all tasks, recommend what to tackle next.]
+### Summary
+
+[One paragraph: tasks completed vs planned, overall confidence level, key learnings, and recommended next actions (next sprint focus, /retro, /curate).]
 ```
 
 ---

@@ -24,7 +24,7 @@ You are generating **actionable recommendations** for what to do next, based on 
 ## How It Works
 
 ```
-Probe 3 layers (git → session → backlog)
+Probe 4 layers (git → session → backlog → team)
   → Score what's available
     → Generate recommendations ranked by urgency
       → Nudge about missing layers that would improve advice
@@ -73,6 +73,24 @@ Extract:
 - **In-progress items**: Work that was started but not finished
 - **Blocked items**: What's stuck and why
 
+### Layer 4: Team Health (if `.claude/team.yaml` exists)
+
+Read `.claude/team.yaml` and check each member's learnings:
+
+```bash
+ls memory/agents/*/learnings.md 2>/dev/null
+```
+
+For each member, check:
+- **Line count**: >120 lines = bloated (recommend `/curate`)
+- **Staleness**: >14 days since last learnings update = cold agent
+- **Missing learnings**: Agent in team.yaml but no learnings file = unconfigured
+
+Extract:
+- **Stale agents**: Members whose learnings haven't been updated recently
+- **Bloated agents**: Members whose learnings exceed 120 lines
+- **Missing agents**: Members in manifest but without learnings files
+
 ---
 
 ## Phase 2: Generate Recommendations
@@ -88,7 +106,8 @@ Based on available layers, generate 3-5 concrete recommendations. Each recommend
 2. **In-progress beads** → Resume before starting new work
 3. **Blocked items that could be unblocked** → Unblock before starting independent work
 4. **Ready backlog by priority** → Work highest-priority items first
-5. **No backlog** → Suggest /blossom or /meeting to discover work
+5. **Stale team agents** → Recommend `/curate` or `/tend` for agents with cold learnings
+6. **No backlog** → Suggest /blossom or /meeting to discover work
 
 ### Focus Area Filter
 
@@ -117,7 +136,7 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 ```markdown
 ## Session Advice
 
-**Layers**: [git] [session] [backlog]
+**Layers**: [git] [session] [backlog] [team]
 (Filled layers shown as bold, missing layers shown as dim/struck)
 
 ### Recommendations
@@ -136,13 +155,14 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 
 - **Session history**: Run a session with SessionEnd hook to get continuity advice next time
 - **Backlog**: Install beads (`bd init`) to get priority-aware recommendations
+- **Team**: Run `/assemble` to get team-aware recommendations (stale learnings, agent health, team-specific actions)
 ```
 
 ### Layer Indicator
 
 Show which layers were available using a compact indicator:
-- All three: `**Layers**: **git** · **session** · **backlog**`
-- Partial: `**Layers**: **git** · ~~session~~ · **backlog**`
+- All four: `**Layers**: **git** · **session** · **backlog** · **team**`
+- Partial: `**Layers**: **git** · ~~session~~ · **backlog** · ~~team~~`
 
 ### Missing Layers Section
 

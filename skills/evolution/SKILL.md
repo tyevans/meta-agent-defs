@@ -69,28 +69,44 @@ Trend (last 5 edits): net line change. **growing** (>+50), **shrinking** (<-50),
 
 ## Phase 3: Report
 
-Format output:
+Format output in pipe format so downstream skills (`/curate`, `/assess`, `/critique`) can consume the findings:
 
 ```markdown
 ## Evolution: <file-path>
 
-**Created**: <date> by <short-hash> (<message>)
-**Last modified**: <date> (<N days ago>)
-**Stability**: <stable|active|volatile> (<N days since last edit>)
-**Total churn**: <added> added, <removed> removed across <N> edits
+**Source**: /evolution
+**Input**: <file-path> [commit-range if provided]
+**Pipeline**: (none — working from direct input)
+
+### Items (N)
+
+1. **Stability: <stable|active|volatile>** — <N days since last edit>, <N total edits>
+   - source: git log -- <file-path>
+   - confidence: CONFIRMED
+
+2. **Churn: <added> added, <removed> removed** — across <N> edits since <creation-date>
+   - source: git log --stat -- <file-path>
+   - confidence: CONFIRMED
+
+3. **Fix-after-feat: <N instances | none>** — [list commit pairs if any, or "no rushed fix cycles detected"]
+   - source: <commit-hash-1>, <commit-hash-2>
+   - confidence: CONFIRMED
+
+4. **Trend: <growing|shrinking|stable>** — net <+/-N lines> over last 5 edits
+   - source: git log -5 -- <file-path>
+   - confidence: CONFIRMED
+
+[Additional items for notable patterns: large single-commit rewrites, long dormant periods followed by burst activity, rename history, etc. Only include if detected — do not pad with empty observations.]
 
 ### Timeline
+
 | Date | Commit | Type | Message | Delta |
 |------|--------|------|---------|-------|
 [Most recent first, all commits]
 
-### Patterns
-- **Fix-after-feat**: [N instances | none detected] [list pairs if any]
-- **Edit frequency**: [avg days | single edit]
-- **Trend (last 5)**: [growing|shrinking|stable] (net +/-N)
-
 ### Summary
-[1-2 sentences. Examples: "Stable — 120 days, minimal churn." or "Active — 8 edits in 45 days, ongoing refinement."]
+
+[1-2 sentences synthesizing stability, churn trend, and any concerning patterns. Examples: "Stable definition with minimal churn — 120 days since last edit, no fix-after-feat cycles." or "Actively evolving — 8 edits in 45 days with 2 fix-after-feat cycles suggesting the design is still settling."]
 ```
 
 If commit range provided, append diff (or `--stat` if >500 lines).

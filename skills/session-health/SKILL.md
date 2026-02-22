@@ -65,7 +65,29 @@ bd ready                       # What's available?
 git status                     # Any uncommitted work?
 ```
 
-### 5. Recommendation
+### 5. Check Team Health (conditional)
+
+If `.claude/team.yaml` exists, read it and check each member's learnings:
+
+```bash
+ls memory/agents/*/learnings.md 2>/dev/null
+```
+
+For each member in the team manifest, check:
+- **Learnings file exists?** If missing, flag as "unconfigured"
+- **Line count**: >120 lines = bloated (flag for `/curate`)
+- **Last modified date**: >14 days since last update = stale
+
+Report team state in the output:
+
+```markdown
+**Team**: [team name] — [N] members
+- [member]: [line count] learnings, last updated [date] — [healthy / stale / bloated]
+```
+
+If no team is configured, skip this section silently (not an error — many projects don't use teams).
+
+### 6. Recommendation
 
 Based on the above, recommend ONE of:
 
@@ -86,6 +108,7 @@ Based on the above, recommend ONE of:
 **Scope**: [On track / Minor drift / Significant drift] — started with [X], now doing [Y]
 **Quality**: [Good / Showing wear / Degrading]
 **Uncommitted work**: [Yes/No] — [details if yes]
+**Team**: [team name — N members, M stale | No team configured]
 
 ### Recommendation
 [Action] — [1-2 sentence rationale]
