@@ -74,7 +74,7 @@ xargs rm -f < ~/.claude/.tackline.manifest
 
 **New machine:** Clone, install, go. Your entire Claude Code workflow travels with you.
 
-## Skills (44)
+## Skills (46)
 
 ### Composable Primitives
 
@@ -92,6 +92,8 @@ Stateless skills that chain through conversation context. Output of any feeds th
 | `/diff-ideas` | Side-by-side tradeoff analysis |
 | `/decompose` | Break into bounded sub-parts |
 | `/plan` | Dependency-aware execution sequence |
+| `/expand` | Elaborate sparse items into detailed descriptions |
+| `/transform` | Apply a rewrite instruction to every item (map) |
 | `/sketch` | Code skeleton with TODOs |
 | `/merge` | Combine multiple outputs into one |
 
@@ -116,6 +118,14 @@ Orchestrated multi-step workflows with side effects.
 | `/promote` | Graduate durable cross-agent learnings to project rules |
 | `/tend` | Full learning lifecycle: curate agents, curate rules, promote, demotion, summary |
 | `/test-strategy` | Classify spec type, write tests, enforce red-green gates |
+| `/evolution` | File change history, churn, and stability analysis |
+| `/drift` | Cross-definition convergence/divergence detection |
+| `/consolidate` | Backlog dedup, stale detection, cleanup |
+| `/bug` | File structured bug reports to beads backlog |
+| `/domain` | Capture or query project-specific terminology |
+| `/diagnose-agent` | Agent struggle profile from learnings + git signals |
+| `/challenge-gen` | Generate targeted training challenges |
+| `/challenge-run` | Execute challenges and evaluate performance |
 
 ### Session & Team
 
@@ -128,6 +138,8 @@ Orchestrated multi-step workflows with side effects.
 | `/retro` | Session retrospective with persistent learnings |
 | `/handoff` | Session transition capture |
 | `/session-health` | Context load and drift diagnostic |
+| `/team-meeting` | Goal-oriented planning with persistent team |
+| `/discover` | Recommend skills or pipelines for a described goal |
 
 [Full catalog with decision tree and chain patterns](docs/INDEX.md)
 

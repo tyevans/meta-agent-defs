@@ -38,48 +38,83 @@ tackline/
     agent-generator.md        # Generates project-specific agents from codebase analysis
     project-bootstrapper.md   # Full project setup for Claude Code + Beads
     code-reviewer.md          # Read-only code review across 4 quality dimensions
-  skills/
-    blossom/SKILL.md          # /blossom -- spike-driven exploration (fork)
-    fractal/SKILL.md          # /fractal -- goal-directed recursive exploration (inline)
-    meeting/SKILL.md          # /meeting -- interactive multi-agent dialogue (inline)
+  skills/                     # 46 skills (symlinked to ~/.claude/skills/)
+    active-learn/SKILL.md     # /active-learn -- adversarial training loop (fork)
+    advise/SKILL.md           # /advise -- proactive session recommendations (inline)
     assemble/SKILL.md         # /assemble -- persistent team creation (inline)
-    standup/SKILL.md          # /standup -- team status sync (inline)
-    sprint/SKILL.md           # /sprint -- sprint planning + dispatch (inline)
+    assess/SKILL.md           # /assess -- categorical rubric evaluation (inline)
+    blossom/SKILL.md          # /blossom -- spike-driven exploration (fork)
+    bootstrap/SKILL.md        # /bootstrap -- full project setup (fork)
+    bug/SKILL.md              # /bug -- file structured bug reports (inline)
+    challenge-gen/SKILL.md    # /challenge-gen -- generate training challenges (inline)
+    challenge-run/SKILL.md    # /challenge-run -- execute and evaluate challenges (inline)
     consensus/SKILL.md        # /consensus -- multi-perspective design synthesis (fork)
-    spec/SKILL.md             # /spec -- structured specification (fork)
-    premortem/SKILL.md        # /premortem -- risk-first failure analysis (fork)
-    tracer/SKILL.md           # /tracer -- iterative end-to-end implementation (fork)
     consolidate/SKILL.md      # /consolidate -- backlog review (fork)
+    critique/SKILL.md         # /critique -- surface weaknesses (inline)
+    curate/SKILL.md           # /curate -- score and optimize learnings/rules (inline)
+    decompose/SKILL.md        # /decompose -- break into sub-parts (inline)
+    diagnose-agent/SKILL.md   # /diagnose-agent -- agent struggle profile (inline)
+    diff-ideas/SKILL.md       # /diff-ideas -- side-by-side tradeoffs (inline)
+    discover/SKILL.md         # /discover -- recommend skills for a goal (inline)
+    distill/SKILL.md          # /distill -- condense to essentials (inline)
+    domain/SKILL.md           # /domain -- project terminology (inline)
+    drift/SKILL.md            # /drift -- cross-definition convergence/divergence (inline)
+    evolution/SKILL.md        # /evolution -- file change history and stability (inline)
+    expand/SKILL.md           # /expand -- elaborate sparse items (inline)
+    filter/SKILL.md           # /filter -- binary keep/drop (inline)
+    fractal/SKILL.md          # /fractal -- goal-directed recursive exploration (inline)
+    gather/SKILL.md           # /gather -- collect structured findings (inline)
+    handoff/SKILL.md          # /handoff -- session transition (inline)
+    meeting/SKILL.md          # /meeting -- interactive multi-agent dialogue (inline)
+    merge/SKILL.md            # /merge -- combine pipe outputs (inline)
+    plan/SKILL.md             # /plan -- ordered action plan (inline)
+    premortem/SKILL.md        # /premortem -- risk-first failure analysis (fork)
+    promote/SKILL.md          # /promote -- graduate learnings to rules (inline)
+    rank/SKILL.md             # /rank -- score and order items (inline)
+    retro/SKILL.md            # /retro -- session retrospective (inline)
     review/SKILL.md           # /review -- code review (fork)
     session-health/SKILL.md   # /session-health -- session diagnostic (inline)
-    handoff/SKILL.md          # /handoff -- session transition (inline)
-    retro/SKILL.md            # /retro -- session retrospective (inline)
-    gather/SKILL.md           # /gather -- collect structured findings (inline)
-    distill/SKILL.md          # /distill -- condense to essentials (inline)
-    rank/SKILL.md             # /rank -- score and order items (inline)
-    filter/SKILL.md           # /filter -- binary keep/drop (inline)
-    assess/SKILL.md           # /assess -- categorical rubric evaluation (inline)
-    decompose/SKILL.md        # /decompose -- break into sub-parts (inline)
-    diff-ideas/SKILL.md       # /diff-ideas -- side-by-side tradeoffs (inline)
     sketch/SKILL.md           # /sketch -- code skeleton with TODOs (inline)
+    spec/SKILL.md             # /spec -- structured specification (fork)
+    sprint/SKILL.md           # /sprint -- sprint planning + dispatch (inline)
+    standup/SKILL.md          # /standup -- team status sync (inline)
+    status/SKILL.md           # /status -- unified system dashboard (inline)
+    team-meeting/SKILL.md     # /team-meeting -- goal-oriented team planning (inline)
+    tend/SKILL.md             # /tend -- full learning lifecycle (inline)
+    test-strategy/SKILL.md    # /test-strategy -- TDD/BDD workflow (fork)
+    tracer/SKILL.md           # /tracer -- iterative end-to-end implementation (fork)
+    transform/SKILL.md        # /transform -- rewrite each item independently (inline)
     verify/SKILL.md           # /verify -- fact-check claims (inline)
-    critique/SKILL.md         # /critique -- surface weaknesses (inline)
-    plan/SKILL.md             # /plan -- ordered action plan (inline)
-    merge/SKILL.md            # /merge -- combine pipe outputs (inline)
   docs/
+    INDEX.md                  # Skill & agent navigator (decision tree, categories)
+    design-notes.md           # Architecture and design decision notes
+    domains.md                # Domain-to-artifact mapping
+    pipelines.md              # Canonical end-to-end lifecycle pipelines
     primitives-cookbook.md     # Annotated walkthroughs of primitive chains
     primitives-recipes.md     # Common chain patterns
     team-system-guide.md      # Standalone adopter guide for team system
-    demos/                    # Demo walkthroughs (build-a-feature, OSS audit)
   demos/
     todo-app/                 # Intentionally buggy Express app for demo walkthroughs
-  rules/
-    team-protocol.md          # Team manifest format, spawn protocol, reflection schema (global)
-    pipe-format.md            # Composable primitive output contract (global)
+  dev/
+    lint.sh                   # Linting script
+    new-agent.sh              # Scaffold a new agent definition
+    new-skill.sh              # Scaffold a new skill definition
+  rules/                      # Global rules (symlinked to ~/.claude/rules/)
+    batch-safety.md           # Batch processing safety (chunk at 12 items)
+    context-trust.md          # Trust user-provided context, don't re-investigate
+    information-architecture.md  # IA principles for knowledge organization
+    memory-layout.md          # Path registry for persistent state
+    pipe-format.md            # Composable primitive output contract
+    team-protocol.md          # Team manifest, spawn protocol, reflection schema
+    test-conventions.md       # Testing conventions
+  templates/
+    teams/                    # Starter team.yaml files for common project types
+  memory/                     # Persistent state (sessions, learnings, epics)
   settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
   install.sh                  # Symlink installer (idempotent, non-destructive)
   CLAUDE.md                   # Context file for working on this repo itself
+  CONTRIBUTING.md             # Contribution guidelines
 ```
 
 ## Design Philosophy

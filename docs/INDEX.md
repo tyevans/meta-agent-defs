@@ -179,6 +179,8 @@ This pattern is especially useful for:
 ## Further Reading
 
 - [Workflow Pipelines](pipelines.md) — 6 canonical end-to-end lifecycle pipelines (discovery, team, deep analysis, planning, recursive exploration, session continuity)
+- [Design Notes](design-notes.md) — architecture and design decision notes
+- [Domain Mapping](domains.md) — domain-to-artifact mapping (referenced by /curate and /promote)
 - [Primitives Cookbook](primitives-cookbook.md) — detailed usage patterns and examples
 - [Primitives Recipes](primitives-recipes.md) — end-to-end workflow recipes
 - [Team System Guide](team-system-guide.md) — team lifecycle, learnings, and coordination

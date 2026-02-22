@@ -95,15 +95,26 @@ tackline/
 │   ├── handoff/SKILL.md         # Session transition (inline)
 │   ├── review/SKILL.md          # Code review (context: fork)
 │   ├── retro/SKILL.md           # Session retrospective (inline)
-│   └── <12 composable primitives>  # gather, distill, rank, etc. (inline)
+│   └── <14 composable primitives>  # gather, distill, expand, transform, rank, etc. (inline)
 ├── docs/                        # Documentation (cookbook, recipes, team guide, INDEX)
-│   └── INDEX.md                 # Skill & agent navigator (decision tree, categories)
+│   ├── INDEX.md                 # Skill & agent navigator (decision tree, categories)
+│   ├── design-notes.md          # Architecture and design decision notes
+│   ├── domains.md               # Domain-to-artifact mapping
+│   └── pipelines.md             # Canonical end-to-end lifecycle pipelines
 ├── demos/                       # Demo projects for primitive walkthroughs
+├── dev/                         # Developer scripts
+│   ├── lint.sh                  # Linting script
+│   ├── new-agent.sh             # Scaffold a new agent definition
+│   └── new-skill.sh             # Scaffold a new skill definition
 ├── rules/                       # Global rules (symlinked to ~/.claude/rules/)
-│   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
-│   ├── pipe-format.md           # Composable primitive output contract (paths: skills/**/SKILL.md)
+│   ├── batch-safety.md          # Batch processing safety (chunk at 12 items)
+│   ├── context-trust.md         # Trust user-provided context
 │   ├── information-architecture.md  # IA principles for knowledge organization
-│   └── memory-layout.md         # Path registry for persistent state (paths: memory/**)
+│   ├── memory-layout.md         # Path registry for persistent state (paths: memory/**)
+│   ├── pipe-format.md           # Composable primitive output contract (paths: skills/**/SKILL.md)
+│   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
+│   └── test-conventions.md      # Testing conventions
+├── memory/                      # Persistent state (sessions, learnings, epics)
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
 ├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
@@ -112,9 +123,10 @@ tackline/
 ├── .claude/                    # Project-local Claude Code config (NOT symlinked globally)
 │   ├── settings.json           # Project-specific hooks + permissions
 │   ├── AGENTS.md               # Agent catalog for project-local agents
-│   ├── agents/                 # 8 project-local agents (authoring, research, maintenance)
+│   ├── agents/                 # 9 project-local agents (authoring, research, maintenance)
 │   ├── rules/                  # Architectural guardrails
 │   └── skills/                 # Project-local skill overrides
+├── CONTRIBUTING.md             # Contribution guidelines
 └── .beads/                     # Task management state
 ```
 
