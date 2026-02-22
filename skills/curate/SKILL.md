@@ -63,8 +63,11 @@ If `$ARGUMENTS` is empty:
 3. Stop and wait for response
 
 If `$ARGUMENTS` is provided:
-1. Confirm `memory/agents/<name>/learnings.md` exists
-2. If not found: "No learnings file at memory/agents/<name>/learnings.md. Has this agent been dispatched yet?"
+1. Check whether `memory/agents/<name>/learnings.md` exists
+2. If not found:
+   - Check whether `.claude/team.yaml` exists and lists this agent
+   - If the agent IS listed in team.yaml: print "No learnings found for <name>. Entering bootstrap mode — pulling from cross-agent sources." Set **bootstrap mode = true**. Continue to Phase 1.
+   - If the agent is NOT in team.yaml (or team.yaml does not exist): "No learnings file at memory/agents/<name>/learnings.md. Has this agent been dispatched yet?" Stop and wait for response.
 3. Note whether `memory/agents/<name>/archive.md` exists (needed for Phase 4)
 4. Note whether `.claude/team.yaml` exists (used in Phase 1d to read the agent definition)
 
@@ -83,7 +86,9 @@ If `$ARGUMENTS` is provided:
 
 ### 1a. Load Primary Artifact
 
-**Learnings mode:** Read `memory/agents/<name>/learnings.md`. Note:
+**Learnings mode (bootstrap):** Skip this step. The target has no learnings.md. Note that the starting entry count is 0. Continue to Phase 1b.
+
+**Learnings mode (normal):** Read `memory/agents/<name>/learnings.md`. Note:
 - Total line count (cap is 60 lines: 30 Core + 30 Task-Relevant)
 - Each distinct entry (entries separated by blank lines or bullet markers)
 - Entry provenance where present: `(added: YYYY-MM-DD, dispatch: <source>)`
@@ -164,7 +169,9 @@ If `docs/domains.md` does not exist, skip this step.
 
 ---
 
-## Phase 2: Score Each Entry
+## Phase 2: Score Each Entry (Skip in Bootstrap Mode)
+
+**In bootstrap mode:** Skip this entire phase. There are no existing entries to score. Proceed directly to Phase 3.
 
 For each entry in the primary artifact, evaluate three independent dimensions. The composite of these dimensions drives the action (keep, archive, review).
 
@@ -253,7 +260,9 @@ Compare the file scope and domain areas from Phase 1b against the topics covered
 
 ### 3a. Build Coverage Map
 
-For each distinct domain area in upcoming work, note whether any HIGH or MEDIUM entry covers it:
+**In bootstrap mode:** All domain areas are uncovered by definition (0 entries). Mark every upcoming work domain as GAP and proceed to steps 3c and 3d to find fill candidates.
+
+**In normal mode:** For each distinct domain area in upcoming work, note whether any HIGH or MEDIUM entry covers it:
 
 ```
 Domain area: skill authoring
@@ -267,7 +276,9 @@ Domain area: hook scripting
 
 ### 3b. Flag Gaps
 
-A gap is a domain area where:
+**In bootstrap mode:** All domain areas from upcoming work are gaps. No filtering needed — proceed directly to 3c and 3d to source fill candidates for every domain.
+
+**In normal mode:** A gap is a domain area where:
 1. Upcoming work touches it (files in task scope, keywords in descriptions)
 2. No HIGH or MEDIUM entry covers it
 
@@ -293,13 +304,15 @@ ls memory/agents/*/learnings.md 2>/dev/null
 
 Read each file that is not the target agent's. For each gap, check whether another agent has an entry covering it. Cross-agent candidates are flagged for potential pull-in. Note the source agent name — this is also relevant for `/promote` (patterns across agents indicate rule candidacy).
 
+**In bootstrap mode:** Also scan all other agents' `archive.md` files for entries relevant to the target agent's `role` and `owns` patterns from team.yaml. Filter candidates by relevance to the new agent's responsibilities — use the agent's `role` description and `owns` glob patterns as the relevance filter. Do not limit to gaps that have no other fill candidate; in bootstrap mode, multiple candidates per domain area are desirable to give the user choice.
+
 ---
 
 ## Phase 4: Compose Output
 
 Emit in pipe format per `rules/pipe-format.md`. The format depends on artifact type.
 
-### Learnings Mode Output
+### Learnings Mode Output (Normal)
 
 ```markdown
 ## Curated Learnings: <agent-name>
@@ -353,6 +366,41 @@ For each gap with no fill candidate:
 ```
 
 Order items: ADD first (most valuable new context), then KEEP (sorted by relevance high before medium), then ARCHIVE (low before passive). This puts what changes at the top for easy review.
+
+### Learnings Mode Output (Bootstrap)
+
+Use this format when bootstrap mode is active (no existing learnings.md):
+
+```markdown
+## Bootstrap Learnings: <agent-name>
+
+**Source**: /curate (bootstrap mode)
+**Input**: <agent-name>
+**Pipeline**: (none — working from direct input)
+
+### Items (N)
+
+1. **SEED: <entry title>** — <entry text>
+   - relevance: high | medium
+   - freshness: <from original added date>
+   - scope: agent | project | global
+   - reason: <gap area this fills — reference to agent role or upcoming work domain>
+   - source: memory/agents/<other-name>/learnings.md | memory/agents/<other-name>/archive.md
+   - cross-agent: true
+   - related: <comma-separated list of related entry titles, if any>
+
+### Gaps (M)
+
+For each domain area in upcoming work with no SEED candidate found:
+
+- **GAP: <domain area>** — no cross-agent or archive entries found for this area. Add a learning after the first dispatch in this domain.
+
+### Summary
+
+<One paragraph: total SEED candidates found, source agents and archives consulted, domains covered vs. gaps remaining, how well the seeded entries match the agent's role and owns patterns, and any promote signals detected. Note this is a starting point — the agent should refine these entries after its first few dispatches.>
+```
+
+Order SEED items by relevance (high before medium), then by source (learnings.md before archive.md).
 
 ### Rules Mode Output
 
@@ -408,7 +456,7 @@ Order items: KEEP (sorted by relevance high before medium), then REVIEW (low bef
 
 ## Phase 5: Write-Back (Conditional)
 
-### Learnings Mode Write-Back
+### Learnings Mode Write-Back (Normal)
 
 After presenting the output, ask the user:
 
@@ -450,6 +498,43 @@ Read the updated `learnings.md` and confirm:
 - Line count is within the 60-line cap
 - All sections are properly structured
 - No ARCHIVE entries remain in learnings.md
+
+### Learnings Mode Write-Back (Bootstrap)
+
+After presenting the bootstrap output, ask the user:
+
+> "Create memory/agents/<name>/learnings.md with these seeded entries? (y/n)"
+
+If the user approves:
+
+**5a. Create learnings.md**
+
+Create `memory/agents/<name>/learnings.md` (and the directory if it does not exist) with:
+
+```markdown
+# Learnings: <agent-name>
+
+## Core
+
+<All SEED entries classified as Core — high-reuse fundamentals applicable across most tasks>
+
+## Task-Relevant
+
+<All SEED entries classified as Task-Relevant — entries tied to current upcoming work scope>
+```
+
+Classify SEED entries into Core vs Task-Relevant using the same heuristic as normal mode:
+- **Core**: patterns that will apply across most dispatches given the agent's role
+- **Task-Relevant**: entries tied to specific upcoming tasks or file areas in current beads
+
+Keep the total under 60 lines. If SEED candidates would exceed the cap, prioritize by relevance (HIGH before MEDIUM) and note what was deferred.
+
+**5b. Verify**
+
+Read the newly created `learnings.md` and confirm:
+- File exists at the correct path
+- Line count is within the 60-line cap
+- Sections are properly structured with the standard header format
 
 ### Rules Mode Write-Back (Report Only)
 
@@ -509,5 +594,7 @@ This manifest is a checklist for human review, not an automation target.
 11. **Suggest pattern coalescence.** When `related:` cross-references reveal 3+ entries across 2+ agents that reference the same concept cluster, suggest creating a shared document in `docs/patterns/<topic>.md`. This is an organic growth path — heavily cross-referenced patterns naturally coalesce into shared documentation without mandating restructuring. Include the suggestion in the Summary section: "Pattern coalescence candidate: [topic] — [n] related entries across [agents]. Consider creating docs/patterns/[topic].md to consolidate shared knowledge." Only suggest, never auto-create.
 
 12. **Consult the domain index.** If `docs/domains.md` exists, read it during Phase 1 to improve gap detection. The domain index maps work areas to their relevant rules and learnings — gaps in the index are gaps in knowledge coverage.
+
+13. **Bootstrap Mode.** Bootstrap mode activates when the target agent has no `learnings.md` but IS listed in `team.yaml`. In this mode: scoring is skipped (nothing to score), gap detection treats all upcoming work domains as uncovered, and the output uses SEED actions instead of ADD/KEEP/ARCHIVE. Seeds are sourced from other agents' `learnings.md` and `archive.md` files, filtered by the new agent's `role` and `owns` patterns. Limitations: seeds are borrowed context — they may not fully match how the new agent will actually work. Treat them as a starting point; replace or refine entries after the first few dispatches.
 
 See also: /tend (orchestrates curate + promote in sequence), /promote (graduates cross-agent patterns to rules), /retro (generates learnings that curate then optimizes), /sprint (dispatches agents whose learnings curate keeps sharp), /evolution (file change history for richer rule scoring), docs/domains.md (domain cross-reference index for knowledge discovery).
