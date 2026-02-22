@@ -30,6 +30,18 @@ Identify the two approaches from $ARGUMENTS or from the top 2 items in prior pip
 - **Comparison**: Table with dimensions as rows, approaches as columns, winner per dimension
 - **Summary**: One paragraph recommendation with reasoning
 
+## Decomposition
+
+Diff-ideas is a convenience macro that bundles three primitive operations:
+
+```
+/gather approach-A -> /gather approach-B -> /merge -> /rank by dimensions -> /distill to recommendation
+```
+
+The bundling is justified because pairwise comparison with a per-dimension winner table is a specific output structure that none of the individual primitives produce. Decomposing would require 5 primitive invocations and manual coordination of the comparison table format.
+
+If you need finer control (e.g., comparing 3+ approaches, or using custom research beyond Grep/WebSearch), decompose manually. For 3+ approaches, consider `/gather` each approach separately, then `/merge` and `/rank`.
+
 ## Guidelines
 
 - Choose 4-6 comparison dimensions relevant to the decision (performance, DX, ecosystem, complexity, etc.)

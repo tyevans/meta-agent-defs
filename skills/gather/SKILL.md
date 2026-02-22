@@ -39,6 +39,17 @@ Output in pipe format:
 
 Each finding must have a source. Use confidence levels when claims are uncertain.
 
+## Modes
+
+This primitive has one implicit secondary behavior:
+
+| Behavior | Description |
+|----------|-------------|
+| **Confidence labeling** | Every finding gets a CONFIRMED/LIKELY/POSSIBLE label. This is a lightweight /assess operation embedded in gather's output. |
+| **Code-first priority** | Search order is hardcoded: codebase first, web second. This is a domain bias (optimized for software engineering), not a user-configurable parameter. |
+
+Confidence labeling is embedded by design — separating it would require a `/gather -> /assess` chain for every collection, adding overhead without value. The code-first priority reflects the target domain; for non-code topics, web results will still be used when codebase results are insufficient.
+
 ## Guidelines
 
 - Code sources are more reliable than web sources — prioritize codebase over web

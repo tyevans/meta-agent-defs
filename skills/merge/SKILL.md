@@ -62,6 +62,17 @@ Build the `**Pipeline**` field by combining the pipeline chains from all input b
 
 Output in pipe format with header, metadata (including `**Pipeline**`), deduplicated items as numbered list, Merge Details section, and final summary.
 
+## Modes
+
+This primitive operates in two modes depending on `$ARGUMENTS`:
+
+| Mode | Trigger | Behavior |
+|------|---------|----------|
+| **Merge all** | `$ARGUMENTS` is empty | Deduplicates and unifies all pipe-format blocks in context. Pure merge — single operation. |
+| **Merge + filter** | `$ARGUMENTS` specifies a topic (e.g., "auth") | Deduplicates, then filters to items matching the topic. Embeds /filter behavior after merging (Step 4). |
+
+In topic mode, merge silently performs a filter pass. If you are composing a pipeline and plan to call `/filter` downstream, omit the topic argument from merge to avoid double-filtering.
+
 ## Guidelines
 
 - If no pipe-format blocks are found in context, emit an error message and stop

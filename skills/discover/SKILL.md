@@ -80,6 +80,8 @@ Check whether the goal maps to a known pipeline pattern. Known patterns (from `d
 | Plan goals with a persistent team | `/team-meeting` -> `/sprint` |
 | Run full agent improvement cycle | `/diagnose-agent` -> `/challenge-gen` -> `/challenge-run` -> `/active-learn` |
 | Facilitate a requirements discussion | `/meeting` |
+| Rewrite findings for a different audience | `/gather` -> `/transform` |
+| Elaborate compressed findings | `/distill` -> `/expand` |
 
 If the goal maps to a pattern above, include the full pipeline in the output.
 

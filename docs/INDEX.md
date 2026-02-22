@@ -31,7 +31,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 
 ## Skills by Category
 
-### Composable Primitives (12)
+### Composable Primitives (14)
 
 Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of any primitive feeds the next via conversation context.
 
@@ -40,6 +40,8 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /gather | Collect information with sources and confidence | Input |
 | /decompose | Break a goal into bounded sub-parts | Transform |
 | /distill | Reduce verbose input to essentials | Transform |
+| /expand | Elaborate sparse items into detailed descriptions (inverse of distill) | Transform |
+| /transform | Apply a rewrite instruction to every item independently (map) | Transform |
 | /rank | Score and order items by criteria | Transform |
 | /filter | Binary keep/drop by criterion | Transform |
 | /assess | Categorize items by rubric (critical/warning/ok) | Transform |
@@ -48,7 +50,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /diff-ideas | Compare two approaches side-by-side | Transform |
 | /merge | Combine multiple pipe-format blocks into one | Transform |
 | /plan | Dependency-aware execution sequence | Output |
-| /sketch | Minimal code skeleton with TODOs | Output |
+| /sketch | Structural skeleton with TODOs (code, docs, configs, schemas) | Output |
 
 ### Workflow Skills (26)
 
@@ -110,7 +112,7 @@ Skills about the skill system itself.
 
 ## Skills by Context Type
 
-**Inline (34):** bug, curate, domain, gather, distill, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, promote, tend, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
+**Inline (36):** bug, curate, domain, gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, promote, tend, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
 
 **Fork (10):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, test-strategy, tracer
 
@@ -129,6 +131,8 @@ Common composition sequences (each step's output feeds the next via context):
 /gather -> /distill -> /sketch        # Research -> condense -> prototype
 /critique -> /bug                     # Find flaws -> file as tracked issues
 /review -> /bug                       # Code review -> file bugs from findings
+/gather -> /transform as ticket titles  # Research -> rewrite each finding as a ticket
+/gather -> /distill -> /expand         # Research -> condense -> elaborate key findings
 /drift -> /rank -> /sprint            # Compare definitions -> prioritize fixes -> execute
 /diagnose-agent -> /challenge-gen     # Profile agent -> generate targeted challenges
 /diagnose-agent -> /challenge-gen -> /challenge-run  # Profile -> challenges -> evaluate

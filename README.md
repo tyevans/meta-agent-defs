@@ -162,7 +162,7 @@ Orchestrated multi-step workflows with side effects.
 
 ## Learn More
 
-- [Full skill & agent catalog](docs/INDEX.md) -- 44 skills, 3 agents, decision tree, chain patterns
+- [Full skill & agent catalog](docs/INDEX.md) -- 46 skills, 3 agents, decision tree, chain patterns
 - [Technical reference](docs/reference.md) -- hooks, MCP servers, project structure, design philosophy
 - [Composable primitive patterns](docs/primitives-cookbook.md) -- annotated walkthroughs
 - [Team system guide](docs/team-system-guide.md) -- persistent learning teams

@@ -34,6 +34,18 @@ You are running the **verify** primitive — checking claims and assertions agai
 
 Each verified or refuted claim must cite specific evidence (file:line, commit hash, URL, or doc reference). Refuted claims are as valuable as verified ones — highlight what's wrong and why.
 
+## Decomposition
+
+Verify is a convenience macro that bundles two primitive operations:
+
+```
+/gather evidence for claims -> /assess VERIFIED|REFUTED|UNCERTAIN
+```
+
+The tight coupling between "what are the claims" and "search for their specific evidence" makes this bundling practical — a standalone `/gather` would need the claims as context to know what evidence to search for, and `/assess` would need the evidence alongside the claims. The macro eliminates this coordination overhead.
+
+If you need finer control (e.g., custom evidence sources or a different verdict rubric), decompose manually into `/gather` + `/assess`.
+
 ## Guidelines
 
 - Code and git history are more authoritative than docs or web — prioritize codebase evidence
