@@ -145,6 +145,36 @@ After completing your task, end your response with a structured reflection:
 
 **For independent tasks: parallelize.** Use `run_in_background: true` on Task calls when tasks touch different ownership areas and have no shared files.
 
+## Dispatch Model
+
+### Decision Boundary: Task vs. Native Teams
+
+Default to Task tool dispatch. Prefer native TeamCreate only when agents must exchange messages during execution — not merely because tasks depend on each other.
+
+| Condition | Mechanism |
+|-----------|-----------|
+| Tasks are independent or sequentially ordered | Task tool (serialize or parallelize) |
+| Agents must communicate mid-execution (e.g., one agent's output shapes another's next step in real time) | Native TeamCreate |
+| Tasks have shared dependencies but no runtime message exchange | Task tool |
+
+Having dependencies between beads is not sufficient justification for native teams. Use `bd dep add` for ordering, Task for dispatch.
+
+### Injection Invariant
+
+Regardless of dispatch mechanism, the orchestrator always injects learnings into the agent's initial prompt. Agents never self-load their own learnings files.
+
+1. Read `memory/agents/<name>/learnings.md` before dispatching.
+2. Embed the contents in the agent's initial prompt (see Prompt Template above).
+3. This applies to both Task tool dispatch and native TeamCreate spawns.
+
+### Known Gap: team.yaml Budget and Tools Enforcement
+
+The `tools` and budget fields in `team.yaml` are not enforced by native TeamCreate. Enforcement is the orchestrator's responsibility:
+
+- Pass `--allowedTools` explicitly when constructing the spawn.
+- Validate that the tool list matches the member's `tools` field before dispatching.
+- Budget limits must be applied in the orchestrator logic, not relied upon from TeamCreate.
+
 ## Reflection Schema
 
 Every spawned team member returns this JSON structure:
