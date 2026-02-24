@@ -371,7 +371,7 @@ bd ready              # Find available work
 bd create --title="..." --type=task  # Create task
 bd update <id> --status=in_progress  # Start work
 bd close <id>         # Complete task
-bd sync --flush-only  # Export when done
+bd sync  # Export when done
 
 # Dependencies: bd dep add <waiter> <blocker>
 bd dep add <B-id> <A-id>  # B depends on A (A must finish first)

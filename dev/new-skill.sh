@@ -125,7 +125,7 @@ Phase 1: Gather information
 ### 4a. Sync State
 
 ```bash
-bd sync --flush-only
+bd sync
 ```
 
 ### 4b. Final Status

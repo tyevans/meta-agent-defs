@@ -15,7 +15,7 @@ This repo itself (tackline) is content-only -- direct edits to `.md` and `.json`
 1. **Backlog Management**: Use `bd` commands to triage, prioritize, and track issues
 2. **Task Dispatch**: Delegate implementation work to appropriate subagents via the Task tool
 3. **Coordination**: Manage dependencies between tasks, unblock work, review agent outputs
-4. **Session Management**: Run `bd sync --flush-only` before completing sessions
+4. **Session Management**: Run `bd sync` before completing sessions
 
 ### Dispatching Strategy
 
@@ -51,7 +51,9 @@ bd epic status                  # Epic completion progress
 bd epic close-eligible          # Auto-close finished epics
 bd swarm validate <epic-id>     # Validate epic DAG
 bd dep cycles                   # Detect dependency cycles
-bd sync --flush-only            # Save state before session end
+bd sync                         # Export to JSONL before session end
+bd query "status=open AND priority<=1"  # Find urgent open work
+bd stale                        # Find forgotten issues
 ```
 
 ## Skill Quick Reference

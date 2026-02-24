@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== Session Start ==='; git log --oneline -3 2>/dev/null | sed 's/^/Last:    /'; git diff --stat --cached 2>/dev/null; echo \"Tree:    $(git status --short 2>/dev/null | wc -l) uncommitted files\"; bd stats --oneline 2>/dev/null || true; bd ready --count 2>/dev/null | sed 's/^/Ready:   /' || true; bd list --status=in_progress --count 2>/dev/null | sed 's/^/Active:  /' || true; bd prime 2>/dev/null || true; echo '=== ==='"
+            "command": "echo '=== Session Start ==='; git log --oneline -3 2>/dev/null | sed 's/^/Last:    /'; git diff --stat --cached 2>/dev/null; echo \"Tree:    $(git status --short 2>/dev/null | wc -l) uncommitted files\"; bd status --no-activity 2>/dev/null || true; bd prime 2>/dev/null || true; echo '=== ==='"
           },
           {
             "type": "command",
@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bd sync --flush-only 2>/dev/null || true; mkdir -p memory/sessions && { NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ); printf '## Pre-Compact Snapshot\\n**Time**: %s\\n\\n### In-Progress Tasks\\n' \"$NOW\"; bd list --status=in_progress 2>/dev/null || echo '(beads unavailable)'; printf '\\n### Recent Commits\\n'; git log --oneline -5 2>/dev/null || echo '(no git)'; printf '\\n### Working Tree\\n'; git status --short 2>/dev/null || echo '(no git)'; printf '\\n### Open Questions\\n(fill in before context is lost)\\n\\n### Working Theories\\n(fill in before context is lost)\\n\\n### Key Decisions\\n(fill in before context is lost)\\n'; } > memory/sessions/pre-compact.md 2>/dev/null || true"
+            "command": "bd sync 2>/dev/null || true; mkdir -p memory/sessions && { NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ); printf '## Pre-Compact Snapshot\\n**Time**: %s\\n\\n### In-Progress Tasks\\n' \"$NOW\"; bd list --status=in_progress 2>/dev/null || echo '(beads unavailable)'; printf '\\n### Recent Commits\\n'; git log --oneline -5 2>/dev/null || echo '(no git)'; printf '\\n### Working Tree\\n'; git status --short 2>/dev/null || echo '(no git)'; printf '\\n### Open Questions\\n(fill in before context is lost)\\n\\n### Working Theories\\n(fill in before context is lost)\\n\\n### Key Decisions\\n(fill in before context is lost)\\n'; } > memory/sessions/pre-compact.md 2>/dev/null || true"
           }
         ]
       }
@@ -67,7 +67,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\"git push' 2>/dev/null; then if [ -d .beads ]; then STATUS=$(bd sync --status 2>/dev/null); if echo \"$STATUS\" | grep -qiE 'uncommitted|dirty|pending'; then echo 'BEADS WARNING: Uncommitted beads changes detected. Run bd sync before pushing.' >&2; fi; fi; fi"
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\"git push' 2>/dev/null; then if [ -d .beads ]; then bd sync 2>/dev/null || true; fi; fi"
           }
         ]
       },
@@ -118,7 +118,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mkdir -p memory/sessions && NOW=$(date -u '+%Y-%m-%dT%H-%M-%SZ') && FILE=\"memory/sessions/${NOW}.md\" && echo \"## Session: $NOW\" > \"$FILE\" && echo '' >> \"$FILE\" && echo '### Commits' >> \"$FILE\" && COMMITS=$(git log --oneline -10 2>/dev/null); if [ -n \"$COMMITS\" ]; then echo \"$COMMITS\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Working Tree' >> \"$FILE\" && TREE=$(git status --short 2>/dev/null); if [ -n \"$TREE\" ]; then echo \"$TREE\" >> \"$FILE\"; else echo 'clean' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Backlog' >> \"$FILE\" && BACKLOG=$(bd stats --oneline 2>/dev/null || bd stats 2>/dev/null); if [ -n \"$BACKLOG\" ]; then echo \"$BACKLOG\" >> \"$FILE\"; else echo '(beads unavailable)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### In Progress' >> \"$FILE\" && INPROG=$(bd list --status=in_progress 2>/dev/null); if [ -n \"$INPROG\" ]; then echo \"$INPROG\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && cp \"$FILE\" memory/sessions/last.md 2>/dev/null || true && ls -t memory/sessions/[0-9]*.md 2>/dev/null | tail -n +4 | xargs rm -f 2>/dev/null || true; bd sync --flush-only 2>/dev/null || true"
+            "command": "mkdir -p memory/sessions && NOW=$(date -u '+%Y-%m-%dT%H-%M-%SZ') && FILE=\"memory/sessions/${NOW}.md\" && echo \"## Session: $NOW\" > \"$FILE\" && echo '' >> \"$FILE\" && echo '### Commits' >> \"$FILE\" && COMMITS=$(git log --oneline -10 2>/dev/null); if [ -n \"$COMMITS\" ]; then echo \"$COMMITS\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Working Tree' >> \"$FILE\" && TREE=$(git status --short 2>/dev/null); if [ -n \"$TREE\" ]; then echo \"$TREE\" >> \"$FILE\"; else echo 'clean' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Backlog' >> \"$FILE\" && BACKLOG=$(bd status --no-activity 2>/dev/null); if [ -n \"$BACKLOG\" ]; then echo \"$BACKLOG\" >> \"$FILE\"; else echo '(beads unavailable)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### In Progress' >> \"$FILE\" && INPROG=$(bd list --status=in_progress 2>/dev/null); if [ -n \"$INPROG\" ]; then echo \"$INPROG\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && cp \"$FILE\" memory/sessions/last.md 2>/dev/null || true && ls -t memory/sessions/[0-9]*.md 2>/dev/null | tail -n +4 | xargs rm -f 2>/dev/null || true; bd sync 2>/dev/null || true"
           }
         ]
       }

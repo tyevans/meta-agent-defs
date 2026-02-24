@@ -64,7 +64,7 @@ Gather finds the current state, assess categorizes by severity, filter focuses o
 User: /gather how beads integration works in this repo
   → Findings on bd commands, hooks, session lifecycle, backlog sync
 User: /distill to 6 bullets
-  → bd create/close workflow, SessionStart hook injection, sync --flush-only, epic dependencies
+  → bd create/close workflow, SessionStart hook injection, sync export, epic dependencies
 User: /verify
   → VERIFIED: SessionStart hook exists in settings.json (line 14); REFUTED: "bd sync runs on every commit" (no git hook found)
 ```

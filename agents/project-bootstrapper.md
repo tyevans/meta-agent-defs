@@ -79,7 +79,7 @@ Brief one-line description of the project.
 1. **Backlog Management**: Use `bd` commands to triage, prioritize, and track issues
 2. **Task Dispatch**: Delegate implementation work to appropriate subagents via the Task tool
 3. **Coordination**: Manage dependencies between tasks, unblock work, review agent outputs
-4. **Session Management**: Run `bd sync --flush-only` before completing sessions
+4. **Session Management**: Run `bd sync` before completing sessions
 
 ### When to Invoke Each Agent
 
@@ -179,7 +179,7 @@ Create `.claude/settings.json` for team-shared settings:
         "hooks": [
           {
             "type": "command",
-            "command": "bd sync --flush-only 2>/dev/null || true"
+            "command": "bd sync 2>/dev/null || true"
           }
         ]
       }

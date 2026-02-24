@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bd sync --flush-only 2>/dev/null || true"
+            "command": "bd sync 2>/dev/null || true"
           }
         ]
       }
