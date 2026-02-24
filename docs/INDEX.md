@@ -25,7 +25,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Optimize agent learnings for upcoming work** -> /curate (score, prune, fill gaps) -> /promote (graduate to rules) — or use /tend to run all three
 - **Audit project rules for health** -> /curate rules (score rules, passive context budget, gap detection)
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
-- **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
+- **Discuss with multiple perspectives** -> /meeting (interactive group dialogue) or /workshop (research-backed discussion with user checkpoints at every position)
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
 - **Find the right skill for a goal** -> /discover (semantic recommendation + pipeline suggestion)
 
@@ -52,7 +52,7 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Structural skeleton with TODOs (code, docs, configs, schemas) | Output |
 
-### Workflow Skills (26)
+### Workflow Skills (27)
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -61,6 +61,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /blossom | Spike-driven exploration, produces epic + tasks | fork |
 | /fractal | Goal-directed recursive exploration | inline |
 | /meeting | Multi-agent group discussion (uses native teams for real-time dialogue) | inline |
+| /workshop | Research-backed facilitated discussion: agents investigate (blossom-style spikes) then debate with user checkpoints at every position; produces deliberation document | inline |
 | /team-meeting | Goal-oriented planning with persistent team (uses native teams) | inline |
 | /consensus | Three independent proposals + synthesis | fork |
 | /premortem | Failure analysis with mitigations | fork |
@@ -112,7 +113,7 @@ Skills about the skill system itself.
 
 ## Skills by Context Type
 
-**Inline (36):** bug, curate, domain, gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, promote, tend, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
+**Inline (37):** bug, curate, domain, gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, workshop, team-meeting, promote, tend, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
 
 **Fork (10):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, test-strategy, tracer
 
