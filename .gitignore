@@ -2,6 +2,7 @@
 *.bak.*
 
 # Claude Code local settings
+settings.json
 .claude/settings.local.json
 CLAUDE.local.md
 

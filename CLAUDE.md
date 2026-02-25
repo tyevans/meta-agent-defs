@@ -119,7 +119,6 @@ tackline/
 ├── memory/                      # Persistent state (sessions, learnings, epics)
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
-├── settings.json               # Global hooks + env (symlinked to ~/.claude/)
 ├── mcp-servers.json            # MCP server definitions (installed globally)
 ├── install.sh                  # Symlink installer (idempotent)
 ├── .claude/                    # Project-local Claude Code config (NOT symlinked globally)
@@ -135,7 +134,7 @@ tackline/
 ## Architecture
 
 - **No source code, no build system, no tests.** This is a content-only repo of Markdown definitions and JSON config.
-- `settings.json` at repo root is the **global** settings file symlinked to `~/.claude/settings.json`. It contains hooks (SessionStart, PreCompact, PreToolUse, PostToolUse) and env vars that apply to ALL projects.
+- `settings.json` at repo root is the user's local settings file (gitignored). It contains hooks (SessionStart, PreCompact, PreToolUse, PostToolUse) and env vars that apply to ALL projects. It is NOT installed by `install.sh` -- users manage it directly at `~/.claude/settings.json`.
 - `.claude/settings.json` is the **project-local** settings file for working on this repo itself.
 - `install.sh` is idempotent. It backs up existing regular files before symlinking.
 - `mcp-servers.json` defines MCP servers installed globally via `claude mcp add --scope user`. Config lives in `~/.claude.json` (not symlinked).

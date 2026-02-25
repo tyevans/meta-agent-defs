@@ -219,6 +219,28 @@ if [ -z "$PROJECT_DIR" ]; then
     fi
 fi
 
+# --- Migrate settings.json symlinks to standalone files ---
+# Previously, install.sh symlinked settings.json into ~/.claude/. That's no longer done.
+# If an existing symlink points back to this repo's settings.json, replace it with a copy
+# so the user keeps their config after the source file is removed from git.
+SETTINGS_TARGET="$TARGET_DIR/settings.json"
+if [ -L "$SETTINGS_TARGET" ]; then
+    LINK_TARGET="$(readlink "$SETTINGS_TARGET")"
+    case "$LINK_TARGET" in
+        "$SCRIPT_DIR"/settings.json|*/tackline/settings.json)
+            if [ -f "$LINK_TARGET" ]; then
+                CONTENT="$(cat "$LINK_TARGET")"
+                rm "$SETTINGS_TARGET"
+                printf '%s\n' "$CONTENT" > "$SETTINGS_TARGET"
+                log "Migrated settings.json: symlink replaced with standalone copy"
+            else
+                rm "$SETTINGS_TARGET"
+                warn "Removed dangling settings.json symlink (source no longer exists)"
+            fi
+            ;;
+    esac
+fi
+
 # --- Migrate old manifest name ---
 OLD_MANIFEST="$TARGET_DIR/.meta-agent-defs.manifest"
 if [ -f "$OLD_MANIFEST" ] && [ ! -f "$MANIFEST_FILE" ]; then
@@ -310,14 +332,6 @@ else
     info "Skipping templates (project-local mode - global feature)"
 fi
 
-# --- Settings ---
-if [ -z "$PROJECT_DIR" ]; then
-    info "Installing settings..."
-    link_file "$SCRIPT_DIR/settings.json" "$TARGET_DIR/settings.json"
-else
-    info "Skipping settings.json (project-local mode - would cause duplicate hooks)"
-fi
-
 # --- MCP Servers ---
 if [ -z "$PROJECT_DIR" ]; then
     MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
@@ -383,7 +397,6 @@ if [ -z "$PROJECT_DIR" ]; then
     if [ -d "$SCRIPT_DIR/templates" ]; then
         echo "  Templates: $(find "$SCRIPT_DIR/templates" -type f -name "*.yaml" 2>/dev/null | wc -l) team templates"
     fi
-    echo "  Settings: settings.json (hooks + env)"
     MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
     if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
         echo "  MCP:      $(python3 -c "import json; print(len(json.load(open('$MCP_CONFIG'))))" 2>/dev/null || echo '?') server(s)"
@@ -402,7 +415,6 @@ if [ -z "$PROJECT_DIR" ]; then
     if [ -d "$SCRIPT_DIR/templates" ]; then
         echo "  ls -la $TARGET_DIR/templates/"
     fi
-    echo "  ls -la $TARGET_DIR/settings.json"
 fi
 echo ""
 info "To uninstall:"
