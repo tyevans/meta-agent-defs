@@ -85,19 +85,21 @@ tackline/
 │   └── code-reviewer.md        # Read-only code review agent
 ├── bin/
 │   └── rule-relevance.sh       # SessionStart hook: matches rules to file activity via paths: frontmatter
-├── skills/                      # Skill definitions (symlinked to ~/.claude/skills/)
-│   ├── blossom/SKILL.md         # Spike-driven exploration (context: fork)
-│   ├── fractal/SKILL.md         # Goal-directed recursive exploration (inline)
-│   ├── meeting/SKILL.md         # Interactive multi-agent dialogue (inline)
-│   ├── assemble/SKILL.md        # Persistent learning team creation (inline)
-│   ├── standup/SKILL.md         # Team status sync with learning health (inline)
-│   ├── sprint/SKILL.md          # Sprint planning + dispatch with learning loop (inline)
-│   ├── consolidate/SKILL.md     # Backlog review (context: fork)
-│   ├── session-health/SKILL.md  # Session diagnostic (inline, auto-discoverable)
-│   ├── handoff/SKILL.md         # Session transition (inline)
-│   ├── review/SKILL.md          # Code review (context: fork)
-│   ├── retro/SKILL.md           # Session retrospective (inline)
-│   └── <14 composable primitives>  # gather, distill, expand, transform, rank, etc. (inline)
+├── skills/                      # Skill definitions (flattened to ~/.claude/skills/ on install)
+│   ├── core/                    # Composable primitives + entrypoints (16 skills)
+│   │   ├── gather/, distill/, rank/, filter/, assess/, verify/
+│   │   ├── expand/, transform/, decompose/, critique/, plan/
+│   │   ├── merge/, diff-ideas/, sketch/
+│   │   └── do/, discover/       # Skill routing entrypoints
+│   ├── workflows/               # Exploration, review, lifecycle, session mgmt (22 skills)
+│   │   ├── blossom/, fractal/, consolidate/, review/, bootstrap/
+│   │   ├── meeting/, consensus/, premortem/, spec/, bug/
+│   │   ├── advise/, handoff/, status/, session-health/, domain/
+│   │   ├── evolution/, drift/, test-strategy/, tracer/
+│   │   └── challenge-gen/, challenge-run/, diagnose-agent/
+│   └── teams/                   # Team orchestration + learning lifecycle (9 skills)
+│       ├── assemble/, standup/, sprint/, team-meeting/, active-learn/
+│       └── curate/, promote/, tend/, retro/
 ├── docs/                        # Documentation (cookbook, recipes, team guide, INDEX)
 │   ├── INDEX.md                 # Skill & agent navigator (decision tree, categories)
 │   ├── design-notes.md          # Architecture and design decision notes

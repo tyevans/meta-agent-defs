@@ -305,11 +305,24 @@ for agent in "$SCRIPT_DIR"/agents/*.md; do
 done
 
 # --- Skills ---
+# Skills may be organized in category subdirectories (skills/core/gather/, skills/workflows/blossom/)
+# or directly under skills/ (skills/gather/). Both layouts are flattened on install.
 info "Installing skills..."
-for skill_dir in "$SCRIPT_DIR"/skills/*/; do
-    [ -d "$skill_dir" ] || continue
-    name="$(basename "$skill_dir")"
-    link_dir "$skill_dir" "$TARGET_DIR/skills/$name"
+for entry in "$SCRIPT_DIR"/skills/*/; do
+    [ -d "$entry" ] || continue
+    if [ -f "$entry/SKILL.md" ]; then
+        # Direct skill directory (skills/foo/SKILL.md)
+        name="$(basename "$entry")"
+        link_dir "$entry" "$TARGET_DIR/skills/$name"
+    else
+        # Category directory (skills/core/foo/SKILL.md) — flatten into skills/foo/
+        for skill_dir in "$entry"*/; do
+            [ -d "$skill_dir" ] || continue
+            [ -f "$skill_dir/SKILL.md" ] || continue
+            name="$(basename "$skill_dir")"
+            link_dir "$skill_dir" "$TARGET_DIR/skills/$name"
+        done
+    fi
 done
 
 # --- Rules ---
@@ -389,7 +402,7 @@ log "Installation complete!"
 echo ""
 info "What was installed:"
 echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
-echo "  Skills:   $(ls -d "$SCRIPT_DIR"/skills/*/ 2>/dev/null | wc -l) skills"
+echo "  Skills:   $(find "$SCRIPT_DIR/skills" -name "SKILL.md" 2>/dev/null | wc -l) skills"
 if [ -z "$PROJECT_DIR" ]; then
     if [ -d "$SCRIPT_DIR/rules" ]; then
         echo "  Rules:    $(ls -1 "$SCRIPT_DIR"/rules/*.md 2>/dev/null | wc -l) global rules"
