@@ -27,13 +27,16 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Run a session** -> /status (orient) -> /advise (recommendations) -> ... work ... -> /retro (reflect) -> /handoff (transition)
 - **Discuss with multiple perspectives** -> /meeting (interactive group dialogue)
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
+- **Just do something** -> /do (match goal to skill/pipeline and execute it)
 - **Find the right skill for a goal** -> /discover (semantic recommendation + pipeline suggestion)
 
 ## Skills by Category
 
-### Composable Primitives (14)
+Skills are organized into three layers in the repo (`skills/core/`, `skills/workflows/`, `skills/teams/`) and flattened on install.
 
-Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of any primitive feeds the next via conversation context.
+### Core (16) — `skills/core/`
+
+Composable primitives following [pipe format](../rules/pipe-format.md), plus the routing entrypoints. Stateless — output of any primitive feeds the next via conversation context.
 
 | Skill | Purpose | Chain Position |
 |-------|---------|----------------|
@@ -51,8 +54,10 @@ Stateless skills that follow [pipe format](../rules/pipe-format.md). Output of a
 | /merge | Combine multiple pipe-format blocks into one | Transform |
 | /plan | Dependency-aware execution sequence | Output |
 | /sketch | Structural skeleton with TODOs (code, docs, configs, schemas) | Output |
+| /do | Primary entrypoint: match goal to skill/pipeline and execute it | Router |
+| /discover | Recommend skills or pipelines for a described goal | Router |
 
-### Workflow Skills (26)
+### Workflows (22) — `skills/workflows/`
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -61,7 +66,6 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /blossom | Spike-driven exploration, produces epic + tasks | fork |
 | /fractal | Goal-directed recursive exploration | inline |
 | /meeting | Multi-agent group discussion (uses native teams for real-time dialogue) | inline |
-| /team-meeting | Goal-oriented planning with persistent team (uses native teams) | inline |
 | /consensus | Three independent proposals + synthesis | fork |
 | /premortem | Failure analysis with mitigations | fork |
 | /spec | Progressive specification document | fork |
@@ -70,51 +74,39 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /review | Structured code review (5 dimensions) | fork |
 | /bug | File structured bug reports to beads backlog | inline |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
-| /curate | Score agent learnings or project rules by multi-dimensional scoring (relevance x freshness x scope), archive stale entries, detect gaps with `related:` cross-references and domain index consultation, coalesce similar patterns | inline |
-| /promote | Graduate durable cross-agent learnings to rules (survival, stability, universality criteria); reads dimension-based curate output; marks source learnings after promotion | inline |
-| /tend | Orchestrate full learning lifecycle in 5 phases: /curate per agent, /curate rules, /promote cross-agent, demotion pass (downgrade stale rules), summary | inline |
 | /session-health | Context load and drift diagnostic | inline |
-| /retro | Session retrospective with persistent learnings; delegates promotion to /promote (uses Task dispatch) | inline |
 | /handoff | Session transition capture | inline |
+| /status | Unified dashboard: backlog, activity, team, last session | inline |
+| /advise | Proactive recommendations from git state, session history, backlog | inline |
 | /evolution | File change history, churn, stability analysis | inline |
 | /drift | Cross-definition convergence/divergence detection | inline |
 | /diagnose-agent | Agent struggle profile from learnings evolution + git signals | inline |
 | /challenge-gen | Generate targeted training challenges from struggle profile | inline |
 | /challenge-run | Execute challenges and evaluate agent performance | inline |
-| /active-learn | Full adversarial training loop: diagnose, challenge, evaluate, learn | fork |
 | /domain | Capture or query project-specific terminology and disambiguation rules | inline |
-| /test-strategy | Classify spec type, write tests from specs, enforce red-green gates, fall back gracefully | fork |
+| /test-strategy | Classify spec type, write tests from specs, enforce red-green gates | fork |
 
-### Team Skills (3)
+### Teams (9) — `skills/teams/`
 
-Manage persistent learning teams across sessions.
+Persistent team orchestration and the learning lifecycle (curation, promotion, retrospectives).
 
 | Skill | Purpose | Context |
 |-------|---------|---------|
 | /assemble | Create team with roles and ownership | inline |
 | /standup | Sync status, surface blockers (uses Task dispatch) | inline |
 | /sprint | Dispatch work with learning loop (uses Task dispatch) | inline |
-
-### Session Skills (2)
-
-| Skill | Purpose | Context |
-|-------|---------|---------|
-| /status | Unified dashboard: backlog, activity, team, last session | inline |
-| /advise | Proactive recommendations by composing git state, session history, backlog, and signals. Degrades gracefully — works with just git, richer with each layer present. | inline |
-
-### Meta-Skills (1)
-
-Skills about the skill system itself.
-
-| Skill | Purpose | Context |
-|-------|---------|---------|
-| /discover | Recommend skills or pipelines for a described goal | inline |
+| /team-meeting | Goal-oriented planning with persistent team (uses native teams) | inline |
+| /active-learn | Full adversarial training loop: diagnose, challenge, evaluate, learn | fork |
+| /curate | Score learnings/rules by relevance, archive stale, detect gaps | inline |
+| /promote | Graduate durable cross-agent learnings to rules | inline |
+| /tend | Orchestrate full learning lifecycle: curate -> promote -> demotion | inline |
+| /retro | Session retrospective with persistent learnings | inline |
 
 ## Skills by Context Type
 
-**Inline (36):** bug, curate, domain, gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, fractal, meeting, team-meeting, promote, tend, session-health, retro, handoff, assemble, standup, sprint, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, discover
+**Inline (37):** gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, do, discover, fractal, meeting, bug, session-health, handoff, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, domain, assemble, standup, sprint, team-meeting, curate, promote, tend, retro
 
-**Fork (10):** active-learn, blossom, bootstrap, consensus, consolidate, premortem, review, spec, test-strategy, tracer
+**Fork (10):** blossom, bootstrap, consensus, consolidate, premortem, review, spec, test-strategy, tracer, active-learn
 
 Fork skills run in an isolated context to avoid polluting the main conversation. Use fork skills for heavy exploration; use inline skills for quick operations within the current flow.
 
