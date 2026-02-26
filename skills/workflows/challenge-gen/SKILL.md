@@ -25,6 +25,16 @@ You are running **challenge-gen** — generating targeted challenges to exercise
 - Agent has no learnings history and no owned files with git activity — both strategies need a signal source; a brand-new agent has none
 - You want to run challenges rather than generate them — use /challenge-run to execute an existing challenge set
 
+## Prerequisites
+
+This skill requires the following infrastructure:
+
+- **team.yaml** — Agent must be listed in `.claude/team.yaml` with `ownership` patterns defining their domain ([how to create](/assemble))
+- **diagnose-agent profile** — A `/diagnose-agent` struggle profile for the target agent should exist in the current session context; without it the skill falls back to basic profiling from learnings alone, producing less calibrated challenges ([how to generate](/diagnose-agent))
+- **learnings file** — `memory/agents/<agent>/learnings.md` should exist with accumulated history; used to extract Gotchas and known weaknesses when no upstream profile is available ([populated by /retro and /active-learn](/retro))
+
+If the diagnose-agent profile is missing, the skill warns and continues with basic profiling — challenges will be generated but may not be well-targeted to the agent's actual weaknesses. If team.yaml is missing or the agent is not listed, the skill stops and asks the user to select an agent from the available list.
+
 ## How It Works
 
 **Serial (default):**

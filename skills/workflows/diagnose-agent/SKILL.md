@@ -36,6 +36,16 @@ If `$ARGUMENTS` does not contain `resume:`, proceed to the standard Phase 0 belo
 - Agent was just created and has no git activity on owned files — both Phase 2 (learnings evolution) and Phase 3 (commit signals) need history to analyze
 - You want to improve the agent, not just profile it — use /active-learn, which includes diagnosis as part of a full training cycle
 
+## Prerequisites
+
+This skill requires the following infrastructure:
+
+- **team.yaml** — Agent must be listed in `.claude/team.yaml` with `ownership` patterns (file globs); these drive Phase 3 commit signal analysis ([how to create](/assemble))
+- **learnings file** — `memory/agents/<agent>/learnings.md` must exist with at least 5 entries; below this threshold there is insufficient signal for meaningful weakness detection ([populated by /retro and /active-learn](/retro))
+- **git history for the learnings file** — Phase 2 runs `git log -p` on the learnings file to detect entry churn, survival, and velocity; a file with no commits (never version-controlled) will produce empty results for Phase 2
+
+If the learnings file is missing, the skill produces a partial profile from git commit signals alone (Phase 3 only) and notes the limitation in the Summary. If the agent is not in team.yaml, the skill stops and lists available agents. If the learnings file has no git history, Phase 2 is skipped and the profile relies entirely on Phase 3 signals.
+
 ## How It Works
 
 ```
