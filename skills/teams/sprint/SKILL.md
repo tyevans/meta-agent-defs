@@ -130,6 +130,8 @@ Before presenting the plan, scan for tasks that will likely touch the same files
 
 **Cross-reference**: Build a map of `file/pattern -> [task-ids]`. Any entry with 2+ tasks is a conflict candidate.
 
+**In worktree mode:** When dispatching with `isolation: "worktree"` (see Phase 3b), each agent gets its own repo copy, so shared-file conflicts cannot cause overwrites or merge failures. Conflict detection is still useful for awareness — it tells the orchestrator which worktree results will need careful merging — but no resolution action or user prompt is needed. Skip the resolution options block below and proceed to 2c.
+
 **If conflicts are found**, surface them before presenting the plan:
 
 ```markdown
@@ -196,7 +198,21 @@ Build the task prompt following the spawn protocol from team-protocol.md:
 
 ### 3b. Execute
 
-Dispatch via the Task tool:
+Dispatch via the Task tool.
+
+**With worktree isolation** (recommended for parallel dispatch): Each agent gets its own repo copy, eliminating merge conflicts between concurrent agents. Use this when dispatching independent tasks in parallel:
+
+```
+Task({
+  subagent_type: "general-purpose",
+  model: "<member's model from team.yaml>",
+  prompt: "<composed prompt with identity, learnings, task, and reflection instructions>",
+  isolation: "worktree",
+  run_in_background: true
+})
+```
+
+**Without worktree** (serial, default): Agent works on the shared working tree. Use this for the default serialize-by-default strategy:
 
 ```
 Task({
@@ -206,7 +222,7 @@ Task({
 })
 ```
 
-For independent tasks that touch different ownership areas, use `run_in_background: true` to parallelize.
+For independent tasks that touch different ownership areas, use worktree isolation with `run_in_background: true` to parallelize safely.
 
 **Note**: If dispatching multi-step primitive chains (3+ steps like gather->distill->rank), set `max_turns: 40` to avoid turn limits.
 
@@ -225,6 +241,8 @@ bd update <bead-id> --status=in_progress
 ## Phase 4: Process Results
 
 After each dispatch returns:
+
+**For worktree-isolated agents:** The Task tool returns the worktree path and branch name if the agent made commits. The orchestrator should review these changes (`git log` and `git diff` against the base branch in the worktree) and decide how to integrate them: cherry-pick individual commits, merge the worktree branch, or flag for manual review. Multiple worktree branches can be merged sequentially after all parallel agents complete.
 
 ### 4a. Parse the Response
 
@@ -330,7 +348,7 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
 
 ## Guidelines
 
-1. **Serialize by default.** Dispatch one task at a time so each agent benefits from the previous one's learnings. Only parallelize if tasks are truly independent AND touch different ownership areas.
+1. **Serialize by default.** Dispatch one task at a time so each agent benefits from the previous one's learnings. Only parallelize if tasks are truly independent AND touch different ownership areas. **Exception:** With `isolation: "worktree"`, parallelization is safe even for tasks touching overlapping files, since each agent works on its own repo copy. The serialize default still applies when NOT using worktrees.
 2. **Learnings are the product.** A sprint that completes tasks but doesn't persist learnings has wasted half its value. Always update learnings files.
 3. **Validate learnings.** Don't blindly append everything an agent suggests. Filter out ephemeral observations and duplicates.
 4. **Date every entry.** Always add `(added: YYYY-MM-DD)` to new learnings for staleness tracking.
