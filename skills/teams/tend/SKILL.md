@@ -319,10 +319,11 @@ Present a unified report of the full lifecycle run:
 
 ## Guidelines
 
-1. **Run curate before promote.** Curate ensures learnings are clean and relevant. Promote then works with high-quality input.
-2. **Don't force promotions.** If /promote finds no candidates meeting graduation criteria, that's fine. Better no rule than a premature one.
-3. **Flag gaps as actionable items.** If curate reveals knowledge gaps for upcoming work, surface them — they may warrant investigation beads.
-4. **Respect the cadence.** Weekly or bi-weekly is a good rhythm. Running after every sprint is ideal. Running mid-sprint adds overhead without enough new signal.
-5. **Single agent is fine.** If one agent just finished heavy work, tend just that agent — no need to curate everyone every time.
+1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/tend-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+2. **Run curate before promote.** Curate ensures learnings are clean and relevant. Promote then works with high-quality input.
+3. **Don't force promotions.** If /promote finds no candidates meeting graduation criteria, that's fine. Better no rule than a premature one.
+4. **Flag gaps as actionable items.** If curate reveals knowledge gaps for upcoming work, surface them — they may warrant investigation beads.
+5. **Respect the cadence.** Weekly or bi-weekly is a good rhythm. Running after every sprint is ideal. Running mid-sprint adds overhead without enough new signal.
+6. **Single agent is fine.** If one agent just finished heavy work, tend just that agent — no need to curate everyone every time.
 
 See also: /curate (standalone learnings optimization), /promote (standalone rule graduation), /retro (session-level reflection that feeds learnings), /sprint (dispatch loop that generates learnings).

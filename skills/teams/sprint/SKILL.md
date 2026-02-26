@@ -363,11 +363,12 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
 
 ## Guidelines
 
-1. **Serialize by default.** Dispatch one task at a time so each agent benefits from the previous one's learnings. Only parallelize if tasks are truly independent AND touch different ownership areas. **Exception:** With `isolation: "worktree"`, parallelization is safe even for tasks touching overlapping files, since each agent works on its own repo copy. The serialize default still applies when NOT using worktrees.
-2. **Learnings are the product.** A sprint that completes tasks but doesn't persist learnings has wasted half its value. Always update learnings files.
-3. **Validate learnings.** Don't blindly append everything an agent suggests. Filter out ephemeral observations and duplicates.
-4. **Date every entry.** Always add `(added: YYYY-MM-DD)` to new learnings for staleness tracking.
-5. **Watch for bloat.** If a learnings file exceeds 120 lines during a sprint, flag it for pruning in the next `/retro`.
-6. **Context carries forward.** When dispatching the second+ task in a sprint, include a brief summary of what previous agents found/changed.
+1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/sprint-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+2. **Serialize by default.** Dispatch one task at a time so each agent benefits from the previous one's learnings. Only parallelize if tasks are truly independent AND touch different ownership areas. **Exception:** With `isolation: "worktree"`, parallelization is safe even for tasks touching overlapping files, since each agent works on its own repo copy. The serialize default still applies when NOT using worktrees.
+3. **Learnings are the product.** A sprint that completes tasks but doesn't persist learnings has wasted half its value. Always update learnings files.
+4. **Validate learnings.** Don't blindly append everything an agent suggests. Filter out ephemeral observations and duplicates.
+5. **Date every entry.** Always add `(added: YYYY-MM-DD)` to new learnings for staleness tracking.
+6. **Watch for bloat.** If a learnings file exceeds 120 lines during a sprint, flag it for pruning in the next `/retro`.
+7. **Context carries forward.** When dispatching the second+ task in a sprint, include a brief summary of what previous agents found/changed.
 
 See also: /review (structured code review after agent implementation), /retro (capture sprint learnings at session end), /curate (optimize agent learnings before sprint dispatch), /tend (full learnings lifecycle: curate + promote).

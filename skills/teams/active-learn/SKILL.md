@@ -618,17 +618,18 @@ Report the file path so the user can review:
 
 ## Guidelines
 
-1. **Never leak evaluation criteria to agents.** Hidden Trap and Ground Truth exist solely for post-hoc evaluation. Including them in dispatch prompts invalidates the entire training cycle. This is the single most important constraint.
-2. **Serial dispatch, serial evaluation.** Process one challenge at a time within a round. This avoids API throttling and produces clean evaluation flow. Each challenge is a controlled experiment.
-3. **Evidence in every rating.** Every evaluation rating (result, trap detection, calibration) must cite specific evidence from the agent's output. Ratings without evidence are noise.
-4. **Honest calibration.** Do not inflate pass rates or downplay failures. The training loop's value comes from honest assessment -- a FAIL that leads to a good learning entry is a better outcome than a generous PARTIAL that teaches nothing.
-5. **Respect the learnings cap.** The 60-line cap (30 core + 30 task-relevant) exists for a reason. New entries must earn their place. When at capacity, compare value explicitly before displacing.
-6. **Graceful degradation.** No prior capability.yaml? Start fresh. No dispatch provenance? Skip Phase 1c. No WebSearch results? Use codebase-only edge cases. Always produce something useful.
-7. **Early stop is success.** Reaching the early stop condition means the agent's capability frontier was found and exercised. Running all rounds is not inherently better than stopping at round 2.
-8. **Challenges, not tests.** The goal is growth through deliberate practice, not measurement. Err toward slightly above the agent's level. Struggle produces learning.
-9. **One weakness per challenge.** Compound challenges dilute the training signal. Each challenge targets exactly one WEAKNESS or GAP.
-10. **Cumulative capability tracking.** capability.yaml accumulates across /active-learn runs. Never overwrite history -- append to it. This enables longitudinal trajectory analysis.
-11. **Real over hypothetical.** Every challenge must be grounded in real code, real CVEs, real commits, or real community knowledge. Hypothetical scenarios do not transfer to real work.
-12. **Self-contained agent prompts.** Dispatched agents cannot read the skill file or access parent context. Everything the agent needs must be in the prompt.
+1. **Compaction resilience**: This skill has 6 phases with a loop. Write intermediate state to `memory/scratch/active-learn-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+2. **Never leak evaluation criteria to agents.** Hidden Trap and Ground Truth exist solely for post-hoc evaluation. Including them in dispatch prompts invalidates the entire training cycle. This is the single most important constraint.
+3. **Serial dispatch, serial evaluation.** Process one challenge at a time within a round. This avoids API throttling and produces clean evaluation flow. Each challenge is a controlled experiment.
+4. **Evidence in every rating.** Every evaluation rating (result, trap detection, calibration) must cite specific evidence from the agent's output. Ratings without evidence are noise.
+5. **Honest calibration.** Do not inflate pass rates or downplay failures. The training loop's value comes from honest assessment -- a FAIL that leads to a good learning entry is a better outcome than a generous PARTIAL that teaches nothing.
+6. **Respect the learnings cap.** The 60-line cap (30 core + 30 task-relevant) exists for a reason. New entries must earn their place. When at capacity, compare value explicitly before displacing.
+7. **Graceful degradation.** No prior capability.yaml? Start fresh. No dispatch provenance? Skip Phase 1c. No WebSearch results? Use codebase-only edge cases. Always produce something useful.
+8. **Early stop is success.** Reaching the early stop condition means the agent's capability frontier was found and exercised. Running all rounds is not inherently better than stopping at round 2.
+9. **Challenges, not tests.** The goal is growth through deliberate practice, not measurement. Err toward slightly above the agent's level. Struggle produces learning.
+10. **One weakness per challenge.** Compound challenges dilute the training signal. Each challenge targets exactly one WEAKNESS or GAP.
+11. **Cumulative capability tracking.** capability.yaml accumulates across /active-learn runs. Never overwrite history -- append to it. This enables longitudinal trajectory analysis.
+12. **Real over hypothetical.** Every challenge must be grounded in real code, real CVEs, real commits, or real community knowledge. Hypothetical scenarios do not transfer to real work.
+13. **Self-contained agent prompts.** Dispatched agents cannot read the skill file or access parent context. Everything the agent needs must be in the prompt.
 
 See also: /diagnose-agent (standalone profiling), /challenge-gen (standalone generation), /challenge-run (standalone execution), /sprint (task dispatch with learning loop).

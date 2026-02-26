@@ -192,9 +192,10 @@ Order items: WEAKNESS (HIGH first) -> GAP (HIGH first) -> STRENGTH (HIGH first).
 
 ## Guidelines
 
-1. **Read-only.** No file writes, no git operations beyond read-only log/diff/show. No modifications to learnings, team.yaml, or any other file.
-2. **Evidence-based.** Every item in the output must cite a specific source — a git diff, a learnings entry, or a file path. No speculation without evidence.
-3. **Graceful degradation.** Work with whatever is available. No dispatch provenance? Skip Phase 3. No learnings file? Produce a partial profile from git signals alone, and note the limitation in the Summary.
-4. **Diagnose, do not prescribe.** The output describes what IS, not what to DO about it. Challenge generation is /challenge-gen's job. Training plans are /active-learn's job.
-5. **Honest calibration.** Do not inflate coverage estimates. If the agent has 5 learnings entries for a domain with 30+ files, coverage is low regardless of how good those 5 entries are.
-6. **Cite the diff, not the conclusion.** When reporting entry churn, quote the actual entry that was added and removed — not just "entries were churned in the Gotchas section."
+1. **Compaction resilience**: This skill has 4 phases. Write intermediate state to `memory/scratch/diagnose-agent-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+2. **Read-only.** No file writes, no git operations beyond read-only log/diff/show. No modifications to learnings, team.yaml, or any other file.
+3. **Evidence-based.** Every item in the output must cite a specific source — a git diff, a learnings entry, or a file path. No speculation without evidence.
+4. **Graceful degradation.** Work with whatever is available. No dispatch provenance? Skip Phase 3. No learnings file? Produce a partial profile from git signals alone, and note the limitation in the Summary.
+5. **Diagnose, do not prescribe.** The output describes what IS, not what to DO about it. Challenge generation is /challenge-gen's job. Training plans are /active-learn's job.
+6. **Honest calibration.** Do not inflate coverage estimates. If the agent has 5 learnings entries for a domain with 30+ files, coverage is low regardless of how good those 5 entries are.
+7. **Cite the diff, not the conclusion.** When reporting entry churn, quote the actual entry that was added and removed — not just "entries were churned in the Gotchas section."

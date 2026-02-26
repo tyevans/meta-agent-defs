@@ -186,11 +186,12 @@ Emit pipe-format output:
 
 ## Guidelines
 
-1. **Compare apples to apples.** Only compare files in the same category (workflow skills to workflow skills, agents to agents). Don't flag divergence between unrelated file types.
-2. **Fuzzy section matching.** "When to Use" and "When To Use This" are the same section. Match on normalized form (lowercase, first 3 words).
-3. **Threshold for "shared".** A pattern is "shared" if it appears in ≥3 files OR ≥50% of files in the category, whichever is smaller.
-4. **Git timeline optional.** If git history is complex, skip timeline and focus on structural comparison.
-5. **No false positives on intentional differences.** If files have legitimately different structures (e.g., composable primitives vs workflow skills), don't flag as divergence.
-6. **Cite specific examples.** Every finding should reference actual file paths and section names, not abstract claims.
-7. **Actionable output.** The summary should suggest concrete next steps: "Consider factoring <pattern> into <rule-file>" or "Cross-pollinate <section> from <file1> to <file2>."
-8. **Cross-pollination alerts are LIKELY confidence (not CONFIRMED).** Section-name matching is fuzzy and the change may be intentionally file-specific. Manual review is required to determine if cross-pollination is warranted.
+1. **Compaction resilience**: This skill has 4 phases. Write intermediate state to `memory/scratch/drift-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+2. **Compare apples to apples.** Only compare files in the same category (workflow skills to workflow skills, agents to agents). Don't flag divergence between unrelated file types.
+3. **Fuzzy section matching.** "When to Use" and "When To Use This" are the same section. Match on normalized form (lowercase, first 3 words).
+4. **Threshold for "shared".** A pattern is "shared" if it appears in ≥3 files OR ≥50% of files in the category, whichever is smaller.
+5. **Git timeline optional.** If git history is complex, skip timeline and focus on structural comparison.
+6. **No false positives on intentional differences.** If files have legitimately different structures (e.g., composable primitives vs workflow skills), don't flag as divergence.
+7. **Cite specific examples.** Every finding should reference actual file paths and section names, not abstract claims.
+8. **Actionable output.** The summary should suggest concrete next steps: "Consider factoring <pattern> into <rule-file>" or "Cross-pollinate <section> from <file1> to <file2>."
+9. **Cross-pollination alerts are LIKELY confidence (not CONFIRMED).** Section-name matching is fuzzy and the change may be intentionally file-specific. Manual review is required to determine if cross-pollination is warranted.

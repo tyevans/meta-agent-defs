@@ -404,16 +404,17 @@ The spec proposes a WebSocket-based notification system that pushes events to da
 
 ## Guidelines
 
-1. **Fresh agents prevent contamination** — Each phase uses new agents with clean context
-2. **Ground in reality** — Agents must READ actual code, not speculate about what exists
-3. **The spec is the artifact** — It persists across context boundaries and survives context limits
-4. **Non-Requirements prevent scope creep** — Explicitly stating what WON'T be built is as important as what will
-5. **Guardian is the quality gate** — Iterate until PASS; don't bypass the guardian
-6. **Spec before implementation** — The spec is a contract, not documentation of existing code
-7. **Testable acceptance criteria** — Each criterion must be verifiable (not vague like "works well")
-8. **Incremental population** — Populate, validate, refine, guard -- don't try to perfect in one pass
-9. **Reuse over reinvention** — The guardian enforces use of existing patterns and abstractions
-10. **Fresh context for each phase** — Background agents run independently to avoid bloating the orchestrator's context
+1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/spec-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+2. **Fresh agents prevent contamination** — Each phase uses new agents with clean context
+3. **Ground in reality** — Agents must READ actual code, not speculate about what exists
+4. **The spec is the artifact** — It persists across context boundaries and survives context limits
+5. **Non-Requirements prevent scope creep** — Explicitly stating what WON'T be built is as important as what will
+6. **Guardian is the quality gate** — Iterate until PASS; don't bypass the guardian
+7. **Spec before implementation** — The spec is a contract, not documentation of existing code
+8. **Testable acceptance criteria** — Each criterion must be verifiable (not vague like "works well")
+9. **Incremental population** — Populate, validate, refine, guard -- don't try to perfect in one pass
+10. **Reuse over reinvention** — The guardian enforces use of existing patterns and abstractions
+11. **Fresh context for each phase** — Background agents run independently to avoid bloating the orchestrator's context
 
 ## See also
 

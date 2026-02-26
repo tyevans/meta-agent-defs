@@ -383,16 +383,17 @@ Task({
 
 ## Guidelines
 
-1. **Each phase produces a working increment.** Never proceed to the next phase if the current one is broken.
-2. **Commit after every phase.** Commits provide rollback points and document the tracer's progression.
-3. **Hard-coding in Phase 2 is expected.** The point is to prove the path, not build production code immediately.
-4. **Bottom-up implementation reduces risk.** Each layer has a working foundation when you build on it.
-5. **Phase order is flexible.** If tests before error handling makes more sense for the feature, reorder accordingly.
-6. **Verify after every widening pass.** Run the feature manually after Phases 3, 4, and 5 to ensure nothing broke.
-7. **Stop at any phase.** If the session ends early, you have working code at the last committed phase.
-8. **Widen one concern at a time.** Don't mix error handling and validation in the same pass -- each pass is focused.
-9. **Follow project conventions.** Match existing patterns for error handling, validation, testing, and file organization.
-10. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks (or in `TODO.md` if `.beads/` is not present).
+1. **Compaction resilience**: This skill has 6 phases. Write intermediate state to `memory/scratch/tracer-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+2. **Each phase produces a working increment.** Never proceed to the next phase if the current one is broken.
+3. **Commit after every phase.** Commits provide rollback points and document the tracer's progression.
+4. **Hard-coding in Phase 2 is expected.** The point is to prove the path, not build production code immediately.
+5. **Bottom-up implementation reduces risk.** Each layer has a working foundation when you build on it.
+6. **Phase order is flexible.** If tests before error handling makes more sense for the feature, reorder accordingly.
+7. **Verify after every widening pass.** Run the feature manually after Phases 3, 4, and 5 to ensure nothing broke.
+8. **Stop at any phase.** If the session ends early, you have working code at the last committed phase.
+9. **Widen one concern at a time.** Don't mix error handling and validation in the same pass -- each pass is focused.
+10. **Follow project conventions.** Match existing patterns for error handling, validation, testing, and file organization.
+11. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks (or in `TODO.md` if `.beads/` is not present).
 
 ## See Also
 

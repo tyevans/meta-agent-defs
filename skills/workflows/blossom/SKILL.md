@@ -453,6 +453,7 @@ Present the final blossom report in **pipe format** so downstream primitives (/r
 
 12. **Persist epic state.** After reporting, write `memory/epics/<epic-id>/epic.md` so downstream skills (/sprint) can load context across sessions.
 13. **Report that beads exist.** The Phase 6 report MUST include the Backlog Status callout stating that all items already exist as beads. The caller (primary session) should NOT create additional beads — blossom has already done this in Phases 2-4.
+14. **Compaction resilience**: This skill has 7 phases. Write intermediate state to `memory/scratch/blossom-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
 
 ## Phase 7: Persist Epic State
 
