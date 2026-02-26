@@ -180,6 +180,10 @@ Create `.claude/settings.json` for team-shared settings:
           {
             "type": "command",
             "command": "bd sync 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "mkdir -p memory/sessions && echo '# Pre-Compaction State\n\nAuto-persisted: '$(date -Iseconds) > memory/sessions/pre-compact.md"
           }
         ]
       }
@@ -187,6 +191,8 @@ Create `.claude/settings.json` for team-shared settings:
   }
 }
 ```
+
+The PreCompact hook preserves session state before context compaction. This enables skills to recover from compaction events (see `rules/compaction-resilience.md`).
 
 ### Language-Specific Hooks
 
