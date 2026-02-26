@@ -109,7 +109,14 @@ Flag anything that could cause problems:
 - Dependencies that might shift
 - Timing-sensitive work (PRs awaiting review, deploys in flight)
 
-### 3c. Open Questions
+### 3c. Resumable Agents
+
+Identify any agents that were dispatched this session but did not complete:
+- For each partial/blocked agent, record its agent ID and a one-line description of its last known state
+- These will be listed in the handoff note so the next session can resume rather than cold-start
+- Skip this section if no agents were dispatched or all dispatched agents completed
+
+### 3d. Open Questions
 
 List unresolved questions that came up during the session:
 - Questions that were deferred
@@ -152,6 +159,11 @@ Produce a structured handoff document:
 
 ### Blocked Work
 - **[task/bead ID]**: blocked on [reason]
+
+### Resumable Agents
+<!-- only include this section when one or more agents were mid-task at session end -->
+- **[agent-id]**: [one-line description of last known state — e.g., "investigating auth module, blocked on missing test coverage"]
+  - Resume: `Task({resume: "<agent-id>"})`
 
 ### Open Questions
 - **[Component/file]**: [decision needed] — Options: [A (pros/cons), B (pros/cons)]. Criteria: [what determines choice]. Ask: [who or what investigation resolves this]
