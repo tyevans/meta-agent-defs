@@ -13,6 +13,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Assess risk** -> /premortem (failure analysis) or /critique (adversarial review)
 - **Bootstrap a new project** -> /bootstrap (full setup: infrastructure + agents)
 - **Build something** -> /tracer (iterative end-to-end) or /sketch (skeleton only)
+- **Deploy something** -> /deploy (readiness gate, strategy selection, execution, monitoring, rollback)
 - **Optimize something** -> /optimize (profile -> bottleneck -> fix -> measure -> iterate)
 - **Test an implementation** -> /test-strategy (classify spec type, write tests, enforce red-green gates)
 - **Review code** -> /review (structured code review)
@@ -58,7 +59,7 @@ Composable primitives following [pipe format](../rules/pipe-format.md), plus the
 | /do | Primary entrypoint: match goal to skill/pipeline and execute it | Router |
 | /discover | Recommend skills or pipelines for a described goal | Router |
 
-### Workflows (23) — `skills/workflows/`
+### Workflows (24) — `skills/workflows/`
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -72,6 +73,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /spec | Progressive specification document | fork |
 | /bootstrap | Full project setup: infrastructure + agents | fork |
 | /tracer | Iterative thin-slice implementation | fork |
+| /deploy | Structured deployment: readiness gate, strategy selection, execution, monitoring, rollback | fork |
 | /review | Structured code review (5 dimensions) | fork |
 | /bug | File structured bug reports to beads backlog | inline |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
@@ -108,7 +110,7 @@ Persistent team orchestration and the learning lifecycle (curation, promotion, r
 
 **Inline (37):** gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, do, discover, fractal, meeting, bug, session-health, handoff, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, domain, assemble, standup, sprint, team-meeting, curate, promote, tend, retro
 
-**Fork (11):** blossom, bootstrap, consensus, consolidate, optimize, premortem, review, spec, test-strategy, tracer, active-learn
+**Fork (12):** blossom, bootstrap, consensus, consolidate, deploy, optimize, premortem, review, spec, test-strategy, tracer, active-learn
 
 Fork skills run in an isolated context to avoid polluting the main conversation. Use fork skills for heavy exploration; use inline skills for quick operations within the current flow.
 

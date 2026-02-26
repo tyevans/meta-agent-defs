@@ -65,6 +65,7 @@ bd stale                        # Find forgotten issues
 | Compare approaches | /diff-ideas or /consensus |
 | Plan before building | /decompose -> /plan -> /spec |
 | Test an implementation | /test-strategy |
+| Deploy to production | /deploy |
 | Review code | /review |
 | Track definition changes | /evolution or /drift |
 | Run a session | /status -> ... -> /retro -> /handoff |
@@ -73,7 +74,7 @@ bd stale                        # Find forgotten issues
 | Plan a goal with your team | /team-meeting |
 | Optimize agent learnings | /curate or /tend (curate + promote) |
 
-All 46 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
+All 47 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
 
 ## Project Structure
 
@@ -91,11 +92,11 @@ tackline/
 │   │   ├── expand/, transform/, decompose/, critique/, plan/
 │   │   ├── merge/, diff-ideas/, sketch/
 │   │   └── do/, discover/       # Skill routing entrypoints
-│   ├── workflows/               # Exploration, review, lifecycle, session mgmt (22 skills)
+│   ├── workflows/               # Exploration, review, lifecycle, session mgmt (24 skills)
 │   │   ├── blossom/, fractal/, consolidate/, review/, bootstrap/
 │   │   ├── meeting/, consensus/, premortem/, spec/, bug/
 │   │   ├── advise/, handoff/, status/, session-health/, domain/
-│   │   ├── evolution/, drift/, test-strategy/, tracer/
+│   │   ├── evolution/, drift/, test-strategy/, tracer/, deploy/
 │   │   └── challenge-gen/, challenge-run/, diagnose-agent/
 │   └── teams/                   # Team orchestration + learning lifecycle (9 skills)
 │       ├── assemble/, standup/, sprint/, team-meeting/, active-learn/
