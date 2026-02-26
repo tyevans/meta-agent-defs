@@ -33,7 +33,7 @@ Writing and editing agent definition files (`agents/*.md`, `.claude/agents/*.md`
 
 ### Hook Authoring
 
-Writing and editing hooks in `settings.json`.
+Writing and editing hooks in `~/.claude/settings.json`.
 
 | Type | Source |
 |------|--------|

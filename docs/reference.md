@@ -4,7 +4,7 @@ Detailed reference material for the Tackline toolkit. For a quick overview, see 
 
 ## Hooks and Safety
 
-The global `settings.json` wires up hooks that run automatically across all projects.
+Hooks are configured in `~/.claude/settings.json` (managed by the user, not by this repo) and run automatically across all projects.
 
 | Hook | When | What |
 |------|------|------|
@@ -110,7 +110,6 @@ tackline/
   templates/
     teams/                    # Starter team.yaml files for common project types
   memory/                     # Persistent state (sessions, learnings, epics)
-  settings.json               # Global hooks, env vars, and feature flags
   mcp-servers.json            # MCP server definitions (installed globally by install.sh)
   install.sh                  # Symlink installer (idempotent, non-destructive)
   CLAUDE.md                   # Context file for working on this repo itself

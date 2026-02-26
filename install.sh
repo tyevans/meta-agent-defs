@@ -219,35 +219,6 @@ if [ -z "$PROJECT_DIR" ]; then
     fi
 fi
 
-# --- Migrate settings.json symlinks to standalone files ---
-# Previously, install.sh symlinked settings.json into ~/.claude/. That's no longer done.
-# If an existing symlink points back to this repo's settings.json, replace it with a copy
-# so the user keeps their config after the source file is removed from git.
-SETTINGS_TARGET="$TARGET_DIR/settings.json"
-if [ -L "$SETTINGS_TARGET" ]; then
-    LINK_TARGET="$(readlink "$SETTINGS_TARGET")"
-    case "$LINK_TARGET" in
-        "$SCRIPT_DIR"/settings.json|*/tackline/settings.json)
-            if [ -f "$LINK_TARGET" ]; then
-                CONTENT="$(cat "$LINK_TARGET")"
-                rm "$SETTINGS_TARGET"
-                printf '%s\n' "$CONTENT" > "$SETTINGS_TARGET"
-                log "Migrated settings.json: symlink replaced with standalone copy"
-            else
-                rm "$SETTINGS_TARGET"
-                warn "Removed dangling settings.json symlink (source no longer exists)"
-            fi
-            ;;
-    esac
-fi
-
-# --- Migrate old manifest name ---
-OLD_MANIFEST="$TARGET_DIR/.meta-agent-defs.manifest"
-if [ -f "$OLD_MANIFEST" ] && [ ! -f "$MANIFEST_FILE" ]; then
-    mv "$OLD_MANIFEST" "$MANIFEST_FILE"
-    log "Migrated manifest: .meta-agent-defs.manifest -> .tackline.manifest"
-fi
-
 # --- Stale cleanup ---
 info "Checking for stale installations..."
 STALE_COUNT=0

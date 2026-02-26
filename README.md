@@ -170,8 +170,6 @@ Orchestrated multi-step workflows with side effects.
 
 **Add an agent:** Create `agents/<name>.md` with YAML frontmatter. Rerun `./install.sh`.
 
-**Add a hook:** Edit `settings.json`. Use `|| true` for tools that might not be installed.
-
 ## Learn More
 
 - [Full skill & agent catalog](docs/INDEX.md) -- 46 skills, 3 agents, decision tree, chain patterns

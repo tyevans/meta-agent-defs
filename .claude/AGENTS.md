@@ -30,7 +30,6 @@ Mechanical tasks that don't need research orientation — just correctness.
 | Agent | Purpose | Model | Invoke When |
 |-------|---------|-------|-------------|
 | sync-auditor | Check cross-artifact consistency (docs match files) | haiku | After adding/removing/renaming files, or when docs seem stale |
-| settings-editor | Edit settings.json files (hooks, permissions, env) | sonnet | Adding hooks, changing permissions, modifying environment config |
 | installer-maintainer | Update install.sh for new artifact types or fixes | sonnet | Adding new artifact directories, fixing installation edge cases |
 
 ## Agent Capabilities
@@ -43,7 +42,6 @@ Mechanical tasks that don't need research orientation — just correctness.
 | agent-author | Y | Y | Y | N | Y |
 | skill-author | Y | Y | N | N | Y |
 | sync-auditor | Y | N | N | ls | Y |
-| settings-editor | Y | Y | N | N | Y |
 | installer-maintainer | Y | Y | N | ls, ./install.sh | Y |
 
 ## Workflows

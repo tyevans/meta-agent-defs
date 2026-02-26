@@ -28,13 +28,6 @@ What "done" means for each type of change in this repo.
 - [ ] `install.sh` re-run to verify symlink creation
 - [ ] `docs/INDEX.md` updated with new skill entry
 
-## Settings Change (`settings.json`)
-
-- [ ] Hooks fail gracefully with `|| true` for optional tools
-- [ ] No duplicate hook entries for the same matcher
-- [ ] JSON is valid (no trailing commas, proper quoting)
-- [ ] Re-run `install.sh` to refresh symlink
-
 ## Bug Fix
 
 - [ ] Root cause identified and documented in commit message
