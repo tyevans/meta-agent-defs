@@ -9,4 +9,6 @@
 
 - When adding an optional convention to a rules file, place it between affirmative ("Do This") and negative ("Don't Do This") sections — reads as an opt-in pattern rather than a requirement or constraint (added: 2026-02-25, dispatch: tack-1rj0.2)
 
+- team-protocol.md has both Required and Optional field subsections under "Team Manifest" — new optional member fields go in the Optional Fields table and YAML example should show the field on one member only to signal optionality (added: 2026-02-25, dispatch: tack-pca6.6)
+
 ## Task-Relevant
