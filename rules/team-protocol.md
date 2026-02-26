@@ -175,6 +175,56 @@ The `tools` and budget fields in `team.yaml` are not enforced by native TeamCrea
 - Validate that the tool list matches the member's `tools` field before dispatching.
 - Budget limits must be applied in the orchestrator logic, not relied upon from TeamCreate.
 
+## Agent Continuity
+
+After expensive phases — multi-turn research, large code generation, or long iterative tasks — the orchestrator SHOULD record the agent ID returned by the Task tool so the agent can be resumed rather than re-dispatched from scratch.
+
+### Resume Convention
+
+When the Task tool returns an agent ID for a completed or partial run, write it to a checkpoint file:
+
+```
+memory/scratch/<skill-name>-agent-<member>.md
+```
+
+Format:
+
+```markdown
+# Agent Checkpoint: <skill-name> / <member>
+
+agent_id: <id returned by Task tool>
+task: <bead reference or one-line task description>
+phase_completed: <last completed phase, e.g. "research", "draft", "review">
+recorded: <ISO date>
+```
+
+### When to Resume
+
+On re-invocation, check for a checkpoint file before dispatching. Offer resume when:
+
+1. The checkpoint file exists and is less than 7 days old
+2. The files the agent was working on have not changed significantly since the checkpoint
+3. The task definition has not changed
+4. The agent did not fail or block — it paused or was partially completed
+
+Resume by passing the agent ID to the Task tool's `agent_id` parameter, injecting the same learnings plus a brief resume note in the prompt.
+
+### When to Dispatch Fresh
+
+| Condition | Decision |
+|-----------|----------|
+| Checkpoint is older than 7 days | Fresh dispatch |
+| Task definition has changed since checkpoint | Fresh dispatch |
+| Working branch or major files changed since checkpoint | Fresh dispatch |
+| Agent status was `blocked` or `failed` | Fresh dispatch |
+| No checkpoint file exists | Fresh dispatch |
+| Checkpoint exists, agent paused mid-task, context still valid | Resume |
+| Checkpoint exists, task is identical, files unchanged | Resume |
+
+### Checkpoint Cleanup
+
+Delete the checkpoint file after a successful fresh dispatch or after the resumed agent reaches `completed` status. Stale checkpoints older than 14 days may be deleted during `/retro` without review.
+
 ## Reflection Schema
 
 Every spawned team member returns this JSON structure:
