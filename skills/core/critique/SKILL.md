@@ -4,7 +4,7 @@ description: "Adversarial review of any pipe-format output or claims. Finds what
 argument-hint: "[focus area: security | scalability | clarity | 'critique' to review all]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob
+allowed-tools: Read, Grep, Glob, Task
 context: inline
 ---
 
@@ -45,3 +45,50 @@ You are running the **critique** primitive — adversarial review of outputs, cl
 - If input is sound, say so — "no critical issues found" is a valid critique
 - Preserve source attribution from input if composing with a prior primitive
 - One criticism per numbered item — don't bundle multiple issues
+
+## Panel Mode (opt-in)
+
+Panel mode dispatches 2–3 background agents with distinct adversarial lenses for high-stakes input. It is **not automatic** — trigger it only when $ARGUMENTS contains language like "deep critique", "thorough review", "stress test this", or an explicit request for a panel.
+
+**Default (inline):** Run the Process steps above in a single pass.
+
+**In panel mode:** Replace step 3 with the following fan-out/fan-in sequence.
+
+### Panel Dispatch
+
+Launch 2–3 agents concurrently, each with a distinct lens. Standard lenses (pick 2–3 based on subject matter):
+
+| Lens | Focus |
+|---|---|
+| Feasibility | Can this actually be built/executed given constraints? |
+| Failure Modes | What sequences of events cause this to break or harm? |
+| Scope Gaps | What requirements, edge cases, or stakeholders are unaddressed? |
+
+**Task call per agent (run_in_background: true):**
+
+#### Adversarial Panel Agent Prompt Template
+
+```
+You are an adversarial reviewer applying the [LENS] lens.
+
+Subject: [paste or summarize the input being critiqued]
+
+Your task:
+1. Apply your lens exclusively — do not cover what other lenses would find
+2. Produce a numbered list of findings, each labeled FLAW / GAP / RISK
+3. For each finding: state the verdict, explain the problem concisely, cite evidence where possible
+4. Rate each finding HIGH / MEDIUM / LOW severity
+5. End with a one-sentence summary
+
+Scope: [LENS description from table above]
+Limit: 5–8 findings maximum. Be specific, not exhaustive.
+```
+
+### Panel Merge
+
+After all agents complete, merge their outputs into the standard pipe-format output:
+
+1. **Deduplicate**: findings that are substantively identical across lenses → keep the most specific wording
+2. **Resolve conflicts**: if agents disagree on severity, apply this total order: `Feasibility > Failure Modes > Scope Gaps` — the lens ranked higher wins
+3. **Label provenance**: annotate each merged finding with its source lens in parentheses
+4. **Emit** the unified output using the standard step 4 format, with `**Pipeline**` noting `(panel: N agents)`
