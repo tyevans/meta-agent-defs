@@ -1,6 +1,5 @@
 ---
 paths:
-  - "settings.json"
   - ".claude/settings.json"
 strength: should
 freshness: 2026-02-21
@@ -8,7 +7,7 @@ freshness: 2026-02-21
 
 # Hook Authoring Rules
 
-Rules for writing hooks in `settings.json` (global) and `.claude/settings.json` (project-local).
+Rules for writing hooks in `~/.claude/settings.json` (global) and `.claude/settings.json` (project-local).
 
 ## Fail Gracefully
 
@@ -56,7 +55,7 @@ Hooks have access to these variables provided by Claude Code:
 
 ## Do This
 
-- Model new hooks after the existing patterns in `settings.json`
+- Model new hooks after the existing patterns in `~/.claude/settings.json`
 - Test hooks locally by setting the environment variables and running the command in a shell
 - Document what the hook guards against in a comment or in this rules file
 

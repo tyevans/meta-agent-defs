@@ -29,7 +29,6 @@ These are the artifacts that reference other files and must stay current:
 The README contains a tree listing under "What's Included". Verify:
 - Every `.md` file in `agents/` is listed
 - Every skill directory in `skills/` is listed with its `SKILL.md`
-- `settings.json` is listed
 - `install.sh` is listed
 - No files are listed that do not exist on disk
 
@@ -52,7 +51,6 @@ The root `AGENTS.md` describes available agents. Verify:
 
 The installer creates symlinks. Verify:
 - It loops over `agents/*.md`
-- It handles `settings.json`
 - It handles `skills/*/` directories for global installation
 - If new artifact directories have been added, the installer covers them
 
@@ -71,7 +69,6 @@ The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
    ls /home/ty/workspace/tackline/agents/
    ls /home/ty/workspace/tackline/skills/
    ls /home/ty/workspace/tackline/skills/*/SKILL.md
-   ls /home/ty/workspace/tackline/settings.json
    ```
 2. Read each sync point document
 3. Compare and report discrepancies (including skills/ coverage)

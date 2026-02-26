@@ -28,7 +28,7 @@ The installer at `/home/ty/workspace/tackline/install.sh`:
    - Existing regular file: backup with timestamp, then create symlink
    - Nothing exists: create symlink
 3. Creates target directories (`agents/`, `skills/`)
-4. Loops over `agents/*.md`, `skills/*/`, and `settings.json`
+4. Loops over `agents/*.md`, `skills/*/`, `rules/*.md`, and `templates/`
 5. Prints summary
 
 ## When to Modify

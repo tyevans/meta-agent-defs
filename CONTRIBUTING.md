@@ -9,7 +9,6 @@ Tackline is a **content-only repo** -- Markdown definitions and JSON config, no 
 - **Skills** (`skills/<name>/SKILL.md`) -- Workflow definitions invoked via `/name`
 - **Agents** (`agents/<name>.md`) -- Agent definitions with YAML frontmatter
 - **Rules** (`rules/<name>.md`) -- Global behavioral constraints
-- **Settings** (`settings.json`) -- Hooks and environment variables
 
 ## Adding a Skill
 

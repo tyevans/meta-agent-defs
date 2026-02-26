@@ -93,24 +93,6 @@ done
 echo ""
 
 # =============================================================================
-# 2. Settings JSON validation
-# =============================================================================
-info "Checking settings.json..."
-
-SETTINGS="$SCRIPT_DIR/settings.json"
-if [ -f "$SETTINGS" ]; then
-    if python3 -c "import json; json.load(open('$SETTINGS'))" 2>/dev/null; then
-        check_pass "settings.json: valid JSON"
-    else
-        check_fail "settings.json: invalid JSON"
-    fi
-else
-    check_fail "settings.json: file not found"
-fi
-
-echo ""
-
-# =============================================================================
 # 3. Skills validation
 # =============================================================================
 info "Checking skills..."
