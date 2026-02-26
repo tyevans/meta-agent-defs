@@ -24,10 +24,14 @@ You are running the **transform** primitive — applying a rewrite instruction t
 
 2. **Parse Instruction**: Extract the rewrite rule from $ARGUMENTS (e.g., "as one-line ticket titles", "as acceptance criteria", "for a non-technical audience"). The instruction is applied identically to every item.
 
+**Gate**: The rewrite instruction is concrete enough to apply consistently — it specifies a target format, audience, or structure. If $ARGUMENTS is too vague to apply uniformly (e.g., "make it better"), ask one clarifying question before proceeding.
+
 3. **Transform Each Item**: For each item independently:
    - Apply the rewrite instruction to produce the new content
    - Preserve source attribution and confidence levels from the original
    - Maintain the original item number
+
+**Gate**: Output item count equals input item count. If any item was skipped or merged, that is a transform error — include it in the output with a note rather than silently dropping it.
 
 4. **Emit Output**: Structured in pipe format with header, metadata (including `**Pipeline**`), transformed items as numbered list, and one-paragraph summary.
 

@@ -34,6 +34,10 @@ You are running the **expand** primitive — elaborating sparse items into detai
    - Use Grep/Read to ground elaborations in actual code/docs when possible
    - Use WebSearch/WebFetch for external context when codebase evidence is insufficient
 
+**Gate**: Every input item appears in the output — none skipped or merged. Item count in equals item count out. If an item was passed through unchanged (already detailed), note it explicitly rather than silently omitting it.
+
+**Gate**: Claims added during elaboration are grounded in at least one cited source (file path or URL). If no evidence was found for a claim, mark it POSSIBLE rather than presenting it as fact.
+
 4. **Emit Output**: Structured in pipe format with header, metadata (including `**Pipeline**` — append this step to the upstream chain), numbered items with expanded detail, and one-paragraph summary.
 
 ## Guidelines

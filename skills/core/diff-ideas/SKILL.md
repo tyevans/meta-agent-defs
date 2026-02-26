@@ -20,7 +20,15 @@ You are running the **diff-ideas** primitive — comparing two approaches side-b
 
 ## Process
 
-Identify the two approaches from $ARGUMENTS or from the top 2 items in prior pipe-format output in context (if upstream detected, read its `**Pipeline**` field to construct provenance). Research each approach using codebase (Grep, Glob, Read) first, then web (WebSearch, WebFetch) if needed. Emit structured comparison in pipe format with a comparison table between Items and Summary, including `**Pipeline**` in metadata.
+Identify the two approaches from $ARGUMENTS or from the top 2 items in prior pipe-format output in context (if upstream detected, read its `**Pipeline**` field to construct provenance). Research each approach using codebase (Grep, Glob, Read) first, then web (WebSearch, WebFetch) if needed.
+
+**Gate**: Both approaches are identified and have at least one concrete characteristic each (a behavioral difference, a tradeoff, or a use-case). If only one approach is understood, ask for clarification rather than comparing against a vague alternative.
+
+Score each approach across 4-6 dimensions.
+
+**Gate**: Every dimension has a score or winner for both approaches. No dimension left with "unclear" on both sides. If evidence was insufficient for a dimension, mark the stronger approach as winner with a note rather than leaving it unresolved.
+
+Emit structured comparison in pipe format with a comparison table between Items and Summary, including `**Pipeline**` in metadata.
 
 ## Output Format
 

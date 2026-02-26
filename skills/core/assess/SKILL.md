@@ -27,9 +27,13 @@ Search conversation context for structured output from a prior primitive (the `#
 
 Extract categories from $ARGUMENTS (e.g., "by severity: critical/warning/suggestion", "by goal-fit: answer/deepen/prune"). If no categories are specified, default to HIGH / MEDIUM / LOW priority.
 
+**Gate**: Item count is non-zero and matches the upstream Items (N) count. If zero items were found, stop and report "no items to assess" rather than emitting an empty output.
+
 ### 3. Evaluate and Categorize
 
 Assess each item against the rubric. Assign a categorical verdict with reasoning. Group items by category.
+
+**Gate**: Every item has been assigned a category. No item left uncategorized. If any item lacked sufficient detail for categorization, assign the lowest-severity category and note the assumption in the summary.
 
 ### 4. Emit Categorized Output
 

@@ -35,8 +35,13 @@ Detect the artifact type from $ARGUMENTS or prior primitive context. Default to 
 ## Process
 
 1. **Check context** for prior primitive output (gather, rank, distill). If found, sketch based on those findings and read the `**Pipeline**` field to construct provenance.
+
+**Gate**: Artifact type is determined (code / document / config / schema / workflow) and stated explicitly before generating the skeleton. If the type is ambiguous and no source files exist to default to, ask the user to clarify rather than guessing.
+
 2. **Search codebase/project** (if needed) using Grep/Glob to understand existing structure/conventions.
 3. **Emit skeleton** in pipe format with content blocks containing TODO placeholders. Include `**Pipeline**` in metadata — append this step to the upstream chain, or `(none — working from direct input)` if no upstream.
+
+**Gate**: Every section or component in the skeleton has at least one TODO placeholder. A section with no TODO is either already implemented (should not appear in a sketch) or was silently skipped — flag it and add a placeholder.
 
 Output format: numbered list where each item is a file, section, or component with a content block showing structure and TODO comments marking implementation points.
 

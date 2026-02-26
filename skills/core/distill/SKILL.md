@@ -26,6 +26,10 @@ You are running the **distill** primitive — reducing verbose input to essentia
 
 3. **Distill**: Reduce to essential points while preserving source attribution and confidence levels (if present in input). Prioritize CONFIRMED over LIKELY over POSSIBLE.
 
+**Gate** (topic-filter mode): If $ARGUMENTS specifies a topic, state how many items matched the topic filter before compressing. If zero items matched, stop and report "no items matched topic '[topic]'" rather than emitting an empty output.
+
+**Gate** (compress mode): Output item count is at most the requested N. If the upstream input was already at or below N items, pass all through rather than artificially compressing.
+
 4. **Emit Output**: Structured in pipe format with header, metadata (including `**Pipeline**` — append this step to the upstream pipeline chain, or `(none — working from direct input)` if no upstream), numbered items (even for single items), and one-paragraph summary.
 
 ## Modes

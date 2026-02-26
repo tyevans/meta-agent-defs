@@ -31,6 +31,10 @@ Extract scoring dimensions from $ARGUMENTS (e.g., "by complexity" → one dimens
 
 Assign numeric scores (1-5 scale) for each criterion per item. Calculate overall rank (average or weighted sum). Re-order items from highest to lowest score.
 
+**Gate**: Every item has a numeric score for every criterion — no blanks in the criteria table. If an item lacked sufficient detail to score a criterion, assign the median score (3) and note the assumption in the summary rather than leaving the cell empty.
+
+**Gate**: No two items share the same overall rank. If a tie exists, break it using the most decision-relevant criterion from $ARGUMENTS; note the tiebreak in the summary.
+
 ### 4. Emit Ranked Output
 
 Output in pipe format:
