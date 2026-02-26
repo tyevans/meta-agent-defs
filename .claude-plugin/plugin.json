@@ -1,0 +1,17 @@
+{
+  "name": "tl",
+  "version": "1.0.0",
+  "description": "Composable workflow skills, agents, and hooks for Claude Code",
+  "author": {
+    "name": "ty"
+  },
+  "keywords": ["workflow", "skills", "agents", "orchestration"],
+  "skills": ["./skills/core/", "./skills/workflows/", "./skills/teams/"],
+  "agents": [
+    "./agents/agent-generator.md",
+    "./agents/code-reviewer.md",
+    "./agents/project-bootstrapper.md"
+  ],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json"
+}

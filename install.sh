@@ -20,14 +20,21 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 # --- Argument parsing ---
 PROJECT_DIR=""
 USE_HARDLINKS=false
+RULES_ONLY=false
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--help]
 
 Options:
   project_dir      Install to project_dir/.claude/ instead of ~/.claude/
   --hardlink       Use hardlinks instead of symlinks
+  --rules-only     Install only rules and templates (use with plugin install)
   --help, -h       Show this help message
+
+Install modes:
+  Full install (default)  Symlinks agents, skills, rules, templates, MCP servers
+  Plugin companion        Use --rules-only to install what plugins can't provide
+  Project-local           Provide project_dir for agents + skills only
 EOF
     exit 0
 }
@@ -39,6 +46,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --hardlink)
             USE_HARDLINKS=true
+            shift
+            ;;
+        --rules-only)
+            RULES_ONLY=true
             shift
             ;;
         -*)
@@ -185,10 +196,45 @@ else
 fi
 if [ -n "$PROJECT_DIR" ]; then
     echo "Scope:  project-local (agents + skills only)"
+elif [ "$RULES_ONLY" = true ]; then
+    echo "Scope:  rules-only (plugin companion mode)"
 else
     echo "Scope:  global"
 fi
 echo ""
+
+# --- Plugin conflict detection ---
+if [ "$RULES_ONLY" = false ] && [ -z "$PROJECT_DIR" ]; then
+    # Check if the tl plugin is already installed
+    PLUGIN_ACTIVE=false
+    if [ -f "$HOME/.claude/settings.json" ] && command -v python3 &>/dev/null; then
+        if python3 -c "
+import json, sys
+try:
+    s = json.load(open('$HOME/.claude/settings.json'))
+    plugins = s.get('enabledPlugins', [])
+    if any('tl' in str(p) for p in plugins):
+        sys.exit(0)
+except Exception:
+    pass
+sys.exit(1)
+" 2>/dev/null; then
+            PLUGIN_ACTIVE=true
+        fi
+    fi
+    if [ "$PLUGIN_ACTIVE" = true ]; then
+        warn "The 'tl' plugin appears to be installed."
+        warn "Full install will create duplicate skills/agents in both global (/gather) and plugin (/tl:gather) namespaces."
+        warn "Consider using --rules-only instead to install only what the plugin can't provide."
+        echo ""
+        read -p "Continue with full install anyway? [y/N] " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            info "Aborting. Run with --rules-only for plugin companion mode."
+            exit 0
+        fi
+    fi
+fi
 
 # --- Dependency checks ---
 if ! command -v git &>/dev/null; then
@@ -207,9 +253,11 @@ fi
 
 echo ""
 
-# Ensure ~/.claude/ exists
-mkdir -p "$TARGET_DIR/agents"
-mkdir -p "$TARGET_DIR/skills"
+# Ensure target directories exist
+if [ "$RULES_ONLY" = false ]; then
+    mkdir -p "$TARGET_DIR/agents"
+    mkdir -p "$TARGET_DIR/skills"
+fi
 if [ -z "$PROJECT_DIR" ]; then
     if [ -d "$SCRIPT_DIR/rules" ]; then
         mkdir -p "$TARGET_DIR/rules"
@@ -268,33 +316,41 @@ fi
 echo ""
 
 # --- Agents ---
-info "Installing agents..."
-for agent in "$SCRIPT_DIR"/agents/*.md; do
-    [ -f "$agent" ] || continue
-    name="$(basename "$agent")"
-    link_file "$agent" "$TARGET_DIR/agents/$name"
-done
+if [ "$RULES_ONLY" = false ]; then
+    info "Installing agents..."
+    for agent in "$SCRIPT_DIR"/agents/*.md; do
+        [ -f "$agent" ] || continue
+        name="$(basename "$agent")"
+        link_file "$agent" "$TARGET_DIR/agents/$name"
+    done
+else
+    info "Skipping agents (--rules-only mode)"
+fi
 
 # --- Skills ---
-# Skills may be organized in category subdirectories (skills/core/gather/, skills/workflows/blossom/)
-# or directly under skills/ (skills/gather/). Both layouts are flattened on install.
-info "Installing skills..."
-for entry in "$SCRIPT_DIR"/skills/*/; do
-    [ -d "$entry" ] || continue
-    if [ -f "$entry/SKILL.md" ]; then
-        # Direct skill directory (skills/foo/SKILL.md)
-        name="$(basename "$entry")"
-        link_dir "$entry" "$TARGET_DIR/skills/$name"
-    else
-        # Category directory (skills/core/foo/SKILL.md) — flatten into skills/foo/
-        for skill_dir in "$entry"*/; do
-            [ -d "$skill_dir" ] || continue
-            [ -f "$skill_dir/SKILL.md" ] || continue
-            name="$(basename "$skill_dir")"
-            link_dir "$skill_dir" "$TARGET_DIR/skills/$name"
-        done
-    fi
-done
+if [ "$RULES_ONLY" = false ]; then
+    # Skills may be organized in category subdirectories (skills/core/gather/, skills/workflows/blossom/)
+    # or directly under skills/ (skills/gather/). Both layouts are flattened on install.
+    info "Installing skills..."
+    for entry in "$SCRIPT_DIR"/skills/*/; do
+        [ -d "$entry" ] || continue
+        if [ -f "$entry/SKILL.md" ]; then
+            # Direct skill directory (skills/foo/SKILL.md)
+            name="$(basename "$entry")"
+            link_dir "$entry" "$TARGET_DIR/skills/$name"
+        else
+            # Category directory (skills/core/foo/SKILL.md) — flatten into skills/foo/
+            for skill_dir in "$entry"*/; do
+                [ -d "$skill_dir" ] || continue
+                [ -f "$skill_dir/SKILL.md" ] || continue
+                name="$(basename "$skill_dir")"
+                link_dir "$skill_dir" "$TARGET_DIR/skills/$name"
+            done
+        fi
+    done
+else
+    info "Skipping skills (--rules-only mode)"
+fi
 
 # --- Rules ---
 if [ -z "$PROJECT_DIR" ]; then
@@ -317,7 +373,7 @@ else
 fi
 
 # --- MCP Servers ---
-if [ -z "$PROJECT_DIR" ]; then
+if [ -z "$PROJECT_DIR" ] && [ "$RULES_ONLY" = false ]; then
     MCP_CONFIG="$SCRIPT_DIR/mcp-servers.json"
     if [ -f "$MCP_CONFIG" ]; then
         if command -v claude &>/dev/null; then
@@ -347,6 +403,8 @@ if [ -z "$PROJECT_DIR" ]; then
             info "Skipping MCP server installation (claude CLI not found)"
         fi
     fi
+elif [ "$RULES_ONLY" = true ]; then
+    info "Skipping MCP servers (--rules-only mode)"
 else
     info "Skipping MCP servers (project-local mode - global-only)"
 fi
@@ -372,9 +430,21 @@ echo ""
 log "Installation complete!"
 echo ""
 info "What was installed:"
-echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
-echo "  Skills:   $(find "$SCRIPT_DIR/skills" -name "SKILL.md" 2>/dev/null | wc -l) skills"
-if [ -z "$PROJECT_DIR" ]; then
+if [ "$RULES_ONLY" = true ]; then
+    echo "  Mode:     Plugin companion (--rules-only)"
+    if [ -d "$SCRIPT_DIR/rules" ]; then
+        echo "  Rules:    $(ls -1 "$SCRIPT_DIR"/rules/*.md 2>/dev/null | wc -l) global rules"
+    fi
+    if [ -d "$SCRIPT_DIR/templates" ]; then
+        echo "  Templates: $(find "$SCRIPT_DIR/templates" -type f -name "*.yaml" 2>/dev/null | wc -l) team templates"
+    fi
+elif [ -n "$PROJECT_DIR" ]; then
+    echo "  Mode:     Project-local (agents + skills only)"
+    echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
+    echo "  Skills:   $(find "$SCRIPT_DIR/skills" -name "SKILL.md" 2>/dev/null | wc -l) skills"
+else
+    echo "  Agents:   $(ls -1 "$SCRIPT_DIR"/agents/*.md 2>/dev/null | wc -l) agent definitions"
+    echo "  Skills:   $(find "$SCRIPT_DIR/skills" -name "SKILL.md" 2>/dev/null | wc -l) skills"
     if [ -d "$SCRIPT_DIR/rules" ]; then
         echo "  Rules:    $(ls -1 "$SCRIPT_DIR"/rules/*.md 2>/dev/null | wc -l) global rules"
     fi
@@ -385,18 +455,20 @@ if [ -z "$PROJECT_DIR" ]; then
     if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
         echo "  MCP:      $(python3 -c "import json; print(len(json.load(open('$MCP_CONFIG'))))" 2>/dev/null || echo '?') server(s)"
     fi
-else
-    echo "  Mode:     Project-local (agents + skills only)"
 fi
 echo ""
 info "To verify:"
-echo "  ls -la $TARGET_DIR/agents/"
-echo "  ls -la $TARGET_DIR/skills/"
+if [ "$RULES_ONLY" = false ]; then
+    echo "  ls -la $TARGET_DIR/agents/"
+    echo "  ls -la $TARGET_DIR/skills/"
+fi
 if [ -z "$PROJECT_DIR" ]; then
     if [ -d "$SCRIPT_DIR/rules" ]; then
         echo "  ls -la $TARGET_DIR/rules/"
     fi
-    if [ -d "$SCRIPT_DIR/templates" ]; then
+    if [ -d "$SCRIPT_DIR/templates" ] && [ "$RULES_ONLY" = true ]; then
+        echo "  ls -la $TARGET_DIR/templates/"
+    elif [ -d "$SCRIPT_DIR/templates" ] && [ "$RULES_ONLY" = false ]; then
         echo "  ls -la $TARGET_DIR/templates/"
     fi
 fi

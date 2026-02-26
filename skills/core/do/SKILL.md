@@ -46,6 +46,10 @@ Extract from INDEX.md:
 - **Skills by Category** — the tables listing every skill with purpose and context type
 - **Primitive Chain Patterns** — canonical composition sequences
 
+### Namespace Detection
+
+If this skill was invoked as `/tl:do` (plugin mode), all skill invocations via the Skill tool must use the `tl:` prefix (e.g., `tl:gather` not `gather`). If invoked as `/do` (symlink mode), use unprefixed names. Detect the mode from how `$ARGUMENTS` was received — if the skill name in the invocation context includes a colon prefix, use that prefix for all downstream Skill tool calls.
+
 ---
 
 ## Phase 2: Match Goal to Skill or Pipeline

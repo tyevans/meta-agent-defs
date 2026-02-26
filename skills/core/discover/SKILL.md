@@ -43,6 +43,10 @@ For each file found, Read it and extract:
 
 Do not read the full body of each skill — frontmatter only is sufficient for matching. If a file has no `description` field, skip it.
 
+### Namespace Detection
+
+If this skill was invoked as `/tl:discover` (plugin mode), prefix all skill names in the output with `tl:` (e.g., `/tl:gather` not `/gather`). If invoked as `/discover` (symlink mode), use unprefixed names.
+
 ---
 
 ## Phase 2: Match Goal to Skills
