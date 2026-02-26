@@ -5,7 +5,7 @@ argument-hint: "<goal or area to explore>"
 disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage
-context: fork
+context: inline
 ---
 
 # Blossom: Emergent Spike-Driven Epic Workflow
