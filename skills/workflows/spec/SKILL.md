@@ -267,7 +267,30 @@ Dispatch a single agent as architecture guardian to review the complete spec and
 
 ### Dispatch and Wait
 
-Launch with `run_in_background=true`. If PASS, proceed to Phase 5. If FAIL, apply fixes and re-run the guardian. Iterate until PASS.
+Launch with `run_in_background=true` and capture the returned agent ID:
+
+```
+guardian_id = Task({
+  subagent_type: "Explore",
+  run_in_background: true,
+  prompt: "<guardian instructions above>"
+})
+```
+
+**On PASS:** Proceed to Phase 5.
+
+**On FAIL (resume mode):** Apply the guardian's fixes to the spec using Edit, then resume the same guardian agent rather than dispatching a fresh one. The resumed agent retains full spec + codebase context from its prior review, avoiding redundant re-reads.
+
+```
+Task({
+  resume: "<guardian_id>",
+  prompt: "The following issues were fixed since your last review: <list issues addressed>. Please re-review the spec at .specs/<name>.md and issue an updated PASS/FAIL verdict."
+})
+```
+
+Repeat until PASS. **Maximum 3 iterations.** If still FAIL after 3 iterations, surface the remaining issues to the user and halt — do not continue iterating silently.
+
+*Conditional report:* If more than one iteration was needed, note the iteration count in the Quality Summary (Phase 5d).
 
 ---
 
