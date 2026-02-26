@@ -4,7 +4,7 @@ description: "Combine multiple pipe-format blocks from context into one unified 
 argument-hint: "[optional: topic filter]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob
+allowed-tools: Read, Grep, Glob, TaskList
 ---
 
 # Merge: Combine Multiple Pipe-Format Outputs
@@ -20,9 +20,20 @@ You are running the **merge** primitive — combining multiple pipe-format block
 
 ## Process
 
+### 0. Detect Input Sources (default: conversation context)
+
+Scan conversation context for ALL pipe-format blocks matching the `**Source**: /...` marker. Collect every one, not just the most recent. Note the source skill and `**Pipeline**` field for each block.
+
+**In team context** (`.claude/team.yaml` exists or TaskList returns results): additionally collect pipe-format blocks from two supplementary sources before proceeding:
+
+1. **TaskList completed outputs** — call TaskList to retrieve completed background agent results. For each completed task, extract any pipe-format blocks embedded in the task output. Label each block's source as `task:<task-id>` to distinguish it from conversation-context blocks.
+2. **SendMessage history** — scan SendMessage history for agent messages containing pipe-format blocks. Agents that communicated results via messages (rather than TaskList output) may have additional findings. Label each block's source as `message:<agent-id>`.
+
+After collecting from all supplementary sources, merge them with the conversation-context blocks into a **unified input set** before proceeding to Step 1. If no pipe-format blocks are found in any source, emit an error and stop.
+
 ### 1. Detect All Pipe-Format Blocks
 
-Scan conversation context for ALL blocks matching the pipe-format pattern (the `**Source**: /...` marker). Collect every one, not just the most recent. Note the source skill and `**Pipeline**` field for each block.
+Use the unified input set assembled in Step 0. If running in team context, this set already combines conversation, task, and message blocks — no additional scanning needed.
 
 ### 2. Parse Items
 
