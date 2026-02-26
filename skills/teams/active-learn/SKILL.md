@@ -292,7 +292,7 @@ In team mode use the agent name and role from team.yaml. In solo mode, substitut
 
 **Dispatch:**
 
-Team mode:
+**Standard mode (default)** — Team mode:
 ```
 Task({
   subagent_type: "general-purpose",
@@ -301,7 +301,7 @@ Task({
 })
 ```
 
-Solo mode (no team.yaml): use the current session model:
+**Standard mode (default)** — Solo mode (no team.yaml): use the current session model:
 ```
 Task({
   subagent_type: "general-purpose",
@@ -310,11 +310,36 @@ Task({
 })
 ```
 
+**Worktree isolation mode** — append `isolation: "worktree"` to either call signature:
+```
+Task({
+  subagent_type: "general-purpose",
+  isolation: "worktree",
+  model: "<agent's model or current session model>",
+  prompt: "<composed prompt>"
+})
+```
+
+Benefits of worktree isolation mode:
+- The challenge agent operates in its own git worktree, keeping any file changes off the main working tree
+- Evaluation can diff the worktree branch against the base commit to assess exactly what changed (see Phase 3b below)
+- Failed or abandoned challenges auto-cleanup -- no residue left in the working tree
+
 Serial dispatch only -- no `run_in_background`. Each challenge is a controlled experiment.
 
 ### 3b. Evaluate Each Challenge (Inline)
 
-After each dispatch returns, evaluate on three dimensions:
+After each dispatch returns, evaluate on three dimensions.
+
+**Worktree isolation mode — diff before evaluating:**
+
+If dispatching in worktree isolation mode, retrieve the worktree's branch name from the Task output and diff it against the base commit before running the standard evaluation:
+
+```bash
+git diff <base-commit>..<worktree-branch> -- <relevant paths>
+```
+
+Use this diff as additional evidence during Result Assessment and Trap Detection. Changes the agent made (or failed to make) are observable at the file level, not just from the agent's self-reported reflection. A solution that claims PASS but left no relevant diff is a red flag.
 
 **Result Assessment (PASS / PARTIAL / FAIL):**
 - PASS: All acceptance criteria met, solution correct and complete
