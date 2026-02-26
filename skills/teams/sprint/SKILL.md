@@ -198,7 +198,7 @@ Build the task prompt following the spawn protocol from team-protocol.md:
 
 ### 3b. Execute
 
-Dispatch via the Task tool.
+Dispatch via the Task tool. **Capture the agent ID** from the Task tool's response — it is needed to resume the agent if the task returns partial or blocked.
 
 **With worktree isolation** (recommended for parallel dispatch): Each agent gets its own repo copy, eliminating merge conflicts between concurrent agents. Use this when dispatching independent tasks in parallel:
 
@@ -276,8 +276,8 @@ The `dispatch:` field is optional but recommended. Use the bead ID if beads are 
 
 **If beads are available**, based on `task_result.status`:
 - **completed**: `bd close <bead-id>`
-- **partial**: Keep in-progress, note what remains
-- **blocked**: `bd update <bead-id> --notes="Blocked: <blocked_by>"`
+- **partial**: Keep in-progress, note what remains. Record the agent ID for potential resume.
+- **blocked**: `bd update <bead-id> --notes="Blocked: <blocked_by>"`. Record the agent ID for potential resume.
 - **failed**: `bd update <bead-id> --notes="Failed: <summary>"`
 
 **If beads are not available**, skip bead updates and simply note the task status in the sprint report.
@@ -293,6 +293,8 @@ After each task, show a brief progress update:
 **Learnings persisted**: [count] new entries
 **Next**: [dispatching next task / sprint complete / blocked]
 ```
+
+**In partial/blocked status:** Add a `**Resumable**: <agent-id>` field to the progress update. This agent ID can be passed to the Task tool's `resume` parameter in a follow-up sprint to continue the agent with its full prior context instead of cold-starting.
 
 ### 4e. Dispatch Next
 
@@ -319,6 +321,7 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
    - confidence: [agent's self-assessed confidence]
    - learnings: [count] new entries persisted
    - bead: [bead-id if available]
+   - resumable: [agent-id if partial or blocked, omit otherwise]
 
 2. **[bead-title or task description]** — [1-line outcome summary]
    - member: [agent name]
@@ -326,8 +329,20 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
    - confidence: [agent's self-assessed confidence]
    - learnings: [count] new entries persisted
    - bead: [bead-id if available]
+   - resumable: [agent-id if partial or blocked, omit otherwise]
 
 [... one item per dispatched task]
+
+### Resumable Agents (M)
+
+[Only include this section if any tasks returned partial or blocked. List each resumable agent so a follow-up sprint can continue them with full prior context.]
+
+1. **[bead-title or task description]** — [why it stopped / what remains]
+   - agent-id: [agent-id]
+   - bead: [bead-id if available]
+   - context: [1-sentence description of what the agent had completed before stopping]
+
+[To resume: Task({resume: "<agent-id>", prompt: "additional context or follow-up instructions"})]
 
 ### Learning Deltas
 
