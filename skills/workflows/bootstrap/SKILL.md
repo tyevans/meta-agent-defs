@@ -5,7 +5,7 @@ argument-hint: "<project path or description>"
 disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(ls:*), Bash(test:*), Bash(mkdir:*), Task
-context: fork
+context: inline
 ---
 
 # Bootstrap: Full Project Setup Workflow
