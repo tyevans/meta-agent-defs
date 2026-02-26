@@ -11,7 +11,7 @@ allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
 
 # Session Health Check
 
-You are running a **session health check** — a quick diagnostic of the current conversation to determine if you should continue, compact, or start fresh. Context: **$ARGUMENTS**
+You are running a **session health check** — a quick diagnostic of the current conversation to determine if you should continue, summarize, checkpoint, or start fresh. Context: **$ARGUMENTS**
 
 ## When to Use
 
@@ -33,10 +33,12 @@ Review what you've done this session:
 
 | Load Level | Files Read | Agents | Breadth | Signal |
 |------------|-----------|--------|---------|--------|
-| Light | <10 | 0-1 | 1-2 areas | Healthy, continue |
-| Moderate | 10-25 | 2-4 | 3-4 areas | Watch quality |
-| Heavy | 25-50 | 5+ | 5+ areas | Consider compacting |
-| Overloaded | 50+ | 8+ | Many areas | Compact or clear |
+| Light | <20 | 0-2 | 1-2 areas | Healthy, continue |
+| Moderate | 20-60 | 3-5 | 3-4 areas | Watch quality |
+| Heavy | 60-120 | 6-9 | 5+ areas | Check quality signals; consider fresh session |
+| Overloaded | 120+ | 10+ | Many areas | Quality degraded — fresh session recommended |
+
+> **Note**: Raw file counts are a lagging indicator. Quality signals (step 3) are the primary degradation signal — a session with 30 files but heavy hedging is more degraded than one with 80 files and sharp answers.
 
 ### 2. Check Scope Coherence
 
@@ -50,12 +52,17 @@ Scope drift isn't always bad — discovered work is natural. But if you've drift
 
 ### 3. Check Quality Indicators
 
-Honest self-assessment:
-- Are you repeating information you've already shared?
-- Are you making assumptions instead of reading code?
-- Are you hedging more than earlier in the session?
-- Do your recent tool calls feel less targeted (broader searches, reading larger files)?
-- Have you lost track of the beads backlog state?
+**Quality signals are the primary degradation signal.** A session can be Heavy by file count but still sharp; a session can be Moderate by file count but already degrading. Check these first and let them override the load level assessment:
+
+| Signal | Healthy | Degrading |
+|--------|---------|-----------|
+| **Hedging language** | Direct, confident answers | "I think", "it might", "probably", "as I recall" — increasing over time |
+| **Repetition** | Novel, additive responses | Re-explaining things already stated earlier in the session |
+| **Tool call quality** | Targeted searches, specific file reads | Broad grep patterns, re-reading files already read, "let me check again" |
+| **Tool call failure rate** | Rare failures or none | Repeated tool failures, fallbacks to guessing |
+| **Answer specificity** | Cites file paths, line numbers, exact values | Vague references, omitting specifics that were available |
+
+Rate each signal: Good / Watch / Degrading. If two or more signals are Degrading, elevate the overall session health to **Fresh** regardless of load level.
 
 ### 4. Check Session State
 
@@ -94,15 +101,15 @@ Based on the above, recommend ONE of:
 | Action | When | How |
 |--------|------|-----|
 | **Continue** | Light-moderate load, on-topic, quality fine | Keep working |
-| **Compact** | Heavy load but good progress, want to keep context | `/compact` — preserves key context, frees space |
+| **Partial summarize** | Heavy load but good progress, quality still sharp | Ask the user to summarize the completed work into a brief paragraph in the conversation, then continue — this compresses history without losing goals |
 | **Checkpoint & Continue** | Moderate load, mid-batch work, or want a save point | Commit current work, write intermediate results to `memory/scratch/<slug>.md` if mid-batch, `bd sync`, then continue |
-| **Fresh session** | Overloaded, scope has drifted, or quality degrading | Run /handoff to capture context, commit all work, `bd sync`, push, then `/clear` or new session |
+| **Fresh session** | Overloaded, scope has drifted, or 2+ quality signals degrading | Run /handoff to capture context, commit all work, `bd sync`, push, then start a new session |
 | **Break into subagents** | Remaining work is parallelizable | Dispatch independent tasks to subagents to avoid further context fill |
 
 ## Output Format
 
 ```markdown
-## Session Health: [Healthy / Watch / Compact / Fresh]
+## Session Health: [Healthy / Watch / Summarize / Fresh]
 
 **Load**: [Light/Moderate/Heavy/Overloaded] — ~X files read, ~Y agents, Z areas
 **Scope**: [On track / Minor drift / Significant drift] — started with [X], now doing [Y]
@@ -127,7 +134,7 @@ Based on the above, recommend ONE of:
 ## Important Notes
 
 - This is a **self-diagnostic** — be honest, not optimistic
-- Context compaction via `/compact` is lightweight and preserves important state
+- **Quality signals override file counts.** Two or more degrading quality signals means Fresh, regardless of load level
 - Committing and syncing before any session change is mandatory
 - When in doubt, checkpoint (commit + sync) before deciding — it's cheap insurance
 - A fresh session with good beads context (via `bd prime`) is often more productive than a degraded long session
