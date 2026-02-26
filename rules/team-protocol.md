@@ -155,9 +155,9 @@ After completing your task, end your response with a structured reflection:
 
 ### Dispatch Strategy
 
-**Default: serialize.** Dispatch one task at a time, review output, then dispatch next. This lets each task benefit from the previous one's learnings.
+**Default: parallelize with worktree isolation.** Dispatch tasks concurrently using `isolation: "worktree"` and `run_in_background: true`. Each agent gets its own repo copy, eliminating merge conflicts regardless of file overlap. Cherry-pick or merge worktree branches after agents complete.
 
-**For independent tasks: parallelize.** Use `run_in_background: true` on Task calls when tasks touch different ownership areas and have no shared files.
+**Fall back to serial** only when tasks have true sequential dependencies — i.e., each task needs the previous one's output to proceed. Serial dispatch is the exception, not the default.
 
 ## Dispatch Model
 

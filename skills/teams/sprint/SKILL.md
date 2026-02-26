@@ -28,7 +28,7 @@ You are running a **Sprint** -- the core execution loop for a persistent learnin
 Load manifest + learnings + backlog
   → Auto-assign tasks to members by ownership
     → User approves assignments
-      → Dispatch member via spawn protocol (serialize)
+      → Dispatch member via spawn protocol (parallel worktree)
         → Parse reflection JSON
           → Update member's learnings.md
             → Dispatch next → Sprint report
@@ -171,7 +171,7 @@ Wait for the user's choice before proceeding. Apply the chosen resolution to the
 2. [bead-id]: [member] — [brief reason]
 ...
 
-**Strategy**: Serial dispatch (each task benefits from the previous one's learnings)
+**Strategy**: Parallel worktree dispatch (serial only if tasks have sequential dependencies)
 ```
 
 Ask the user to approve, reorder, reassign, or remove tasks.
@@ -200,7 +200,7 @@ Build the task prompt following the spawn protocol from team-protocol.md:
 
 Dispatch via the Task tool. **Capture the agent ID** from the Task tool's response — it is needed to resume the agent if the task returns partial or blocked.
 
-**With worktree isolation** (recommended for parallel dispatch): Each agent gets its own repo copy, eliminating merge conflicts between concurrent agents. Use this when dispatching independent tasks in parallel:
+**With worktree isolation** (default): Each agent gets its own repo copy, eliminating merge conflicts between concurrent agents. Dispatch all independent tasks this way:
 
 ```
 Task({
@@ -212,7 +212,7 @@ Task({
 })
 ```
 
-**Without worktree** (serial, default): Agent works on the shared working tree. Use this for the default serialize-by-default strategy:
+**Without worktree** (serial fallback): Agent works on the shared working tree. Use this only when a task has a true sequential dependency on a prior task's output:
 
 ```
 Task({
@@ -221,8 +221,6 @@ Task({
   prompt: "<composed prompt with identity, learnings, task, and reflection instructions>"
 })
 ```
-
-For independent tasks that touch different ownership areas, use worktree isolation with `run_in_background: true` to parallelize safely.
 
 **Note**: If dispatching multi-step primitive chains (3+ steps like gather->distill->rank), set `max_turns: 40` to avoid turn limits.
 
@@ -364,7 +362,7 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
 ## Guidelines
 
 1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/sprint-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
-2. **Serialize by default.** Dispatch one task at a time so each agent benefits from the previous one's learnings. Only parallelize if tasks are truly independent AND touch different ownership areas. **Exception:** With `isolation: "worktree"`, parallelization is safe even for tasks touching overlapping files, since each agent works on its own repo copy. The serialize default still applies when NOT using worktrees.
+2. **Parallelize with worktree isolation by default.** Dispatch independent tasks concurrently using `isolation: "worktree"` and `run_in_background: true`. Each agent gets its own repo copy, so parallelization is safe even for tasks touching overlapping files. Fall back to serial dispatch only when tasks have true sequential dependencies (each task needs the previous one's output).
 3. **Learnings are the product.** A sprint that completes tasks but doesn't persist learnings has wasted half its value. Always update learnings files.
 4. **Validate learnings.** Don't blindly append everything an agent suggests. Filter out ephemeral observations and duplicates.
 5. **Date every entry.** Always add `(added: YYYY-MM-DD)` to new learnings for staleness tracking.

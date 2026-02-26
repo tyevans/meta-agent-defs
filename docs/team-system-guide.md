@@ -652,7 +652,7 @@ No blockers
 1. Loads team manifest, learnings, and backlog
 2. Auto-assigns tasks to members by ownership and role
 3. Presents sprint plan for approval
-4. Dispatches members serially (default) or in parallel
+4. Dispatches members in parallel via worktree isolation (serial fallback for sequential dependencies)
 5. Parses reflections and updates learnings files
 6. Reports progress and learning summary
 
@@ -684,7 +684,7 @@ Sample sprint plan:
 2. Bead 43: frontend — UI layer (depends on endpoint contract)
 3. Bead 44: tester — Validation layer (depends on both endpoint and UI)
 
-**Strategy**: Serial dispatch (each task benefits from the previous one's learnings)
+**Strategy**: Serial dispatch (sequential dependencies — auth endpoint must exist before UI, both must exist before tests)
 ```
 
 After user approval, `/sprint` dispatches each task, parses reflections, updates learnings, and reports:
@@ -893,9 +893,9 @@ Don't leave learnings files empty after `/assemble`. Add 2-3 initial observation
 
 Always include `(added: YYYY-MM-DD)` on new learnings. This enables staleness tracking and pruning.
 
-#### Serialize by Default
+#### Parallelize with Worktree Isolation by Default
 
-Dispatch one task at a time unless tasks are truly independent and touch different ownership areas. Serial dispatch lets each agent benefit from the previous one's learnings.
+Dispatch independent tasks concurrently using `isolation: "worktree"` — each agent gets its own repo copy, eliminating merge conflicts. Fall back to serial dispatch only when tasks have true sequential dependencies (each task needs the previous one's output).
 
 #### Review Learnings in PRs
 

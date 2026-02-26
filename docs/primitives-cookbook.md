@@ -149,7 +149,7 @@ Use this chain (gather → assess → filter) when auditing compliance with stan
 
 ## Recipe 2: Choose Agent Dispatch Strategy
 
-**Goal**: Decide between serialized Task dispatch vs. parallel Team dispatch for implementing a multi-agent spike.
+**Goal**: Decide between worktree-isolated parallel dispatch vs. serial dispatch vs. agent teams for implementing a multi-agent spike.
 
 **Chain**: gather → distill → diff-ideas
 
@@ -163,12 +163,12 @@ Use this chain (gather → assess → filter) when auditing compliance with stan
 
 ### Items
 
-1. **Serialize by default** — dispatch one task at a time via Task tool, review output, then dispatch next to avoid API throttling and allow each task to benefit from prior findings
-   - source: /home/ty/workspace/tackline/CLAUDE.md:18
+1. **Parallelize with worktree isolation by default** — dispatch independent tasks concurrently using `isolation: "worktree"` and `run_in_background: true`; each agent gets its own repo copy, eliminating merge conflicts
+   - source: /home/ty/workspace/tackline/CLAUDE.md:20
    - confidence: CONFIRMED
 
-2. **Teams enable parallelization** — use TeamCreate + SendMessage for independent tasks when teams are enabled, running in separate contexts to avoid throttling and context bloat
-   - source: /home/ty/workspace/tackline/CLAUDE.md:20
+2. **Serial dispatch as fallback** — dispatch one task at a time only when tasks have true sequential dependencies (each task needs the previous one's output)
+   - source: /home/ty/workspace/tackline/CLAUDE.md:22
    - confidence: CONFIRMED
 
 3. **Task tool with run_in_background** — for parallel dispatch without teams, use Task(..., run_in_background: true) to launch agents concurrently
@@ -189,7 +189,7 @@ Use this chain (gather → assess → filter) when auditing compliance with stan
 
 ### Summary
 
-The repo defines three dispatch patterns: serialize (one-at-a-time Task calls), parallel background Tasks (Task with run_in_background: true), and Teams (TeamCreate + SendMessage for coordination). Default is serialize to avoid throttling. Teams are for coordination (agents responding to each other); background Tasks are for independent work. Concurrency capped at 4 agents. Subagents can't invoke skills, so all instructions go in the prompt.
+The repo defines three dispatch patterns: worktree-isolated parallel (default — `isolation: "worktree"` with `run_in_background: true`), serial Task dispatch (fallback for sequential dependencies), and Teams (TeamCreate + SendMessage for mid-execution coordination). Default is parallel worktree isolation, which eliminates merge conflicts even for overlapping files. Serial dispatch is reserved for tasks where each step needs the previous one's output. Concurrency capped at 4 agents. Subagents can't invoke skills, so all instructions go in the prompt.
 ```
 
 **Commentary**: Gather found the three dispatch approaches documented in the repo. Now we distill to the core tradeoffs.
@@ -206,14 +206,14 @@ The repo defines three dispatch patterns: serialize (one-at-a-time Task calls), 
 
 ### Items
 
-1. **Serialize (default)** — one Task at a time, each benefits from prior findings; avoids API throttling; slower but safer
-   - source: /home/ty/workspace/tackline/CLAUDE.md:18
+1. **Worktree-isolated parallel (default)** — dispatch with `isolation: "worktree"` and `run_in_background: true`; each agent gets its own repo copy; no merge conflicts; fastest option
+   - source: /home/ty/workspace/tackline/CLAUDE.md:20
 
-2. **Parallel background Tasks** — launch up to 4 agents concurrently with run_in_background: true; for independent work only (agents can't coordinate); faster but risks throttling
-   - source: /home/ty/workspace/tackline/.claude/rules/fan-out-protocol.md:14-20
+2. **Serial dispatch (fallback)** — one Task at a time when tasks have true sequential dependencies; each benefits from prior output; slower but necessary for dependent chains
+   - source: /home/ty/workspace/tackline/CLAUDE.md:24
 
-3. **Teams** — TeamCreate + SendMessage for coordination between agents; separate contexts prevent bloat; best for complex multi-agent dialogue (meeting, blossom); adds orchestration overhead
-   - source: /home/ty/workspace/tackline/CLAUDE.md:20, fan-out-protocol.md:52-62
+3. **Teams** — TeamCreate + SendMessage for mid-execution coordination between agents; separate contexts prevent bloat; best for complex multi-agent dialogue (meeting, blossom); adds orchestration overhead
+   - source: /home/ty/workspace/tackline/CLAUDE.md:26, fan-out-protocol.md:52-62
 
 ### Summary
 

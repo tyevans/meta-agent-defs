@@ -19,9 +19,11 @@ This repo itself (tackline) is content-only -- direct edits to `.md` and `.json`
 
 ### Dispatching Strategy
 
-**Default: serialize.** Dispatch one task at a time, review output, then dispatch next. This avoids API throttling and lets each task benefit from the last one's findings.
+**Default: parallelize with worktree isolation.** Dispatch independent tasks concurrently using `isolation: "worktree"` and `run_in_background: true`. Each agent gets its own repo copy — no merge conflicts, no context bloat. Cherry-pick or merge results after agents complete.
 
-**When teams are enabled: parallelize.** Use agent teams for independent tasks (e.g., blossom spikes, parallel audits). Teams run in separate contexts so throttling and context bloat don't apply.
+**Fall back to serial** only when tasks have true sequential dependencies (each task needs the previous one's output to proceed). Serial dispatch is the exception, not the default.
+
+**Use agent teams** when agents must communicate mid-execution (not merely because tasks depend on each other).
 
 ---
 
