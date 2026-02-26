@@ -57,6 +57,59 @@ Every skill MUST include:
 - Reference `$ARGUMENTS` to accept user input
 - Include a visual workflow diagram showing phase progression (ASCII flowchart)
 
+## Iterative Mode (Optional)
+
+Some skills support multi-turn follow-up: the user runs the skill once, reviews findings, then drills into a specific item without re-running the expensive gather phase. Add this section only when the skill has a distinct gather/explore phase whose output a user would plausibly want to investigate further.
+
+### When to Include It
+
+Include Iterative Mode when the skill:
+- Has a gather or explore phase that is expensive (many tool calls, external reads, or agent dispatch)
+- Produces a ranked or enumerated findings list the user may want to narrow
+- Can meaningfully answer a follow-up question using only the already-gathered output, without re-running Phase 1
+
+### Skill Body Template
+
+Add an **Iterative Mode** section after the main workflow phases:
+
+```markdown
+## Iterative Mode
+
+After the skill completes, users can resume to drill into a specific finding
+without re-running the gather phase.
+
+**How to resume:**
+> /[skill-name] resume: <finding-id or follow-up question>
+
+Or via the Task tool:
+> Task(skill: [skill-name], resume: "<finding-id>: <follow-up query>")
+
+**On resume, the skill should:**
+1. Detect the `resume:` prefix in `$ARGUMENTS`
+2. Skip Phase 1 (gather/explore) entirely
+3. Re-read any output written to `memory/scratch/[skill-name]-output.md`
+   (written at end of Phase 1 to survive context loss)
+4. Apply the follow-up query to the already-gathered findings
+5. Produce a focused output for the selected finding only
+```
+
+### State Preservation Convention
+
+- At the end of the gather phase, write the full findings list to
+  `memory/scratch/<skill-name>-output.md` so a resumed invocation can reload it
+- Preserve: ranked findings, source file paths, confidence levels, and any decisions made
+- Re-derive on resume: summaries, recommendations, and formatted output (cheap to regenerate)
+- Delete the scratch file on session end or when the user explicitly closes the thread
+
+### Output Advertising
+
+When the skill completes its first run and iterative mode is supported, close with:
+
+```
+Resume available — to drill into finding N:
+  /[skill-name] resume: N <your question>
+```
+
 ## Don't Do This
 
 - Do not include Write/Edit in allowed-tools unless the skill modifies files
