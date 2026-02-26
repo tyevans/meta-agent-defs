@@ -4,7 +4,7 @@ description: "Detect skill/agent convergence and divergence patterns across defi
 argument-hint: "<category or glob pattern>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Task
 ---
 
 # Drift: Definition Convergence/Divergence Analysis
@@ -47,11 +47,15 @@ Category mappings:
 
 If target cannot be resolved to at least 2 files, error: "Need at least 2 files to compare. Got: [N]"
 
+**Source-breadth assessment**: After resolving the file list, count the total number of files. If the count exceeds 12, use **parallel mode** for Phase 1. Otherwise, use **serial mode (default)**.
+
 ---
 
 ## Phase 1: Read Definitions
 
-Read all resolved files. For each file, extract:
+### Serial mode (default, ≤12 files)
+
+Read all resolved files directly. For each file, extract:
 - Full content (for section comparison)
 - Section headers (lines starting with `##` or `###`)
 - Frontmatter fields (if present)
@@ -67,6 +71,36 @@ File 2: <path>
   Sections: [...]
   ...
 ```
+
+### In parallel mode (>12 files):
+
+Split the resolved file list into two roughly equal halves. Dispatch 2 background Explore agents, one per half. Each agent reads its subset and returns a partial inventory in the same format as serial mode.
+
+#### Agent prompt template
+
+```
+You are a drift inventory agent. Read the following definition files and extract
+a structured inventory for each one.
+
+Files to read:
+<LIST OF FILE PATHS — one per line>
+
+For each file, output a block in this exact format:
+
+File: <path>
+  Sections: [<comma-separated list of ## and ### headers>]
+  Frontmatter: {<field>: <value>, ...}
+
+Rules:
+- List section headers in document order, normalized to their exact text
+- For frontmatter, include all YAML key-value pairs
+- If a file is missing or unreadable, output: File: <path> — UNREADABLE
+- Output ONLY the inventory blocks — no preamble, no summary
+```
+
+Dispatch both agents concurrently with `run_in_background: true`. Collect their outputs, then merge the partial inventories by concatenating the blocks into a single unified inventory before proceeding to Phase 2.
+
+**Merge rule**: If the same file appears in both outputs (e.g., due to a split overlap), keep the first agent's entry. Entries from Agent 1 take precedence over entries from Agent 2 for any path conflict.
 
 ---
 
@@ -186,7 +220,7 @@ Emit pipe-format output:
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 4 phases. Write intermediate state to `memory/scratch/drift-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: This skill has 4 phases. Write intermediate state to `memory/scratch/drift-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`. In parallel mode, write the merged inventory to the checkpoint before proceeding to Phase 2 — agent outputs are not recoverable after context loss.
 2. **Compare apples to apples.** Only compare files in the same category (workflow skills to workflow skills, agents to agents). Don't flag divergence between unrelated file types.
 3. **Fuzzy section matching.** "When to Use" and "When To Use This" are the same section. Match on normalized form (lowercase, first 3 words).
 4. **Threshold for "shared".** A pattern is "shared" if it appears in ≥3 files OR ≥50% of files in the category, whichever is smaller.
