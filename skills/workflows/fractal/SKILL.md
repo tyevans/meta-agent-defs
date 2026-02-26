@@ -177,7 +177,11 @@ When stopping, proceed to Phase 3 even if DEEPEN items remain. Fractal's value i
 
 ### Recursion
 
-If DEEPEN items exist and no termination condition is met, and the user checkpoint confirms continuation (if applicable), dispatch new handlers for them. Increment the depth level in their prompt. Continue until termination.
+If DEEPEN items exist and no termination condition is met, and the user checkpoint confirms continuation (if applicable), dispatch handlers for DEEPEN items. Increment the depth level in their prompt. Continue until termination.
+
+**Prefer resume over new spawn for DEEPEN items.** When the original handler's ID is available (captured when you dispatched it), use `Task({resume: "<original-handler-id>", prompt: "..."})` so the handler retains its warm file-reading context from the prior depth level. Fall back to spawning a new handler only if the original ID is unavailable. One resume per handler — if a resumed handler produces further DEEPEN items at depth 3+, spawn a new handler for those.
+
+To enable resume: note each handler's agent ID when dispatching in Phase 1d and record the mapping (handler-id → area) for use here.
 
 ---
 
