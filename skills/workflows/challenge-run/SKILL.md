@@ -48,7 +48,8 @@ Search conversation context for the pipe-format pattern:
 **If found:**
 1. Read the upstream output. State: "Reading N items from /challenge-gen output above."
 2. Extract: agent name, challenge items with scenarios, targeted weaknesses, difficulty levels
-3. Record the upstream `**Pipeline**` field for provenance
+3. For each challenge, note its **strategy** (edge-case or commit-replay) and extract `base_commit` if present. Challenges with `base_commit` will use worktree isolation in Phase 1b.
+4. Record the upstream `**Pipeline**` field for provenance
 
 **If not found:**
 1. If `$ARGUMENTS` provides an agent name, look for challenge files (Phase 0b)
@@ -65,7 +66,7 @@ git ls-files -- "memory/agents/$ARGUMENTS/challenges/*-challenges.md"
 
 Also check untracked files with Glob: `memory/agents/<name>/challenges/*-challenges.md`
 
-Select the most recent file (by timestamp in filename). Read it and extract all challenges with their full details: Scenario, Acceptance Criteria, Hidden Trap, Ground Truth.
+Select the most recent file (by timestamp in filename). Read it and extract all challenges with their full details: Scenario, Acceptance Criteria, Hidden Trap, Ground Truth. For commit-replay challenges, also extract the **Base commit** field. Note which challenges have a `base_commit` and which don't — this determines isolation mode in Phase 1b.
 
 If no challenge file exists, tell the user to run `/challenge-gen <agent-name>` first and stop.
 
@@ -100,9 +101,18 @@ For each challenge, build a self-contained prompt for the target agent. The prom
 
 **CRITICAL: Never include the Hidden Trap or Ground Truth in the agent prompt.** These are for evaluation only. Including them defeats the purpose of the challenge.
 
+**For commit-replay challenges with `base_commit`:** Prepend a setup step to the prompt instructing the agent to run `git checkout <base_commit>` as their first action. This resets the worktree to the pre-fix state so the agent works against the actual codebase at the time of the bug.
+
 The prompt structure:
 
 > You are **<agent-name>**, a <role> on the team.
+>
+> ## Setup *(commit-replay only)*
+>
+> Run this command before anything else to reset to the pre-fix codebase state:
+> ```
+> git checkout <base_commit>
+> ```
 >
 > ## Your Learnings
 >
@@ -127,6 +137,19 @@ The prompt structure:
 
 ### 1b. Dispatch
 
+**For commit-replay challenges with `base_commit`:** Use worktree isolation so the agent gets its own repo copy and can check out the pre-fix state without affecting the main working tree.
+
+```
+Task({
+  subagent_type: "general-purpose",
+  isolation: "worktree",
+  model: "<agent's model from team.yaml>",
+  prompt: "<composed prompt from 1a>"
+})
+```
+
+**For edge-case challenges (no `base_commit`):** Dispatch without worktree isolation (existing behavior).
+
 ```
 Task({
   subagent_type: "general-purpose",
@@ -145,6 +168,8 @@ Store the agent's full response for evaluation in Phase 2. Extract:
 - Their identified risk areas and uncertainties
 - Their reasoning about approach selection
 
+**For commit-replay challenges with worktree isolation:** Also capture the agent's git diff from the worktree. The Task tool output from a worktree-isolated agent includes the diff of changes made in the worktree. Record this diff as the **Agent Diff** — it shows exactly what the agent changed and becomes primary evaluation material in Phase 2a for precise comparison against the ground truth.
+
 ---
 
 ## Phase 2: Evaluate Each Challenge
@@ -162,7 +187,8 @@ Check the agent's output against the acceptance criteria:
 **FAIL**: The solution does not meet the primary acceptance criteria. Fundamental misunderstanding or incorrect approach.
 
 **Objective checks (prefer these over subjective assessment):**
-- For commit-replay challenges: Compare the agent's changes against the ground truth diff. Do they address the same root cause? Do they touch the same files? Is the fix semantically equivalent even if not identical?
+- For commit-replay challenges with an Agent Diff (captured in Phase 1c): Compare the agent's actual diff against the ground truth diff. Do they touch the same files? Do they address the same root cause? Is the fix semantically equivalent even if not line-identical? The Agent Diff provides precise, objective evidence — prefer it over assessing the agent's prose description of their changes.
+- For commit-replay challenges without an Agent Diff: Fall back to comparing the agent's described approach against the ground truth diff direction.
 - For edge-case challenges: Does the agent's solution handle the specific edge case described in the hidden trap?
 - If the challenge involves code: Does the approach match the ground truth direction?
 
@@ -241,9 +267,15 @@ Pipeline: <upstream pipeline> -> /challenge-run (N evaluated)
 
 <Brief summary of what the agent did>
 
+### Agent Diff *(commit-replay only)*
+
+```diff
+<git diff captured from the agent's worktree — omit this section for edge-case challenges>
+```
+
 ### Evaluation Notes
 
-<Why this result/trap/calibration rating was assigned. Cite specific evidence from the agent's output.>
+<Why this result/trap/calibration rating was assigned. Cite specific evidence from the agent's output. For commit-replay challenges, reference specific lines from the Agent Diff compared against the ground truth.>
 
 ### Growth Signal
 
@@ -315,5 +347,6 @@ Overall: [X/N passed], [trap detection rate], [calibration assessment]
 8. **Commit-replay fidelity.** For commit-replay challenges, compare the agent's approach direction against the ground truth diff. Semantic equivalence counts -- the agent does not need to produce an identical diff, just address the same root cause with a sound approach.
 9. **Self-contained agent prompts.** The dispatched agent cannot read the skill file or access parent context. Everything the agent needs (identity, learnings, scenario, criteria, reflection protocol) must be in the prompt.
 10. **Results persist for longitudinal tracking.** Evaluation files accumulate in the challenges directory so /active-learn can track improvement over multiple cycles.
+11. **Worktree isolation for commit-replay fidelity.** Worktrees give each agent an isolated copy of the repository, so commit-replay challenges get authentic pre-fix state without affecting the main working tree. The agent checks out `base_commit` inside the worktree and works against the actual codebase at the time of the bug. Edge-case challenges do not need worktrees since they operate on the current codebase state.
 
 See also: /challenge-gen (upstream producer), /diagnose-agent (struggle profiling), /active-learn (downstream consumer).
