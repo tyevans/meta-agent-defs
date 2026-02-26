@@ -91,8 +91,8 @@ Running /gather — your goal is a research question that needs information coll
 
 Then call the Skill tool with the matched skill name and pass the user's original goal as args.
 
-### Pipeline
-For multi-step pipelines, announce the full pipeline, then execute each step sequentially. After each step completes, the output stays in context for the next step to consume (pipe format).
+### Pipeline (sequential, default)
+For multi-step pipelines where each step depends on the previous output, announce the full pipeline and execute sequentially. After each step completes, the output stays in context for the next step to consume (pipe format).
 
 ```
 Pipeline: /gather -> /distill -> /rank
@@ -101,8 +101,68 @@ Starting with /gather to collect findings.
 
 Execute each step via the Skill tool. Between steps, do not add commentary — let the pipe format flow. Only intervene if a step produces no items (abort the pipeline and explain why).
 
+Write a checkpoint to `memory/scratch/do-checkpoint.md` after each completed step so the pipeline can be resumed if interrupted:
+
+```
+# /do pipeline checkpoint
+Goal: <original goal>
+Pipeline: /gather -> /distill -> /rank
+Completed: /gather
+Remaining: /distill -> /rank
+Last output: <one-line summary of last step's output>
+```
+
+Delete the checkpoint file when the pipeline completes successfully.
+
+### Pipeline (parallel branches)
+When the matched pipeline includes independent branches — steps that operate on unrelated topics or sources and don't need each other's output — dispatch them as background Task agents simultaneously instead of sequentially.
+
+**Independence check:** Branches are independent when:
+- They target different subjects (e.g., two `/gather` calls on unrelated topics)
+- Neither branch's output is required as input to the other
+- They produce outputs that are later merged or ranked together
+
+**Parallel dispatch:**
+
+```
+Parallel branches detected: /gather [topic A] + /gather [topic B]
+Dispatching both simultaneously, then merging outputs.
+```
+
+Dispatch each branch via Task with `run_in_background=true`:
+
+```
+Task({
+  subagent_type: "general-purpose",
+  run_in_background: true,
+  prompt: "Run /[skill] with this goal: [branch-specific goal]. Return your full pipe-format output."
+})
+```
+
+Wait for all parallel branches to complete, then merge their outputs in context before continuing to the next sequential step (e.g., `/rank` or `/distill` across combined results).
+
+**Limit:** Dispatch at most 4 parallel branches. If more exist, serialize the excess.
+
 ### Fork-context skills
 If the matched skill has `context: fork`, it runs in an isolated context automatically. No special handling needed — just invoke it.
+
+---
+
+## Iterative Mode (Resume)
+
+If interrupted mid-pipeline, /do can be resumed from where it left off.
+
+**How to resume:**
+> /do resume: <follow-up or "continue">
+
+**On resume, the skill should:**
+1. Detect the `resume:` prefix in `$ARGUMENTS`
+2. Read `memory/scratch/do-checkpoint.md` if it exists
+3. Report which steps have already completed and what remains
+4. Skip completed steps and continue from the first incomplete step
+5. Treat checkpoint items as confirmed prior output — do not re-run them
+
+If no checkpoint file exists, inform the user and restart from Phase 0.
 
 ---
 
@@ -111,6 +171,8 @@ If the matched skill has `context: fork`, it runs in an isolated context automat
 - **Trust the catalog.** Match against docs/INDEX.md, not your training knowledge of what skills exist. If INDEX.md doesn't list it, it's not available.
 - **Prefer action over explanation.** The whole point of /do is to execute, not recommend. Only present options when genuinely ambiguous.
 - **Pass the original goal.** When invoking the Skill tool, pass the user's original `$ARGUMENTS` as the args, not a rewritten version.
-- **Pipelines are sequential.** Execute one skill at a time. Each step's pipe-format output feeds the next via conversation context.
+- **Sequential by default.** Execute pipelines one skill at a time unless branches are clearly independent. Each step's pipe-format output feeds the next via conversation context.
+- **Parallel only when independent.** Do not parallelize steps that consume each other's output. If in doubt, serialize.
+- **Checkpoint multi-step pipelines.** Write `memory/scratch/do-checkpoint.md` after each completed step in a pipeline with 3 or more steps.
 - **Abort on empty.** If a pipeline step produces 0 items, stop the pipeline and tell the user why rather than feeding nothing to the next step.
 - **Don't over-match.** If the goal doesn't map to any skill (e.g., "make me a sandwich"), say so plainly rather than forcing a bad match.
