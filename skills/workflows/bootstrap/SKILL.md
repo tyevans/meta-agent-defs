@@ -163,5 +163,6 @@ Present the final bootstrap summary to the user:
 2. **Pass context forward.** Include the bootstrapper's findings in the agent generator's prompt so it doesn't re-discover what's already known.
 3. **Surface failures early.** If the bootstrapper fails, ask the user before proceeding rather than running the agent generator on a broken setup.
 4. **Respect existing setup.** Both agents check for existing `.claude/` configuration and avoid overwriting intentional customizations.
+5. **No worktree isolation here.** Worktree isolation creates an isolated copy of the repo where the skill is invoked, not the target project. Both dispatched agents write to `$PROJECT_PATH` -- an external directory -- so worktree isolation would protect the wrong repo and provide no safety benefit. Cross-project bootstrap writes cannot be sandboxed by worktrees.
 
 See also: /assemble (create a persistent learning team after bootstrapping). /blossom (explore the newly set-up project to discover work and generate initial backlog). /sprint (execute the initial backlog items created during bootstrap).
