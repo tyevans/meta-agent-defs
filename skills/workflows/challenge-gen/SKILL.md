@@ -19,6 +19,12 @@ You are running **challenge-gen** — generating targeted challenges to exercise
 - Before /active-learn to create a curated challenge set for a training cycle
 - When onboarding an agent to a new domain and want calibrated difficulty ramps
 
+## Don't Use When
+
+- No /diagnose-agent profile exists for the target agent — challenges generated without a struggle profile are poorly calibrated (run /diagnose-agent first)
+- Agent has no learnings history and no owned files with git activity — both strategies need a signal source; a brand-new agent has none
+- You want to run challenges rather than generate them — use /challenge-run to execute an existing challenge set
+
 ## How It Works
 
 **Serial (default):**

@@ -21,6 +21,12 @@ You are generating **actionable recommendations** for what to do next, based on 
 - When onboarding to a new project ("what should I focus on?")
 - When the user asks "what now?" or "what should I do next?"
 
+## Don't Use When
+
+- You already know what to work on — go work on it; /advise adds no value when the path is clear
+- Mid-task, not between tasks — this is an orientation tool, not a mid-flow interrupt
+- No git history and no backlog exist — Layer 1 requires at least one commit for meaningful advice (a brand-new empty repo produces noise, not signal)
+
 ## How It Works
 
 ```
@@ -102,6 +108,8 @@ In active-agents mode: extract:
 
 **If TaskList returns no results**, skip this layer and do not include it in the layers indicator.
 
+**Gate**: At least 2 layers contributed usable signals (non-empty, non-error results). If only Layer 1 (git) returned data, note this in the Missing Layers section — git-only advice is minimal and will be shallow without additional layers. Do not pad recommendations to appear more comprehensive than the data supports.
+
 ---
 
 ## Phase 2: Generate Recommendations
@@ -139,6 +147,8 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 **Example:**
 - ❌ Before: "Consider addressing the high fix rate"
 - ✅ After: "Run /review on commits c752c8d..888d9f2 — fix rate is 45% (9/20 commits in last 30d), concentrated in src/integration.rs"
+
+**Gate**: Every recommendation passes the sharpening tests above — it names a specific artifact (commit hash, bead ID, file path, or agent name) and states a concrete next action. Drop any recommendation that fails both tests rather than including a vague item.
 
 ---
 

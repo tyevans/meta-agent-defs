@@ -12,6 +12,12 @@ context: fork
 
 You are running the **Blossom** workflow -- a recursive spike-driven exploration pattern that converts an unknown or loosely-defined goal into a comprehensive, prioritized backlog. The user wants to explore: **$ARGUMENTS**
 
+## Don't Use When
+
+- Goal is already well-defined with specific, actionable tasks — use /decompose instead to break down known work
+- You need depth on a single well-scoped topic — use /fractal for focused recursive exploration rather than broad discovery
+- Scope is a single file or function — blossom's spike-dispatch overhead is wasted on micro-scope work
+
 ## Overview
 
 Blossom works in 6 phases. Spike dispatch uses agent teams for large explorations (6+ spikes) or background Task agents for small ones (5 or fewer).

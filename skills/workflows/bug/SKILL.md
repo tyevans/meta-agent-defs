@@ -19,6 +19,12 @@ You are running the **bug** skill — filing a structured bug report in the bead
 - When the user says "file a bug", "this is broken", or "track this issue"
 - To bridge findings from any pipe-format output into actionable beads issues
 
+## Don't Use When
+
+- The issue is a feature request or enhancement, not a defect — use `bd create --type=task` directly
+- The problem is not yet reproducible — investigate and confirm the bug exists before creating a bead for it
+- A bead for this issue was already created upstream (e.g., by /review or another skill) — check `bd list --status=open` to avoid duplicates before filing
+
 ## Overview
 
 ```

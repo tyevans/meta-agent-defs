@@ -20,6 +20,12 @@ You are running the **Consensus** workflow -- a multi-perspective synthesis patt
 - Before committing to a significant refactoring or new feature approach
 - When a design discussion has stalled because all options seem equally good (or bad)
 
+## Don't Use When
+
+- The decision is straightforward with one clearly correct approach — three-agent dispatch is expensive overhead for a non-decision
+- You are comparing exactly two known approaches with well-understood trade-offs — use /diff-ideas for head-to-head comparisons
+- You need data before you can evaluate options — use /gather first to collect the information needed to frame the problem
+
 ## Overview
 
 Consensus works in 5 phases (with an optional debate round):
@@ -143,6 +149,8 @@ Use the Task tool to spawn three background agents with `subagent_type: "general
 
 Allow all three agents to complete. Do not proceed until all three have returned their proposals.
 
+**Gate**: All three proposals are present — one per lens. If an agent returned an error or empty result, re-dispatch that agent before continuing. Do not synthesize with fewer than three proposals.
+
 ---
 
 ## Phase 2.5: Debate Round (OPTIONAL)
@@ -218,6 +226,8 @@ List each agreement with its implication:
 - **All three avoid [Y]**: Strong signal that [Y] is the wrong approach.
 - **All three touch [file path]**: This file is central to the solution.
 ```
+
+**Gate**: Each listed agreement is independently proposed by all three agents — not derived from one proposal that the others passively did not contradict. If an apparent agreement is actually one proposal that the others didn't address, reclassify it as a majority position or an uncontested assumption, not a confirmed agreement.
 
 ### 3c. Identify Tensions
 

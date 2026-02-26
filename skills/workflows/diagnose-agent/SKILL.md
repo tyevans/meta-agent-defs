@@ -30,6 +30,12 @@ If `$ARGUMENTS` does not contain `resume:`, proceed to the standard Phase 0 belo
 - When onboarding a new task type to an agent and want to calibrate difficulty
 - As input to /challenge-gen, /rank, or /assess via pipe format
 
+## Don't Use When
+
+- Agent has fewer than 5 learnings entries — insufficient history for meaningful signal; run the agent on real tasks first to build evidence
+- Agent was just created and has no git activity on owned files — both Phase 2 (learnings evolution) and Phase 3 (commit signals) need history to analyze
+- You want to improve the agent, not just profile it — use /active-learn, which includes diagnosis as part of a full training cycle
+
 ## How It Works
 
 ```

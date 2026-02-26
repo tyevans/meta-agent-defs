@@ -19,6 +19,12 @@ You are running the **Deploy** workflow -- a structured deployment process with 
 - You want post-deployment health checks before declaring success
 - You need a clear rollback plan if things go wrong
 
+## Don't Use When
+
+- No deployment infrastructure exists — this skill detects and drives existing tooling; it cannot provision infrastructure from scratch
+- Changes haven't been tested — Phase 0 will catch this, but don't invoke /deploy as a shortcut around a broken test suite
+- You need a deployment strategy designed from scratch — use /spec or /consensus to design the strategy first, then come back to /deploy for execution
+
 ## Overview
 
 Deploy works in 5 phases. The readiness gate (Phase 0) must pass before any deployment begins.

@@ -19,6 +19,12 @@ You are running **challenge-run** -- dispatching an agent on targeted challenges
 - Before /active-learn to produce evaluation data for the learning loop
 - When you want objective evidence of agent capability rather than speculation
 
+## Don't Use When
+
+- No challenge files exist for the target agent — run /challenge-gen first to produce them
+- Agent is not defined in `.claude/team.yaml` — the skill requires the agent's role, model, and ownership patterns from the team manifest
+- You want to generate challenges rather than execute them — use /challenge-gen to create a challenge set first
+
 ## How It Works
 
 ```

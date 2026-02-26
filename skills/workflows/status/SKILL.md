@@ -21,6 +21,12 @@ You are generating a **system status snapshot** — a single-command overview of
 - When you want a full picture without dispatching agents or running multiple commands
 - Before deciding what to work on next
 
+## Don't Use When
+
+- You need deep diagnosis of why a session feels wrong — use /session-health instead
+- You already know what to work on and just need to start — /status adds no value if the path is already clear
+- You only need backlog info — run `bd ready` or `bd stats` directly rather than the full status view
+
 ## How It Works
 
 ```
