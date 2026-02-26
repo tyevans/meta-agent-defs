@@ -157,6 +157,17 @@ If the exchange counter has reached the depth limit, skip relay regardless and p
 - If a panelist gives a vague response, push back: "Be more specific. What exactly would you change/build/avoid?"
 - If the discussion goes circular, summarize what's settled and redirect to what's unresolved
 
+### Context Management
+
+After 2 or more checkpoint cycles, earlier discussion rounds accumulate in the facilitator's context. Apply **partial summarization** to compress completed threads while keeping the active thread intact:
+
+1. **Identify completed threads.** A thread is complete when the user chose to Continue (reset counter) or Pivot — meaning the prior thread reached a checkpoint and the user moved on.
+2. **Compress each completed thread** into 3-5 bullet points capturing: the core question, panelists' key positions, where they agreed, and what tension remained. Retain only what is needed to avoid revisiting the same ground.
+3. **Preserve the active thread in full.** The current round's exchanges — the question posed, each panelist's response, and any in-flight follow-ups — must not be compressed.
+4. **Update your working context** by replacing the full text of completed thread exchanges with the compressed summary. This is a mental operation — you are not writing to a file, just discarding detail that no longer drives the conversation.
+
+**When to apply:** After checkpoint 2 (i.e., when the third checkpoint is reached), compress threads 1 and all prior completed threads. After each subsequent checkpoint, compress the newly completed thread. The active thread always stays uncompressed.
+
 ---
 
 ## Phase 3: Synthesize and Close

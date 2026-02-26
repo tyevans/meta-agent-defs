@@ -101,7 +101,7 @@ Based on the above, recommend ONE of:
 | Action | When | How |
 |--------|------|-----|
 | **Continue** | Light-moderate load, on-topic, quality fine | Keep working |
-| **Partial summarize** | Heavy load but good progress, quality still sharp | Ask the user to summarize the completed work into a brief paragraph in the conversation, then continue — this compresses history without losing goals |
+| **Partial summarize** | Heavy load but good progress, quality still sharp | Selectively compress completed work threads while preserving in-progress work at full context. For each completed thread (a task or subtask where the output is final): write a 3-5 bullet summary capturing goal, approach, outcome, and key decisions, then release the detailed exchange from working context. Leave all in-progress threads uncompressed. This is a model-side operation — do not ask the user to summarize. |
 | **Checkpoint & Continue** | Moderate load, mid-batch work, or want a save point | Commit current work, write intermediate results to `memory/scratch/<slug>.md` if mid-batch, `bd sync`, then continue |
 | **Fresh session** | Overloaded, scope has drifted, or 2+ quality signals degrading | Run /handoff to capture context, commit all work, `bd sync`, push, then start a new session |
 | **Break into subagents** | Remaining work is parallelizable | Dispatch independent tasks to subagents to avoid further context fill |
