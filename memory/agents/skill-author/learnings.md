@@ -22,4 +22,11 @@
 
 - When adding a resume mechanism to a guardian-style dispatch, annotate the max-iteration cap inline at the same location as the resume call — placing it separately creates a split reviewers have to reconcile mentally (added: 2026-02-25, dispatch: tack-1rj0.4)
 
+- When adding a parallel mode to a serial primitive, introduce a source-breadth assessment as the new Phase 1 — makes the mode-selection decision transparent before any tool calls (added: 2026-02-25, dispatch: tack-2rli.1)
+- When a parallel mode wraps a Skill invocation, the Task prompt must embed all context the Skill would gather itself — subagents cannot invoke skills, so pass context from prior phases inline (added: 2026-02-25, dispatch: tack-2rli.5)
+- When inserting an enrichment phase before existing Phase 1, number it Phase 0 rather than renumbering downstream — keeps the change purely additive and avoids collateral cross-reference edits (added: 2026-02-25, dispatch: tack-2rli.8)
+- When adding a new layer to a multi-layer skill, update all four touch points: prose description, How It Works diagram, output format layer indicators, and missing-layers nudge section (added: 2026-02-25, dispatch: tack-2rli.6)
+- For skills where all phases commit to the branch, use "abort = discard worktree" framing consistently in worktree isolation mode — emphasizes the clean-abort benefit (added: 2026-02-25, dispatch: tack-2rli.4)
+- When a gap ticket references "Phase N (widening pass)", read the actual skill before accepting — the phase may serve a different purpose than stated, changing the design decision (added: 2026-02-25, dispatch: tack-2rli.13)
+
 ## Task-Relevant
