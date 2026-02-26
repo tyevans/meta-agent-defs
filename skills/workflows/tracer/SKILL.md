@@ -347,6 +347,40 @@ bd create --title="[follow-up task]" --type=task --priority=[0-4] \
 
 ---
 
+## Dispatch Mode
+
+**Standard mode (default)**: Run all phases directly in the current branch. Commits land on the working branch as the tracer progresses.
+
+**Worktree isolation mode**: Dispatch the entire tracer workflow to a Task agent running in an isolated git worktree. All commits happen on a temporary branch. The user reviews the result and decides to merge or discard — clean abort at any phase means discarding the worktree with no revert needed.
+
+### Standard Mode (default)
+
+Run `/tracer <feature>` with no special syntax. All phases execute in the current context and commit to the current branch.
+
+### Worktree Isolation Mode
+
+Use when you want to keep the main branch clean until the full tracer is reviewed, or when integration risk is high enough that a clean discard path is valuable.
+
+**Dispatch:**
+
+```
+Task({
+  subagent_type: "general-purpose",
+  isolation: "worktree",
+  prompt: "Run the full Tracer workflow for: <feature>. Complete all phases (Map, Tracer, Error Handling, Edge Cases, Tests, Report) and commit each phase to this isolated worktree branch. Do not modify the main branch."
+})
+```
+
+**After the isolated agent completes:**
+
+1. Review the branch name returned in the Task result.
+2. Inspect the commits: `git log --oneline <branch>`
+3. Choose:
+   - **Merge**: `git merge <branch>` or open a PR to bring the tracer into the main branch.
+   - **Discard**: Delete the worktree branch. No revert needed — the main branch was never touched.
+
+---
+
 ## Guidelines
 
 1. **Each phase produces a working increment.** Never proceed to the next phase if the current one is broken.
