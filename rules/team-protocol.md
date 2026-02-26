@@ -28,6 +28,7 @@ members:
     role: "Server logic, data models, business rules"
     tools: [Read, Write, Edit, Grep, Glob, "Bash(git:*)", "Bash(uv run pytest:*)"]
     owns: ["src/domain/**", "src/infra/**", "tests/**"]
+    isolation: worktree
 ```
 
 ### Required Fields
@@ -41,6 +42,19 @@ members:
 | `role` | member | One-line responsibility description |
 | `tools` | member | Tool list for `--allowedTools` |
 | `owns` | member | Glob patterns for files this member is responsible for |
+
+### Optional Fields
+
+| Field | Scope | Values | Default | Description |
+|-------|-------|--------|---------|-------------|
+| `isolation` | member | `worktree`, `none` | `none` | Dispatch isolation mode. `worktree` means the member can be dispatched in a dedicated git worktree; `none` means the member must run in the main working context. |
+
+**When to set `isolation: worktree`:**
+- The member's `owns` patterns don't overlap with any other member's patterns
+- The member's tasks don't require reading or writing shared state files (e.g., `memory/team/decisions.md`, `.beads/`)
+- The member's work is self-contained within its owned paths for the duration of the sprint
+
+**Consumed by /sprint**: The sprint skill reads `isolation` at dispatch time and passes worktree-isolated members to the worktree dispatch path. Members with `isolation: none` (or no `isolation` field) are dispatched in the main context.
 
 ## Learnings Files
 
