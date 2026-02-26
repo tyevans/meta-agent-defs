@@ -34,7 +34,7 @@ Read all skill descriptions
 Use Glob to find all skill definition files:
 
 ```
-skills/*/SKILL.md
+skills/**/SKILL.md
 ```
 
 For each file found, Read it and extract:
@@ -131,6 +131,6 @@ If your goal maps to a canonical workflow:
 
 - **Prefer specificity over completeness.** Two well-matched recommendations beat five loosely-matched ones.
 - **Name the tradeoff.** If two skills both fit, say which is better for breadth vs. depth, or exploration vs. execution.
-- **Do not hardcode the skill list.** Always read from `skills/*/SKILL.md` at runtime so the recommendation reflects the actual installed skill set.
+- **Do not hardcode the skill list.** Always read from `skills/**/SKILL.md` at runtime so the recommendation reflects the actual installed skill set.
 - **Pipeline is optional.** Only include the Suggested Pipeline section if the goal clearly maps to a multi-step workflow. Single-skill goals do not need a pipeline.
 - **Argument handling**: If `$ARGUMENTS` is empty, ask the user to describe their goal in one sentence before proceeding.
