@@ -229,7 +229,7 @@ Each spike agent (whether background Task or team teammate) receives these instr
 
    **If any check fails:**
    - **Team mode:** Send ONE pushback message naming which checks failed and demanding a corrected report (Items section with confidence tags and file:line citations from actual code reading). One retry only -- if still inadequate, log failure and move on.
-   - **Background mode:** Cannot re-prompt. If `.beads/` exists, flag via `bd update <spike-id> --notes="QUALITY ISSUE: [which checks failed]"`. If `.beads/` does not exist, note the quality failure in `TODO.md` next to the spike item. Do not create firm tasks from low-quality reports.
+   - **Background mode:** Resume the agent with `Task({resume: "<agent-id>", prompt: "Your report failed quality checks: [which checks failed]. Please re-investigate and resubmit with pipe-format structure, confidence tags (CONFIRMED/LIKELY/POSSIBLE), and file:line citations from actual code reading."})`. **One retry only — if the second attempt still fails quality, accept the result with a quality note.** If `.beads/` exists, flag via `bd update <spike-id> --notes="QUALITY ISSUE: [which checks failed]"`. If `.beads/` does not exist, note the quality failure in `TODO.md` next to the spike item. Do not create firm tasks from low-quality reports.
 
 2. **Create firm task beads** as children of the epic:
 
