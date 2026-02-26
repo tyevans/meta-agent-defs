@@ -143,7 +143,12 @@ git show --format="" <commit-hash>
 
 # Get the file state BEFORE the commit (this is the starting point)
 git show <commit-hash>^:<file-path>
+
+# Get the parent commit hash (this is the base_commit for worktree isolation)
+git rev-parse <commit-hash>^
 ```
+
+Record the parent hash as the `base_commit` — the state of the repo before the fix was applied. This is the commit that `/challenge-run` will use to create a worktree at the pre-fix state.
 
 ### 2c. Select Best Replay Candidates
 
@@ -202,6 +207,7 @@ Difficulty level: <novice | intermediate | expert | adversarial>
 ## Challenge 1: <title>
 
 **Strategy**: edge-case | commit-replay
+**Base commit**: <parent-hash> *(commit-replay only)*
 **Targeted weakness**: <WEAKNESS or GAP name from profile>
 **Difficulty**: <level>
 
@@ -246,6 +252,7 @@ Output the challenge set in pipe format for downstream consumption:
    - acceptance_criteria: <how to evaluate>
    - hidden_trap: <what makes it hard>
    - strategy: edge-case | commit-replay
+   - base_commit: <hash> *(commit-replay only)*
 
 2. ...
 
@@ -269,9 +276,9 @@ Strategy mix: <N edge-case, M commit-replay>
 3. **One weakness per challenge.** Each challenge targets exactly one WEAKNESS or GAP. Compound challenges dilute the training signal.
 4. **Hidden traps are essential.** A challenge without a non-obvious trap is just a task. The trap is what forces the agent to develop new patterns rather than applying existing ones.
 5. **Graceful degradation.** No upstream profile? Do basic profiling. No web search results? Use codebase-only edge cases. Always produce something useful.
-6. **Commit-replay integrity.** When extracting commit material, never modify the ground truth diff. The whole point is that the actual change is the answer.
+6. **Commit-replay integrity.** When extracting commit material, never modify the ground truth diff. The whole point is that the actual change is the answer. The `base_commit` must be a real commit hash from git history (output of `git rev-parse <commit>^`), never fabricated or modified — `/challenge-run` depends on it for worktree isolation.
 7. **Do not show hidden traps to the agent.** The challenge file separates what the agent sees (scenario + acceptance criteria) from what the evaluator knows (hidden trap + ground truth). This separation is critical.
 8. **Cap at 5 challenges.** More than 5 creates evaluation overhead without proportional learning benefit. If many weaknesses exist, prioritize by severity.
 9. **Write provenance.** Record which profile items each challenge targets so /active-learn can track which weaknesses have been exercised and which remain untouched.
 
-See also: /challenge-run (execute the challenges produced here against the agent); /diagnose-agent (generate the struggle profile that feeds this skill); /active-learn (run a full training cycle using challenge sets).
+See also: /challenge-run (execute the challenges produced here against the agent — uses `base_commit` for worktree isolation in commit-replay challenges); /diagnose-agent (generate the struggle profile that feeds this skill); /active-learn (run a full training cycle using challenge sets).
