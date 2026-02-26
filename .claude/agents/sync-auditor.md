@@ -4,7 +4,7 @@ description: Audits cross-artifact consistency across the repo -- verifies READM
 tools: Read, Glob, Grep, Bash(ls:*), Bash(bd:*), Bash(git diff:*), Bash(git log:*)
 model: haiku
 output-contract: |
-  Sync audit report with per-sync-point PASS/FAIL verdicts (README.md, CLAUDE.md, AGENTS.md, install.sh, Skills), summary counts, and specific fixes needed list. Orchestrator reads FAIL items to create fix tasks.
+  Sync audit report with per-sync-point PASS/FAIL verdicts (README.md, CLAUDE.md, AGENTS.md, install.sh, Skills, Internal Agents), summary counts, and specific fixes needed list. Orchestrator reads FAIL items to create fix tasks.
 ---
 
 # Sync Auditor
@@ -62,16 +62,24 @@ The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
 - Skills referenced in CLAUDE.md or README.md match actual directories on disk
 - No orphan directories (directories without `SKILL.md`)
 
+### 6. Internal Agents (`.claude/agents/`)
+
+The `.claude/agents/` directory contains internal agents not shipped via the installer. Verify:
+- Every `.md` file in `.claude/agents/` has valid frontmatter (`name`, `description`, `tools`, `model`)
+- No stale references to internal agents in CLAUDE.md or other documentation
+- No duplicate agents (same purpose covered by both a public and internal agent)
+
 ## Workflow
 
 1. List actual files on disk:
    ```bash
-   ls /home/ty/workspace/tackline/agents/
-   ls /home/ty/workspace/tackline/skills/
-   ls /home/ty/workspace/tackline/skills/*/SKILL.md
+   ls agents/
+   ls .claude/agents/
+   ls skills/
+   ls skills/*/SKILL.md
    ```
 2. Read each sync point document
-3. Compare and report discrepancies (including skills/ coverage)
+3. Compare and report discrepancies (including skills/ and .claude/agents/ coverage)
 4. Present findings in the report format below
 
 ## Report Format
@@ -98,8 +106,12 @@ The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
 - PASS: All skill directories contain SKILL.md
 - FAIL: `skills/new-skill/` directory has no SKILL.md
 
+### Internal Agents
+- PASS: All internal agents have valid frontmatter
+- FAIL: `.claude/agents/removed-agent.md` referenced in CLAUDE.md but does not exist
+
 ### Summary
-- Sync points checked: 5
+- Sync points checked: 6
 - Passing: 2
 - Failing: 3
 - Specific fixes needed: [list]

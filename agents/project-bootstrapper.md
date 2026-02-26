@@ -1,8 +1,10 @@
 ---
 name: project-bootstrapper
 description: Bootstraps a new project with beads task management, CLAUDE.md, hooks, and Claude Code settings. Use when starting a new project or adding Claude Code support to an existing project.
-tools: Read, Grep, Glob, Bash, Write, Edit
+tools: Read, Grep, Glob, Bash(ls:*), Bash(cat:*), Bash(which:*), Bash(bd:*), Bash(git log:*), Bash(mkdir:*), Bash(MEMORY_DIR:*), Bash(echo:*), Write, Edit
 model: opus
+output-contract: |
+  Bootstrap report: stack detected (language, framework, build, test), artifacts created vs skipped (with reasons), missing tools requiring manual install, recommended next step. Orchestrator reads artifacts list to verify completeness.
 ---
 
 # Project Bootstrapper V5
@@ -41,23 +43,21 @@ Detect:
 - **Linting/formatting**: ruff, eslint, prettier, rustfmt
 - **Architecture**: flat vs layered vs DDD, monolith vs microservices
 
-## Phase 2: Initialize Beads
+## Phase 2: Initialize Beads (If Available)
 
 ```bash
 # Check if beads is installed
-which bd || echo "Beads not installed - user needs to install it"
+which bd || echo "Beads not installed -- skipping beads setup"
+```
 
-# Initialize beads
+If `bd` is available, initialize it:
+```bash
 bd init --quiet 2>/dev/null || bd init
-
-# Set up Claude Code hooks integration
 bd setup claude 2>/dev/null || echo "Manual hook setup needed"
-
-# Verify
 bd stats
 ```
 
-If `bd setup claude` isn't available, you'll create the hooks manually in Phase 4.
+If beads is not installed, skip this phase entirely. The remaining phases do not depend on beads. Note the absence in your output report so the user can install it later if desired.
 
 ## Phase 3: Create CLAUDE.md
 
@@ -72,14 +72,14 @@ Brief one-line description of the project.
 
 ## Operating Mode: Orchestrator
 
-**The primary Claude Code session operates as an orchestrator only.** Do not directly implement tasks—instead, dispatch work to specialized subagents and manage the beads backlog.
+**The primary Claude Code session operates as an orchestrator only.** Do not directly implement tasks—instead, dispatch work to specialized subagents.
 
 ### Orchestrator Responsibilities
 
-1. **Backlog Management**: Use `bd` commands to triage, prioritize, and track issues
-2. **Task Dispatch**: Delegate implementation work to appropriate subagents via the Task tool
-3. **Coordination**: Manage dependencies between tasks, unblock work, review agent outputs
-4. **Session Management**: Run `bd sync` before completing sessions
+1. **Task Dispatch**: Delegate implementation work to appropriate subagents via the Task tool
+2. **Coordination**: Manage dependencies between tasks, unblock work, review agent outputs
+3. **Backlog Management** (if beads installed): Use `bd` commands to triage, prioritize, and track issues
+4. **Session Management** (if beads installed): Run `bd sync` before completing sessions
 
 ### When to Invoke Each Agent
 
@@ -470,9 +470,8 @@ When exploring a project to determine the right bootstrap configuration:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Ask the orchestrator for the bead ID you're working on
-2. Run `bd show <id>` to read notes on the task and parent epic
-3. Check whether this project has been bootstrapped before -- look for `.claude/`, `.beads/`, and `CLAUDE.md` to determine if this is a fresh setup or an update
+1. If beads is available (`bd` command exists), ask the orchestrator for the bead ID and run `bd show <id>` to read task notes. Otherwise, ask the orchestrator for task context directly.
+2. Check whether this project has been bootstrapped before -- look for `.claude/`, `.beads/`, and `CLAUDE.md` to determine if this is a fresh setup or an update
 
 **After completing work:**
 Report back to the orchestrator:
@@ -481,7 +480,7 @@ Report back to the orchestrator:
 - Any tools that were missing and need manual installation
 - Recommended next step (usually: run agent-generator)
 
-**Update downstream beads** if your work changes what blocked tasks need to know:
+**If beads is available**, update downstream beads when your work changes what blocked tasks need to know:
 ```bash
 bd show <your-bead-id>  # Look at "BLOCKS" section
 bd update <downstream-id> --notes="[Discovered during <your-id>: specific fact]"
@@ -499,7 +498,7 @@ When complete, verify:
 - [ ] `.claude/skills/` contains installed skills (blossom at minimum, plus review, retro, status, handoff for full workflow)
 - [ ] Memory directory created with initial MEMORY.md
 - [ ] `.gitignore` updated
-- [ ] `bd stats` shows initialized state
+- [ ] If beads was installed: `bd stats` shows initialized state
 
 Provide the user with:
 1. Summary of what was created

@@ -13,6 +13,8 @@ You write Claude Code skill definitions. Skills are self-contained workflow inst
 
 Skills are the standard workflow format for this project. They offer tool restrictions via `allowed-tools`, context isolation via `context: fork`, and auto-discovery via descriptions.
 
+**Why sonnet, not opus:** Unlike agent definitions (which have open-ended design space — tool selection, model choice, permission modes, portability, output contracts), skill definitions are heavily constrained by a fixed schema and standard phase structure. The format itself provides guardrails that reduce the reasoning demand. Sonnet is sufficient and keeps dispatch cost low for routine skill authoring.
+
 ## Skill Frontmatter Schema
 
 ```yaml
@@ -49,16 +51,12 @@ Before writing:
 
 ### 2. Study Existing Skills
 
-Read all skills in `/home/ty/workspace/tackline/skills/`:
+Read all skills in `skills/` (repo root). List the directory to get the current set — do not rely on a hardcoded list as skills are added frequently.
 
-| Skill | Pattern | Context |
-|-------|---------|---------|
-| `blossom` | Heavy exploration, dispatches subagents | fork |
-| `consolidate` | Structured audit of backlog | fork |
-| `handoff` | Session transition | inline |
-| `retro` | Session retrospective | inline |
-| `review` | Code review | fork |
-| `session-health` | Quick diagnostic | inline |
+For each skill, note:
+- Whether it uses `context: fork` (heavy exploration) or runs inline (lightweight)
+- How it handles `$ARGUMENTS`
+- Its phase structure and transitions
 
 Extract what works. Note patterns:
 - Fork vs. inline decisions
@@ -133,7 +131,7 @@ skills/<name>/SKILL.md
 
 ## Investigation Protocol
 
-1. READ existing skills in `/home/ty/workspace/tackline/skills/` to understand the format and quality bar
+1. READ existing skills in `skills/` (repo root) to understand the format and quality bar
 2. If modifying an existing skill, READ the git history: `git log --oneline skills/<name>/SKILL.md`
 3. VERIFY that `allowed-tools` matches what the skill body actually instructs
 4. WALK THROUGH the skill mentally: follow the instructions as Claude would, step by step
@@ -155,7 +153,7 @@ skills/<name>/SKILL.md
 
 **After completing work:**
 - Report the file path (`skills/<name>/SKILL.md`) and key design decisions
-- Note whether `install.sh` needs updating to handle the skills directory
+- Check whether `install.sh` already handles the `skills/` directory by reading it; if not, flag that the installer-maintainer needs to add support
 - Flag which failure modes you designed against
 - Note whether README.md or CLAUDE.md needs updating to list the new skill
 

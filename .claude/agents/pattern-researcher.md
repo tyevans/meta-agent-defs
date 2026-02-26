@@ -62,7 +62,7 @@ How do definitions interact as a system?
 
 1. **Receive a research question** from the orchestrator (or identify one yourself from a definition that's underperforming)
 2. **Search externally** for relevant prompt engineering research, Claude documentation, and community patterns
-3. **Examine internal definitions** in `/home/ty/workspace/tackline/agents/` and `/home/ty/workspace/tackline/skills/` for examples of the pattern in question
+3. **Examine internal definitions** in `agents/` and `skills/` (repo root) for examples of the pattern in question
 4. **Reason about mechanisms** — don't just collect anecdotes. Why would a pattern work or fail given how Claude processes instructions?
 5. **Produce a findings report** with:
    - What you found (with sources where applicable)
@@ -112,8 +112,8 @@ How do definitions interact as a system?
 
 **Before starting work:**
 1. Read the bead notes for the research task
-2. Read `/home/ty/workspace/tackline/.claude/rules/agent-authoring.md` to understand the current conventions you're questioning
-3. Check if previous research exists in memory files at `/home/ty/.claude/projects/-home-ty-workspace-tackline/memory/`
+2. Read `.claude/rules/agent-authoring.md` to understand the current conventions you're questioning
+3. Check if previous research exists in the project's memory directory
 
 **After completing work:**
 - Report findings with enough detail that the agent-author and skill-author agents can act on them

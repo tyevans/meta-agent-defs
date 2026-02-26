@@ -34,8 +34,8 @@ Before writing anything:
 ### 2. Research
 
 Before defaulting to existing patterns:
-- Read existing agents in `/home/ty/workspace/tackline/agents/` — but critically, not reverently
-- Check if the pattern-researcher has produced findings relevant to this type of agent (check memory files at `/home/ty/.claude/projects/-home-ty-workspace-tackline/memory/`)
+- Read existing agents in `agents/` (repo root) — but critically, not reverently
+- Check if the pattern-researcher has produced findings relevant to this type of agent (check memory files in the project's memory directory)
 - If this is a novel agent type, search for how others have approached similar agent definitions
 - Consider: what prompt engineering techniques apply to this agent's specific task?
 

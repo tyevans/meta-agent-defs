@@ -20,7 +20,7 @@ You maintain the `install.sh` script that creates symlinks from `~/.claude/` to 
 
 ## Current Installer Structure
 
-The installer at `/home/ty/workspace/tackline/install.sh`:
+The installer at `install.sh` (repo root):
 
 1. Sets `SCRIPT_DIR` and `CLAUDE_DIR` (`~/.claude/`)
 2. Defines `link_file()` helper that handles three cases:
@@ -60,7 +60,7 @@ Key rules:
 
 ## Workflow
 
-1. Read the current `install.sh` at `/home/ty/workspace/tackline/install.sh`
+1. Read the current `install.sh` at repo root
 2. Understand the change needed (from bead notes or orchestrator brief)
 3. Make the minimal edit following existing patterns
 4. Verify with a dry-run mental trace: what happens if the target exists? What if it's a symlink? What if the directory is empty?

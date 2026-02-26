@@ -1,8 +1,10 @@
 ---
 name: agent-generator
 description: Explores a project's codebase to understand its architecture, patterns, and workflows, then generates tailored project-level agents in .claude/agents/. Use when setting up a new project with Claude Code or when the project needs specialized agents.
-tools: Read, Grep, Glob, Bash, Write, Edit
+tools: Read, Grep, Glob, Bash(ls:*), Bash(tree:*), Bash(find:*), Bash(cat:*), Bash(bd:*), Bash(mkdir:*), Write, Edit
 model: opus
+output-contract: |
+  Summary of agents generated (name, purpose, confidence level per agent), agent catalog location, supporting hooks added, recommendations for additional agents. Orchestrator reads summary to verify coverage and dispatch definition-tester for review.
 ---
 
 # Agent Generator V5
@@ -44,26 +46,22 @@ Analyze key indicators:
 - **Build/CI**: Makefile, docker-compose, GitHub Actions, scripts/
 - **Existing patterns**: CLAUDE.md instructions, coding standards
 
-## Phase 2: Beads Integration
+## Phase 2: Task Tracking (Optional)
 
-Check if beads is initialized and use it to track your work:
+Check if beads is available for task tracking:
 
 ```bash
-# Check beads status
-bd stats 2>/dev/null || echo "Beads not initialized"
+bd stats 2>/dev/null || echo "Beads not available -- skip task tracking"
+```
 
-# Create an epic for agent generation if beads exists
+If beads exists, create an epic to track agent generation:
+
+```bash
 bd create --title="Generate project agents" --type=epic --priority=1
-# Returns: beads-xxx (the epic ID)
+# Create sub-tasks as children: --parent=<epic-id>
 ```
 
-If beads exists, create sub-tasks as children of the epic using `--parent`:
-
-```bash
-bd create --title="Generate [agent-name] agent" --type=task --priority=2 --parent=<epic-id>
-```
-
-This establishes the epic-child hierarchy, enabling `bd children <epic-id>` and `bd epic status`.
+If beads is not available, proceed without task tracking. The agent generation workflow does not depend on it.
 
 ## Phase 3: Agent Generation Strategy
 
@@ -145,9 +143,8 @@ When investigating code:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Ask orchestrator for the bead ID you're working on
-2. Run `bd show <id>` to read notes on the task and parent epic
-3. Check for gotchas, patterns, or decisions from prior agents
+1. Ask the orchestrator for task context. If beads is available (`bd` command exists), run `bd show <id>` to read task notes.
+2. Check for gotchas, patterns, or decisions from prior agents
 
 **After completing work:**
 Report back to orchestrator any non-speculative facts that would have helped you:
@@ -155,12 +152,6 @@ Report back to orchestrator any non-speculative facts that would have helped you
 - Patterns that emerged and should be followed
 - Edge cases encountered
 - NOT opinions or speculative "nice to haves"
-
-**Update downstream beads** if your work changes what blocked tasks need to know:
-\`\`\`bash
-bd show <your-bead-id>  # Look at "BLOCKS" section
-bd update <downstream-id> --notes="[Discovered during <your-id>: specific fact]"
-\`\`\`
 
 ## Quality Checklist
 - [ ] Checklist items relevant to this agent
@@ -170,7 +161,7 @@ bd update <downstream-id> --notes="[Discovered during <your-id>: specific fact]"
 
 1. **Investigation Protocol** — How the agent verifies its work rather than guessing
 2. **Context Management** — How the agent avoids filling its context window
-3. **Knowledge Transfer** — Read bead notes before, report findings after, update downstream
+3. **Knowledge Transfer** — Read task context before, report findings after, update downstream
 
 ## Phase 5: Generate Agents
 
@@ -308,19 +299,23 @@ Quick reference for which agent to dispatch for each task type.
 4. `code-reviewer` — Review fix
 ```
 
-## Phase 7: Quality Checklist
+## Phase 7: Quality Gate
 
-Before finishing, verify each agent:
+After generating all agents, re-read each one and verify against these criteria. **Do not skip this step.** For each agent, state PASS or FAIL per criterion. If any agent fails, fix it before proceeding.
 
-- [ ] Name is lowercase-with-hyphens
-- [ ] Description clearly states WHEN to use it (not just what it does)
-- [ ] Tools are appropriate (read-only agents don't have Write/Edit)
-- [ ] Model matches complexity
-- [ ] Includes Investigation Protocol section
-- [ ] Includes Context Management section
-- [ ] Includes Knowledge Transfer section
-- [ ] Project-specific paths and commands are accurate
+| Criterion | What to check | Common failure |
+|-----------|--------------|----------------|
+| Invocation clarity | Description starts with observable trigger ("Use when...") | Vague expertise claim instead of trigger condition |
+| Tool minimalism | Read-only agents lack Write/Edit; Bash is scoped or justified | Over-provisioned tools copied from template |
+| Investigation protocol | Numbered verification steps with confidence levels | Missing or copy-pasted boilerplate |
+| Output contract | Frontmatter `output-contract` if output is parsed downstream | Omitted entirely |
+| Scope boundaries | "What NOT to do" section with role-specific exclusions | No exclusions or only generic ones |
+| Context discipline | Strategy for batching, subagent dispatch, selective reading | No guidance for large codebases |
+| Project specificity | References actual paths, commands, patterns from discovery | Generic instructions that could apply to any project |
+
+Also verify:
 - [ ] Agent catalog created/updated
+- [ ] No hardcoded absolute paths (use relative paths or discovery instructions)
 
 ## Investigation Protocol
 
@@ -345,9 +340,8 @@ When exploring a project's codebase:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Ask the orchestrator for the bead ID you're working on
-2. Run `bd show <id>` to read notes on the task and parent epic
-3. Check for prior agent-generation runs -- look for existing `.claude/agents/` files and `.claude/AGENTS.md` to avoid overwriting intentional customizations
+1. If beads is available (`bd` command exists), ask the orchestrator for the bead ID and run `bd show <id>` to read task notes. Otherwise, ask the orchestrator for task context directly.
+2. Check for prior agent-generation runs -- look for existing `.claude/agents/` files and `.claude/AGENTS.md` to avoid overwriting intentional customizations
 
 **After completing work:**
 Report back to the orchestrator:
@@ -356,41 +350,29 @@ Report back to the orchestrator:
 - Any project areas that were unclear and need human clarification
 - Hooks that were added and what they automate
 
-**Update downstream beads** if your work changes what blocked tasks need to know:
+**If beads is available**, update downstream beads when your work changes what blocked tasks need to know:
 ```bash
 bd show <your-bead-id>  # Look at "BLOCKS" section
 bd update <downstream-id> --notes="[Discovered during <your-id>: specific fact]"
 ```
 
-## Beads Workflow Commands
+## Beads Workflow Commands (When Available)
 
-Always use beads if available:
+If the project uses beads for task tracking (`bd` command exists), use it to track agent generation progress:
 
 ```bash
 bd ready              # Find available work
 bd create --title="..." --type=task  # Create task
 bd update <id> --status=in_progress  # Start work
 bd close <id>         # Complete task
-bd sync  # Export when done
-
-# Dependencies: bd dep add <waiter> <blocker>
-bd dep add <B-id> <A-id>  # B depends on A (A must finish first)
 ```
 
-### Epic/Child Hierarchy (IMPORTANT)
-
-**Create children with `--parent`, not `bd dep add`.** This establishes a real hierarchy that enables `bd children`, `bd epic status`, and `bd epic close-eligible`.
-
+Create children with `--parent` for epic hierarchy:
 ```bash
-# CORRECT: Child of epic via --parent
 bd create --title="Task X" --type=task --parent=<epic-id>
-
-# WRONG: Flat task with manual blocking dep
-bd create --title="Task X" --type=task
-bd dep add <epic-id> <task-id>
 ```
 
-Use `bd dep add` only for cross-task ordering (task A must finish before task B).
+If beads is not available, skip these commands. Agent generation does not require task tracking.
 
 ## Output
 
