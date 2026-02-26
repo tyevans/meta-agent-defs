@@ -80,28 +80,59 @@ Read CLAUDE.md to understand what's already in passive context.
 
 ## Phase 1: Curate Agent Learnings
 
-For each target agent, invoke `/curate` to optimize their learnings for upcoming work.
+### 1a. Assess Agent Count
 
-### 1a. Invoke /curate
+Count the target agents determined in Phase 0b. This determines the dispatch mode for this phase.
 
-Use the Skill tool to invoke `/curate` for each agent:
+- **1-2 agents (default — serial):** invoke `/curate` once per agent using the Skill tool, sequentially
+- **3+ agents (parallel):** dispatch one background Task per agent concurrently, then collect
+
+### 1b. Invoke /curate
+
+**Serial mode (default, 1-2 agents):** Use the Skill tool to invoke `/curate` for each agent:
 
 - If single agent: `/curate <agent-name>`
-- If multiple agents: invoke `/curate` once per agent, sequentially
+- If two agents: invoke `/curate` once per agent, one after the other
 
-### 1b. Collect Results
+**Parallel mode (3+ agents):** Dispatch one background Task per agent concurrently. Each Task receives everything /curate needs self-contained in its prompt:
 
-After each /curate invocation, note:
+```
+Task({
+  subagent_type: "general-purpose",
+  run_in_background: true,
+  model: "sonnet",
+  prompt: "Run /curate for agent <agent-name>.
+
+Agent: <agent-name>
+Learnings file: memory/agents/<agent-name>/learnings.md
+
+Upcoming work snapshot:
+<paste bd ready / in_progress / epic output from Phase 0c>
+
+Rules inventory:
+<paste ls rules/*.md .claude/rules/*.md output from Phase 0d>
+
+Invoke the curate skill with argument '<agent-name>' and return its full pipe-format output."
+})
+```
+
+Launch all agent Tasks in a single batch. Limit to 4 concurrent Tasks to avoid API throttling; if there are more than 4 agents, launch in batches of 4 and wait for each batch before launching the next.
+
+### 1c. Collect Results
+
+After all curate invocations complete (serially or via TaskOutput for parallel), note for each agent:
 - How many learnings were kept, archived, or added
 - Any gaps identified (upcoming work needs knowledge not in learnings)
 - Any items flagged for cross-agent relevance
 
-### 1c. Progress Check
+### 1d. Progress Check
 
 After curating all agents, summarize before moving to rules:
 
 ```markdown
 ### Agent Curate Phase Complete
+
+**Mode**: serial | parallel (N agents)
 
 | Agent | Kept | Archived | Added | Gaps Found |
 |-------|------|----------|-------|------------|
