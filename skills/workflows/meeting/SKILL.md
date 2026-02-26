@@ -4,7 +4,7 @@ description: "Form an agent team and have an interactive group discussion to fle
 argument-hint: "<topic or question>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Write, Bash(bd:*), Bash(git:*), Bash(rm:*), Bash(ls:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
 ---
 
 # Meeting: Interactive Multi-Agent Dialogue
@@ -12,6 +12,29 @@ allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage, Tea
 You are facilitating a **Meeting** -- an interactive group discussion with a panel of agents. Unlike fan-out workflows (consensus, premortem) where agents work independently and return reports, a meeting is a live conversation where the user drives the agenda and agents respond to each other.
 
 **Topic:** $ARGUMENTS
+
+## Phase 0: Resume Check
+
+Before assembling a new panel, check whether a prior meeting left panelists available for resumption:
+
+```bash
+# Check for prior meeting scratch file
+ls memory/scratch/meeting-panelists.md 2>/dev/null
+```
+
+<!-- Condition: only if memory/scratch/meeting-panelists.md exists -->
+If the file exists, read it and display:
+
+> A prior meeting panel is available:
+> - Panelists: [roles and agent IDs from file]
+> - Topic covered: [one-line summary from file]
+>
+> **Resume** the prior panelists (they retain context from the last discussion), or **start fresh** with a new panel?
+
+- *Resume* → Skip Phase 1 entirely. Send the new topic/question as direct messages to each prior panelist using the agent IDs from the scratch file. Proceed to Phase 2.
+- *Start fresh* → Delete `memory/scratch/meeting-panelists.md` and proceed to Phase 1.
+
+If the file does not exist, proceed directly to Phase 1.
 
 ## When to Use
 
@@ -71,7 +94,26 @@ Task({
 >
 > Always respond from your role's specific perspective, never as a generic assistant. When the facilitator sends you a message, respond with 2-4 paragraphs of concrete, specific analysis. If you disagree with another panelist's position, say so and explain why.
 
-### 1d. Opening Round
+### 1d. Capture Panelist IDs
+
+After all panelists are spawned, record their agent IDs to `memory/scratch/meeting-panelists.md` for compaction resilience and resume support:
+
+```markdown
+# Meeting Panelists
+
+topic-summary: <one-line summary of what is being discussed>
+
+## Panelists
+
+- role: <role-name-1>
+  agent-id: <task-agent-id-1>
+- role: <role-name-2>
+  agent-id: <task-agent-id-2>
+```
+
+This file enables Phase 0 resume on re-invocation. Delete it in Phase 3 shutdown (3b) after `TeamDelete()`.
+
+### 1e. Opening Round
 
 Once all panelists are spawned, send the opening question as **direct messages** to each panelist (not broadcast). Direct messages reliably trigger substantive engagement; broadcasts often produce empty acknowledgments.
 
@@ -168,10 +210,14 @@ SendMessage({
 })
 ```
 
-After all panelists confirm, delete the team:
+After all panelists confirm, delete the team and clean up the scratch file:
 
 ```
 TeamDelete()
+```
+
+```bash
+rm -f memory/scratch/meeting-panelists.md
 ```
 
 ### 3c. Optional: Create Beads
