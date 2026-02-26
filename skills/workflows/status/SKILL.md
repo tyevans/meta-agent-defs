@@ -177,6 +177,40 @@ Only include suggestions that match the current state. Do not invent conditions.
 
 ---
 
+After the Suggested Actions section, emit a pipe-format summary so /advise can consume status signals:
+
+```
+## System status signals
+
+**Source**: /status
+**Input**: [focus area from $ARGUMENTS, or "full system status"]
+**Pipeline**: (none — working from direct input)
+
+### Items (4)
+
+1. **Backlog state** — [N open tasks, N ready, N blocked, N in-progress]
+   - ready: [top 3 task titles, or "none"]
+   - blocked: [N tasks blocked, or "none"]
+   - epics: [N epics, M% complete on average, or "none"]
+
+2. **Recent activity** — [active | quiet | stalled]
+   - branch: [current branch]
+   - commits-last-7d: [N]
+   - working-tree: [clean | N files modified/untracked]
+
+3. **Team health** — [healthy | cold members | bloated learnings | no team]
+   - members: [N total, N active, N cold, N bloated]
+   - action-needed: [member names needing attention, or "none"]
+
+4. **Suggested actions** — [N actions derived from state]
+   - actions: [top 3 suggestions as short phrases]
+   - confidence: CONFIRMED
+
+### Summary
+
+[One paragraph: current backlog shape, recent activity level, team health, and the single most important action to take next.]
+```
+
 ## Guidelines
 
 1. **Fast.** This should complete in under 10 seconds. No agent dispatch, no synthesis essays.

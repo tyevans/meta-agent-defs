@@ -440,6 +440,46 @@ Next steps:
 - Announce to team if applicable
 ```
 
+### 4e. Pipe-Format Summary
+
+After the close-out block, emit a pipe-format summary so downstream skills (/status, /retro) can consume deployment outcomes:
+
+```
+## Deployment outcomes
+
+**Source**: /deploy
+**Input**: [service / environment from $ARGUMENTS]
+**Pipeline**: (none — working from direct input)
+
+### Items (5)
+
+1. **Deployment strategy** — [direct | canary | blue-green | rolling]
+   - tooling: [GitHub Actions | Docker | k8s | Make | manual]
+   - target: [service / environment]
+
+2. **Version deployed** — [git tag, commit hash, or image tag]
+   - branch: [branch name]
+   - commit: [short SHA]
+
+3. **Readiness gate** — [PASS | FAIL]
+   - git: [clean on main | dirty — describe]
+   - tests: [verified passing | unverified | failed]
+   - open high-priority work: [none | N items affecting deploy]
+
+4. **Health check result** — [HEALTHY | DEGRADED | FAILED]
+   - endpoint: [pass HTTP 200 | fail HTTP NNN | skipped]
+   - logs: [clean | N errors | error pattern found]
+   - monitoring window: [N minutes]
+
+5. **Rollback status** — [not triggered | triggered — reason]
+   - stable version: [tag or commit if rolled back | n/a]
+   - follow-up task: [bead ID or "none"]
+
+### Summary
+
+[One paragraph: what was deployed, which strategy was used, whether health checks passed, and whether a rollback occurred.]
+```
+
 ---
 
 ## Guidelines

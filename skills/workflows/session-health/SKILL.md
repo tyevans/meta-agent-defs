@@ -131,6 +131,45 @@ Based on the above, recommend ONE of:
 2. [runnable command or specific file path]
 ```
 
+After producing the health report, emit a pipe-format summary so /advise or /retro can consume health signals:
+
+```
+## Session health signals
+
+**Source**: /session-health
+**Input**: [current session, $ARGUMENTS if provided]
+**Pipeline**: (none — working from direct input)
+
+### Items (4)
+
+1. **Context load** — [Light | Moderate | Heavy | Overloaded]
+   - files-read: [~N]
+   - agents-dispatched: [~N]
+   - topic-breadth: [N areas]
+   - confidence: CONFIRMED
+
+2. **Quality signals** — [Good | Showing wear | Degrading]
+   - hedging: [Good | Watch | Degrading]
+   - repetition: [Good | Watch | Degrading]
+   - tool-call-quality: [Good | Watch | Degrading]
+   - answer-specificity: [Good | Watch | Degrading]
+   - confidence: CONFIRMED
+
+3. **Scope coherence** — [On track | Minor drift | Significant drift]
+   - original-goal: [one-line summary]
+   - current-work: [one-line summary]
+   - batch-progress: [N/M items complete | not applicable]
+
+4. **Recommendation** — [Continue | Partial summarize | Checkpoint & Continue | Fresh session | Break into subagents]
+   - rationale: [one sentence]
+   - next-action: [specific command or file reference]
+   - confidence: CONFIRMED
+
+### Summary
+
+[One paragraph: load level, quality assessment, and recommended action with a concrete reason.]
+```
+
 ## Important Notes
 
 - This is a **self-diagnostic** — be honest, not optimistic

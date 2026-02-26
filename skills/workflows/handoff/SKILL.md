@@ -188,6 +188,43 @@ bd create --title="HANDOFF: [summary of session]" --type=task --priority=1 \
 
 If the project has a `memory/` directory, optionally write the handoff note there as `memory/handoff-[date].md` for persistent reference.
 
+### 4b. Pipe-Format Summary
+
+After writing the handoff note, emit a pipe-format summary so the next session's /status or /advise can consume handoff items without parsing the full prose document:
+
+```
+## Handoff state
+
+**Source**: /handoff
+**Input**: [focus area from $ARGUMENTS, or "general session handoff"]
+**Pipeline**: (none — working from direct input)
+
+### Items (5)
+
+1. **Unfinished work** — [N tasks in-progress at handoff time]
+   - tasks: [bead IDs and one-line status for each in-progress task]
+   - pickup points: [specific file:line or step for each task]
+
+2. **Key decisions** — [N decisions made this session]
+   - decisions: [brief titles of the most important decisions]
+   - rationale preserved: [yes — in handoff note | partial | no]
+
+3. **Resumable agents** — [N agents mid-task | none]
+   - agents: [agent IDs and last known state, or "none"]
+
+4. **Open questions** — [N unresolved questions]
+   - questions: [component names where decisions are needed]
+   - blockers: [external dependencies or missing information]
+
+5. **Risks flagged** — [N risks]
+   - risks: [brief list of fragile areas or timing-sensitive work]
+   - confidence: CONFIRMED
+
+### Summary
+
+[One paragraph: what work was in flight, what the highest-priority pickup point is, and what the incoming session should do first.]
+```
+
 ---
 
 ## Guidelines
