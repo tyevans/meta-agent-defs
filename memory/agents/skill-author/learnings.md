@@ -19,5 +19,13 @@
 - For depth-bounded recursion (fractal-style), set the resume boundary at depth N→N+1 only; deeper transitions spawn fresh to avoid cascading warm-context dependencies (added: 2026-02-25, dispatch: tack-1rj0.6)
 - When inserting a new numbered subsection into an existing sequence, renumber downstream labels in the same edit to avoid a follow-up correction pass (added: 2026-02-25, dispatch: tack-1rj0.7)
 - When a phase-0 resume check produces a phase collision (two sections numbered "Phase 0"), rename the original to Phase 1 and renumber all downstream phases — a named collision is worse than a renumber cascade (added: 2026-02-25, dispatch: tack-1rj0.8)
+- When a parallel mode uses background agents, add a compaction-resilience note for the merge step — agent outputs live only in context and are lost on compaction before merge completes (added: 2026-02-25, dispatch: tack-2rli.3)
+- Total-order tiebreakers work best when the ordering maps to a natural priority hierarchy (e.g., fatal > serious > advisory) rather than being arbitrary (added: 2026-02-25, dispatch: tack-2rli.11)
+- When panel mode only replaces one step of an existing Process, say "Replace step N with..." rather than rewriting the whole Process — minimizes surface area and makes unchanged steps obvious (added: 2026-02-25, dispatch: tack-2rli.11)
+- When adding context management guidance to a facilitation skill, anchor it to the skill's existing state vocabulary (checkpoints, counters, threads) rather than generic terms (added: 2026-02-25, dispatch: tack-2rli.12)
+- When adding parallel dispatch to an entrypoint skill, use Task agents (not Skill tool) since Skill has no background mode — note that subagents receive embedded instructions, not skill invocations (added: 2026-02-25, dispatch: tack-2rli.9)
+- A scope assessment gate before concurrent dispatch prevents wasted agent spawns — worth adding whenever parallelism depends on external data sources that may be empty (added: 2026-02-25, dispatch: tack-3a8f.5)
+- For project-specific workflow skills (deploy, debug, migrate), the pattern "detect tooling via config file presence, map to concrete commands, fallback to asking user" keeps the skill practical without enumerating every environment (added: 2026-02-25, dispatch: tack-2rli.14)
+- Cross-project skills (those operating on `$PROJECT_PATH` or external directories) are categorically incompatible with worktree isolation — the sandboxing happens in the wrong repo (added: 2026-02-25, dispatch: tack-2rli.7)
 
 ## Task-Relevant
