@@ -20,11 +20,23 @@ Standard pattern for dispatching multiple agents and collecting their results. U
 
 ## Dispatch
 
-Launch agents concurrently using background Task agents:
+Launch agents concurrently using background Task agents. **Default to worktree isolation** for agents that write files — each agent gets its own repo copy, eliminating merge conflicts:
 
 ```
 Task({
   subagent_type: "<type>",
+  run_in_background: true,
+  isolation: "worktree",
+  model: "<model>",
+  prompt: "<agent instructions>"
+})
+```
+
+For **read-only agents** (Explore subagent_type, investigation-only prompts), worktree isolation is unnecessary — omit `isolation`:
+
+```
+Task({
+  subagent_type: "Explore",
   run_in_background: true,
   model: "<model>",
   prompt: "<agent instructions>"
