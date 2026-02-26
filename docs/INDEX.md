@@ -13,6 +13,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Assess risk** -> /premortem (failure analysis) or /critique (adversarial review)
 - **Bootstrap a new project** -> /bootstrap (full setup: infrastructure + agents)
 - **Build something** -> /tracer (iterative end-to-end) or /sketch (skeleton only)
+- **Optimize something** -> /optimize (profile -> bottleneck -> fix -> measure -> iterate)
 - **Test an implementation** -> /test-strategy (classify spec type, write tests, enforce red-green gates)
 - **Review code** -> /review (structured code review)
 - **File a bug** -> /bug (structured bug report to beads backlog)
@@ -57,7 +58,7 @@ Composable primitives following [pipe format](../rules/pipe-format.md), plus the
 | /do | Primary entrypoint: match goal to skill/pipeline and execute it | Router |
 | /discover | Recommend skills or pipelines for a described goal | Router |
 
-### Workflows (22) — `skills/workflows/`
+### Workflows (23) — `skills/workflows/`
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -85,6 +86,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /challenge-run | Execute challenges and evaluate agent performance | inline |
 | /domain | Capture or query project-specific terminology and disambiguation rules | inline |
 | /test-strategy | Classify spec type, write tests from specs, enforce red-green gates | fork |
+| /optimize | Profile, identify bottleneck, implement fix, measure, iterate toward target | fork |
 
 ### Teams (9) — `skills/teams/`
 
@@ -106,7 +108,7 @@ Persistent team orchestration and the learning lifecycle (curation, promotion, r
 
 **Inline (37):** gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, do, discover, fractal, meeting, bug, session-health, handoff, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, domain, assemble, standup, sprint, team-meeting, curate, promote, tend, retro
 
-**Fork (10):** blossom, bootstrap, consensus, consolidate, premortem, review, spec, test-strategy, tracer, active-learn
+**Fork (11):** blossom, bootstrap, consensus, consolidate, optimize, premortem, review, spec, test-strategy, tracer, active-learn
 
 Fork skills run in an isolated context to avoid polluting the main conversation. Use fork skills for heavy exploration; use inline skills for quick operations within the current flow.
 
@@ -126,6 +128,7 @@ Common composition sequences (each step's output feeds the next via context):
 /gather -> /transform as ticket titles  # Research -> rewrite each finding as a ticket
 /gather -> /distill -> /expand         # Research -> condense -> elaborate key findings
 /drift -> /rank -> /sprint            # Compare definitions -> prioritize fixes -> execute
+/tracer -> /optimize                  # Implement correctly -> then make it fast
 /diagnose-agent -> /challenge-gen     # Profile agent -> generate targeted challenges
 /diagnose-agent -> /challenge-gen -> /challenge-run  # Profile -> challenges -> evaluate
 /active-learn                                       # Full loop: diagnose -> challenge -> evaluate -> learn (all inline)
