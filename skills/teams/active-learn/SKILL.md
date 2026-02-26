@@ -325,6 +325,16 @@ Benefits of worktree isolation mode:
 - Evaluation can diff the worktree branch against the base commit to assess exactly what changed (see Phase 3b below)
 - Failed or abandoned challenges auto-cleanup -- no residue left in the working tree
 
+**Agent ID capture:** After each dispatch, record the agent ID returned by Task in a per-weakness map:
+
+```
+weakness_agents: {
+  "<weakness-name>": "<agent-id-from-task-output>"
+}
+```
+
+This map carries forward into subsequent rounds to enable resume dispatch (see Phase 5b).
+
 Serial dispatch only -- no `run_in_background`. Each challenge is a controlled experiment.
 
 ### 3b. Evaluate Each Challenge (Inline)
@@ -395,6 +405,7 @@ Training cycle: /active-learn round <N>
 **Confidence Calibration**: OVER | UNDER | WELL_CALIBRATED
 **Targeted Weakness**: <weakness name>
 **Growth Signal**: <signal>
+**Resume Signal**: LEARNED | PARTIAL | NO_CHANGE | N/A  <!-- present only when this was a resumed dispatch; N/A for first-round fresh dispatch -->
 
 ### Agent's Approach
 <Brief summary>
@@ -511,6 +522,29 @@ After completing a round, re-run Phase 1 logic (lightweight -- focus on the roun
 
 If continuing: return to Phase 2 with the updated struggle profile. The new round targets weaknesses that emerged or persisted.
 
+**In subsequent rounds — resume vs fresh dispatch for re-tested weaknesses:**
+
+When Phase 2 selects a weakness that was already challenged in a prior round (i.e., an entry exists in `weakness_agents` for that weakness), use resume dispatch in Phase 3a instead of a fresh Task call. The resumed agent retains its prior attempt and the feedback from Phase 3b/4a within this session, testing whether it can learn across rounds. Max 3 rounds per weakness before treating as persistent and switching to a fresh agent. <!-- max-resume-cap: 3 rounds per weakness -->
+
+In resume mode, compose a feedback prompt that includes:
+1. A brief summary of what the agent's prior attempt got right and wrong (from Phase 3b evaluation)
+2. The updated learnings entry added in Phase 4b (if any)
+3. The new challenge scenario for this round (targeting the same weakness from a different angle)
+
+```
+Task({
+  resume: "<agent-id from weakness_agents[weakness-name]>",
+  prompt: "<feedback summary>\n\n<new challenge prompt>"
+})
+```
+
+In fresh mode (new weakness, or weakness exceeding the 3-round cap): use standard Task dispatch as defined in Phase 3a and record the new agent ID in `weakness_agents`.
+
+This resume behavior is the active learning signal: an agent that improves on a resumed attempt has demonstrated within-session learning from feedback. Record this in Phase 3c under a **Resume Signal** field:
+- **LEARNED**: Resumed agent improved result or trap detection vs prior attempt
+- **PARTIAL**: Resumed agent showed awareness of prior feedback but did not fully correct
+- **NO_CHANGE**: Resumed agent repeated prior approach without incorporating feedback
+
 ---
 
 ## Phase 6: Emit Training Summary
@@ -545,11 +579,13 @@ In solo mode, prepend the SOLO MODE label to the summary block so the user knows
 
 ### Improvement Trajectory
 
-| Round | Challenges | Passed | Traps Caught | Calibration | New Learnings |
-|-------|-----------|--------|--------------|-------------|---------------|
-| 1 | N | X | Y | pattern | Z |
-| 2 | N | X | Y | pattern | Z |
-| ... | | | | | |
+| Round | Challenges | Passed | Traps Caught | Calibration | New Learnings | Resume Signals |
+|-------|-----------|--------|--------------|-------------|---------------|----------------|
+| 1 | N | X | Y | pattern | Z | N/A |
+| 2 | N | X | Y | pattern | Z | X learned, Y no_change |
+| ... | | | | | | |
+
+<!-- Resume Signals column: only populated for rounds 2+, where some challenges used resume dispatch. Lists count of LEARNED / PARTIAL / NO_CHANGE outcomes. -->
 
 Overall trend: <improving | stable | declining>
 Early stopped: <yes/no, reason>
