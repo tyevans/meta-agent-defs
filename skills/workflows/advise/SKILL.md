@@ -4,13 +4,13 @@ description: "Proactive session recommendations by composing git state, session 
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)"]
+allowed-tools: [Read, Glob, Grep, TaskList, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)"]
 context: inline
 ---
 
 # Advise: Proactive Session Recommendations
 
-You are generating **actionable recommendations** for what to do next, based on whatever project state is available. This skill degrades gracefully across four layers — it always produces useful output, even in a bare git repo with no tooling installed.
+You are generating **actionable recommendations** for what to do next, based on whatever project state is available. This skill degrades gracefully across five layers — it always produces useful output, even in a bare git repo with no tooling installed.
 
 **Focus area (optional):** $ARGUMENTS
 
@@ -24,7 +24,7 @@ You are generating **actionable recommendations** for what to do next, based on 
 ## How It Works
 
 ```
-Probe 4 layers (git → session → backlog → team)
+Probe 5 layers (git → session → backlog → team → live agents)
   → Score what's available
     → Generate recommendations ranked by urgency
       → Nudge about missing layers that would improve advice
@@ -91,6 +91,17 @@ Extract:
 - **Bloated agents**: Members whose learnings exceed 120 lines
 - **Missing agents**: Members in manifest but without learnings files
 
+### Layer 5: Active Agents (if TaskList returns results)
+
+Call TaskList to retrieve live task state.
+
+In active-agents mode: extract:
+- **Running tasks**: tasks with status `running` — capture agent name, task description, and (if available) how long they have been running
+- **Completed tasks awaiting review**: tasks with status `completed` that have no corresponding bead close or commit since completion
+- **Idle agents**: agents in `.claude/team.yaml` (if present) that have no running or recently completed task
+
+**If TaskList returns no results**, skip this layer and do not include it in the layers indicator.
+
 ---
 
 ## Phase 2: Generate Recommendations
@@ -104,10 +115,12 @@ Based on available layers, generate 3-5 concrete recommendations. Each recommend
 
 1. **Uncommitted changes from a previous session** → Always recommend reviewing/committing first
 2. **In-progress beads** → Resume before starting new work
-3. **Blocked items that could be unblocked** → Unblock before starting independent work
-4. **Ready backlog by priority** → Work highest-priority items first
-5. **Stale team agents** → Recommend `/curate` or `/tend` for agents with cold learnings
-6. **No backlog** → Suggest /blossom or /meeting to discover work
+3. **Completed agent tasks awaiting review** → Review before dispatching new work ("Agent X completed — review results before dispatching next task")
+4. **Blocked items that could be unblocked** → Unblock before starting independent work
+5. **Ready backlog by priority** → Work highest-priority items first
+6. **Idle agents with ready backlog tasks** → "Agent Y is idle — dispatch to: [top ready task title]"
+7. **Stale team agents** → Recommend `/curate` or `/tend` for agents with cold learnings
+8. **No backlog** → Suggest /blossom or /meeting to discover work
 
 ### Focus Area Filter
 
@@ -136,7 +149,7 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 ```markdown
 ## Session Advice
 
-**Layers**: [git] [session] [backlog] [team]
+**Layers**: [git] [session] [backlog] [team] [live-agents]
 (Filled layers shown as bold, missing layers shown as dim/struck)
 
 ### Recommendations
@@ -151,18 +164,19 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 
 ### Missing Layers
 
-[Only if layers 2-4 are missing. Frame as value proposition, not error.]
+[Only if layers 2-5 are missing. Frame as value proposition, not error.]
 
 - **Session history**: Run a session with SessionEnd hook to get continuity advice next time
 - **Backlog**: Install beads (`bd init`) to get priority-aware recommendations
 - **Team**: Run `/assemble` to get team-aware recommendations (stale learnings, agent health, team-specific actions)
+- **Live agents**: No active agent tasks detected — live-agents layer enriches advice when a sprint or parallel dispatch is running
 ```
 
 ### Layer Indicator
 
 Show which layers were available using a compact indicator:
-- All four: `**Layers**: **git** · **session** · **backlog** · **team**`
-- Partial: `**Layers**: **git** · ~~session~~ · **backlog** · ~~team~~`
+- All five: `**Layers**: **git** · **session** · **backlog** · **team** · **live-agents**`
+- Partial: `**Layers**: **git** · ~~session~~ · **backlog** · ~~team~~ · ~~live-agents~~`
 
 ### Missing Layers Section
 

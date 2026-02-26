@@ -4,7 +4,7 @@ description: "Show unified system status: backlog, recent activity, team health,
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)"]
+allowed-tools: [Read, Glob, Grep, TaskList, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)"]
 context: inline
 ---
 
@@ -78,6 +78,16 @@ git log --oneline --since="7 days ago" | head -20
 
 **If no recent activity**, skip this section.
 
+### 1f. Live Agents (conditional)
+
+Call TaskList to retrieve active task state. If TaskList returns results, collect:
+
+- **Running tasks**: tasks with status `running` — capture agent name, task description
+- **Completed tasks**: tasks with status `completed` that have not yet been reviewed (no corresponding commit or bead close since completion)
+- **Idle agents**: agents listed in `.claude/team.yaml` (if present) that have no running or recently completed task
+
+**If TaskList returns no results**, skip this section entirely.
+
 ---
 
 ## Phase 2: Format Output
@@ -122,6 +132,17 @@ Health values (mechanical):
 
 [Or: "No team configured."]
 
+### Live Agents
+[Only present when TaskList returned results.]
+
+| Agent | Task | Status |
+|-------|------|--------|
+| [agent name] | [task description] | running / completed (awaiting review) |
+
+Idle agents (in team.yaml but no active or recent task): [list or "none"]
+
+[Omit this section entirely when TaskList returns no results.]
+
 ### Suggested Actions
 [Numbered list, derived mechanically from the data above]
 ```
@@ -143,6 +164,8 @@ Generate 1-5 suggestions based purely on observed state. Use these rules:
 | In-progress tasks exist | "Resume in-progress work: [task titles]" |
 | Epics with all children complete | "Run `bd epic close-eligible` to auto-close completed epics" |
 | Everything is clean and no ready tasks | "Backlog is clear — create new tasks or run `/blossom` to explore" |
+| Completed tasks awaiting review (from TaskList) | "Review results from [agent name]: [task description]" |
+| Idle agents with ready backlog tasks | "Dispatch [agent name] to: [top ready task title]" |
 
 Only include suggestions that match the current state. Do not invent conditions.
 
