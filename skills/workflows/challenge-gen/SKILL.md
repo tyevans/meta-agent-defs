@@ -4,7 +4,7 @@ description: "Generate targeted challenges for agent improvement from a /diagnos
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Grep, Glob, Write, WebSearch, WebFetch, "Bash(git:*)", "Bash(wc:*)", "Bash(mkdir:*)"]
+allowed-tools: [Read, Grep, Glob, Write, WebSearch, WebFetch, Task, "Bash(git:*)", "Bash(wc:*)", "Bash(mkdir:*)"]
 context: inline
 ---
 
@@ -21,6 +21,7 @@ You are running **challenge-gen** — generating targeted challenges to exercise
 
 ## How It Works
 
+**Serial (default):**
 ```
 Detect upstream /diagnose-agent output (or accept $ARGUMENTS)
   -> Validate agent exists, extract ownership areas
@@ -29,6 +30,19 @@ Detect upstream /diagnose-agent output (or accept $ARGUMENTS)
         -> Assemble 3-5 challenges with quality gate
           -> Write challenges to memory/agents/<name>/challenges/
             -> Emit pipe format output
+```
+
+**Parallel mode** (pass `parallel` in `$ARGUMENTS`):
+```
+Detect upstream /diagnose-agent output (or accept $ARGUMENTS)
+  -> Validate agent exists, extract ownership areas
+    -> [concurrently]
+         Agent A: Research domain edge cases (WebSearch + codebase)
+         Agent B: Find commit-replay candidates (raw git)
+    -> Collect results from both agents
+      -> Assemble 3-5 challenges with quality gate
+        -> Write challenges to memory/agents/<name>/challenges/
+          -> Emit pipe format output
 ```
 
 ---
@@ -64,7 +78,195 @@ Search conversation context for the pipe-format pattern:
 
 ---
 
-## Phase 1: Research Domain Edge Cases (Strategy A)
+## Parallel Dispatch Mode
+
+In parallel mode (`$ARGUMENTS` contains `parallel`), run Phase 1 and Phase 2 as concurrent background Task agents after Phase 0 completes. This roughly halves wall-clock time because Strategy A (WebSearch + codebase) and Strategy B (git history) are fully independent.
+
+**When to use parallel mode:** When the agent's owned area is broad (many files, many weaknesses) and both strategies are expected to yield candidates. For narrow profiles or small codebases, serial mode is cheaper and produces equivalent results.
+
+**Assessment before dispatch:** After Phase 0 validates the agent and extracts ownership, confirm that both strategies have meaningful scope before launching both agents:
+- Strategy A has scope if: ≥1 WEAKNESS or GAP item exists and the owned file globs match files in the repo
+- Strategy B has scope if: the agent has owned files with recent commits (`git log --oneline --since="60 days ago" -- <owns-patterns>` returns ≥1 result)
+
+If only one strategy has scope, fall back to serial for the active strategy only.
+
+### Dispatch (parallel mode)
+
+After Phase 0 completes, launch both agents concurrently:
+
+**Strategy A agent:**
+
+```
+Task({
+  subagent_type: "general-purpose",
+  run_in_background: true,
+  prompt: "<Strategy A agent prompt — see template below>"
+})
+```
+
+**Strategy B agent:**
+
+```
+Task({
+  subagent_type: "general-purpose",
+  run_in_background: true,
+  prompt: "<Strategy B agent prompt — see template below>"
+})
+```
+
+Collect results from both agents before proceeding to Phase 3.
+
+### Agent Prompt Templates
+
+#### Strategy A: Domain Edge Cases Agent Prompt
+
+```
+You are running Strategy A of challenge-gen for agent: <agent-name>.
+
+## Context
+
+Agent owns: <owns-patterns>
+Struggle profile source: <upstream source or "basic profiling">
+
+Weaknesses to target:
+<list each WEAKNESS item from struggle profile>
+
+Gaps to target:
+<list each GAP item from struggle profile>
+
+Difficulty calibration: <novice | intermediate | expert | adversarial>
+
+## Your Task
+
+Research domain edge cases for the weaknesses and gaps listed above. You are Strategy A — do NOT use git history (that is Strategy B's job). Use WebSearch and codebase reading only.
+
+### Step 1: Codebase Edge Cases
+
+Search the agent's owned files for error-prone patterns:
+
+- Files with high cyclomatic complexity (many conditionals, nested logic)
+- Error handling paths that are rarely exercised
+- Configuration edge cases (empty inputs, boundary values, unusual combinations)
+- Cross-cutting concerns the agent's learnings don't mention
+
+Use Grep and Glob to find files matching these patterns: <owns-patterns>
+
+### Step 2: External Edge Cases
+
+Use WebSearch to find real-world edge cases related to each weakness:
+- Search for CVEs, security advisories, or known bugs in the technology stack
+- Search Stack Overflow for highly-voted edge case questions in the domain
+- Search GitHub issues for "unexpected behavior" or "edge case" in related projects
+- Search for framework-specific gotchas the agent may not have encountered
+
+For each external finding, verify it applies to the codebase by checking:
+- Is the relevant technology/library actually used? (check package files, imports)
+- Is the vulnerable pattern present in owned files?
+- Has it already been addressed? (check git history for related fixes)
+
+### Step 3: Select Best Edge Cases
+
+From all candidates, select 2-3 that:
+- Target a specific WEAKNESS or GAP from the profile above
+- Have clear acceptance criteria (the "right answer" is verifiable)
+- Contain a non-obvious trap (something that makes the naive solution wrong)
+- Are grounded in real scenarios (not hypothetical)
+
+## Output Format
+
+Report your findings as a structured list. For each candidate:
+
+**Edge Case <N>:** <title>
+- targeted_weakness: <WEAKNESS or GAP name from profile>
+- scenario: <what the agent is asked to do>
+- trap: <the non-obvious thing that makes the naive solution wrong>
+- acceptance_criteria: <how to evaluate pass/fail>
+- grounding: <URL, file path, or CVE that makes this real>
+
+If no candidates meet the quality bar, state: "No qualifying edge cases found — Strategy A produced 0 candidates."
+```
+
+#### Strategy B: Commit-Replay Agent Prompt
+
+```
+You are running Strategy B of challenge-gen for agent: <agent-name>.
+
+## Context
+
+Agent owns: <owns-patterns>
+Struggle profile source: <upstream source or "basic profiling">
+
+Weaknesses to target:
+<list each WEAKNESS item from struggle profile>
+
+Gaps to target:
+<list each GAP item from struggle profile>
+
+Difficulty calibration: <novice | intermediate | expert | adversarial>
+
+## Your Task
+
+Find commit-replay challenge candidates in the agent's ownership area. You are Strategy B — use git history only. Do NOT use WebSearch (that is Strategy A's job).
+
+### Step 1: Find Candidate Commits
+
+Run these git commands against the owned file patterns:
+
+```bash
+# Recent fix commits in owned files
+git log --oneline --since="60 days ago" -- <owns-patterns> | head -30
+
+# Find fix: commits that follow feat: commits on same files
+git log --format="%H %s" --since="60 days ago" -- <owns-patterns>
+```
+
+Scan for `fix:` commits. For each, check if a `feat:` commit on the same files preceded it within 7 days.
+
+Prioritize:
+- `fix_after_feat` commits (the fix is the challenge — can the agent get it right the first time?)
+- Commits touching frequently-changed files (areas where correctness is repeatedly hard)
+- Commits with detailed messages (better context for the challenge prompt)
+
+### Step 2: Extract Challenge Material
+
+For each candidate commit:
+
+```bash
+git show --format="%B" --no-patch <commit-hash>   # commit message -> challenge prompt
+git show --format="" <commit-hash>                  # diff -> ground truth
+git show <commit-hash>^:<file-path>                 # file before commit -> starting point
+git rev-parse <commit-hash>^                        # parent hash -> base_commit
+```
+
+Record the parent hash as `base_commit` — the state before the fix. This is what `/challenge-run` uses for worktree isolation.
+
+### Step 3: Select Best Replay Candidates
+
+From all candidates, select 1-2 that:
+- Target a specific WEAKNESS or GAP from the profile above
+- Have a self-contained diff (not sprawling across 10+ files)
+- Have enough context in the commit message to understand intent
+- The "before" state is a plausible starting point (not mid-refactor)
+
+## Output Format
+
+Report your findings as a structured list. For each candidate:
+
+**Commit Replay <N>:** <title>
+- targeted_weakness: <WEAKNESS or GAP name from profile>
+- base_commit: <parent hash from git rev-parse>
+- commit_hash: <the fix commit hash>
+- scenario: <commit message or paraphrase — what the agent is asked to do>
+- trap: <what makes the naive approach get this wrong>
+- acceptance_criteria: <how to evaluate — match the actual diff>
+- files_changed: <count and list of files in the diff>
+
+If no candidates meet the quality bar, state: "No qualifying commit-replay candidates found — Strategy B produced 0 candidates."
+```
+
+---
+
+## Phase 1: Research Domain Edge Cases — Strategy A (default)
 
 For each WEAKNESS and GAP item from the struggle profile, research real-world edge cases in that domain.
 
@@ -107,7 +309,7 @@ From all candidates, select 2-3 that:
 
 ---
 
-## Phase 2: Find Commit-Replay Candidates (Strategy B)
+## Phase 2: Find Commit-Replay Candidates — Strategy B (default)
 
 Identify real commits in the agent's ownership area that can be turned into replay challenges.
 
@@ -163,6 +365,8 @@ From all candidates, select 1-2 that:
 ## Phase 3: Assemble Challenges
 
 Combine edge-case and commit-replay candidates into a final set of 3-5 challenges.
+
+In parallel mode, wait for both background agents to complete, then collect their structured output before proceeding. Treat agent output sections ("Edge Case N:" and "Commit Replay N:") as the candidate pool that feeds Phase 3a and 3b below.
 
 ### 3a. Balance and Calibrate
 
