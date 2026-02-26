@@ -47,10 +47,10 @@ Before loading context and dispatching agents, check that the session has enough
 
 | Load Level | Files Read | Agents Dispatched | Signal |
 |------------|-----------|-------------------|--------|
-| Light | <10 | 0-1 | Healthy — proceed |
-| Moderate | 10-25 | 2-4 | Proceed, watch quality |
-| Heavy | 25-50 | 5+ | Warn user before dispatching |
-| Overloaded | 50+ | 8+ | Recommend handoff |
+| Light | <20 | 0-2 | Healthy — proceed |
+| Moderate | 20-50 | 3-5 | Proceed, watch quality |
+| Heavy | 50-100 | 6-9 | Warn user before dispatching |
+| Overloaded | 100+ | 10+ | Recommend handoff |
 
 **If load is Heavy or Overloaded:** Warn the user:
 
