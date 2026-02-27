@@ -51,7 +51,7 @@ Note the member count. You must produce a status entry for every member — miss
 
 ### 1b. Check Backlog (conditional)
 
-**If `.beads/` exists in the project root**, run:
+**If `.beads/` or `.tacks/` exists in the project root**, run:
 
 ```bash
 bd stats
@@ -61,7 +61,7 @@ bd blocked
 bd epic status
 ```
 
-**If `.beads/` does not exist**, skip this step. The standup will focus on git activity and learning health only.
+**If neither `.beads/` nor `.tacks/` exists**, skip this step. The standup will focus on git activity and learning health only.
 
 ### 1c. Check Git
 

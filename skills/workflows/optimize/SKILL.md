@@ -295,14 +295,14 @@ Produce a final report covering all iterations:
 
 If follow-up work was identified:
 
-**If `.beads/` exists in the project root**, create beads tasks:
+**If `.beads/` or `.tacks/` exists in the project root**, create beads tasks:
 
 ```bash
 bd create --title="[follow-up task]" --type=task --priority=[0-4] \
   --description="Follow-up from optimize: [component]. [Details and context.]"
 ```
 
-**If `.beads/` does not exist**, write follow-up tasks to `TODO.md` in the project root.
+**If neither `.beads/` nor `.tacks/` exists**, write follow-up tasks to `TODO.md` in the project root.
 
 ---
 

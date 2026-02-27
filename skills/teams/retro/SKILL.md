@@ -48,7 +48,7 @@ Note which commits were made this session, how many files were touched, and the 
 
 ### 1b. Backlog Activity (conditional)
 
-**If `.beads/` exists in the project root**, check backlog activity:
+**If `.beads/` or `.tacks/` exists in the project root**, check backlog activity:
 
 ```bash
 bd stats
@@ -57,7 +57,7 @@ bd list --status=closed
 
 Note how many tasks were completed, what types they were, and whether any were closed as duplicates or stale (vs. genuinely completed).
 
-**If `.beads/` does not exist**, skip this step and rely on git activity and conversation context alone.
+**If neither `.beads/` nor `.tacks/` exists**, skip this step and rely on git activity and conversation context alone.
 
 ### 1c. Conversation Context
 
@@ -250,7 +250,7 @@ Read MEMORY.md after edits to confirm it is well-structured and under the line l
 
 ## Phase 6: Capture Action Items (conditional)
 
-**If `.beads/` exists**, create a bead for each sharpened action item from Phase 3 (items that passed the sharpening gate):
+**If `.beads/` or `.tacks/` exists**, create a bead for each sharpened action item from Phase 3 (items that passed the sharpening gate):
 
 ```bash
 bd create --title="<concrete action from sharpening gate>" --type=task --priority=<2-4> \
@@ -259,7 +259,7 @@ bd create --title="<concrete action from sharpening gate>" --type=task --priorit
 
 Every item here already passed the sharpening gate, so it should be implementable in one session without design decisions. Typically 1-3 beads per retro; zero is fine if no concrete follow-ups emerged.
 
-**If `.beads/` does not exist**, list action items in the report only.
+**If neither `.beads/` nor `.tacks/` exists**, list action items in the report only.
 
 ---
 

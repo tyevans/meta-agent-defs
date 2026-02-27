@@ -78,7 +78,7 @@ If a test command exists, report the last test run result from git log or CI art
 
 ### 0d. In-Progress Work Check
 
-If `.beads/` exists:
+If `.beads/` or `.tacks/` exists:
 
 ```bash
 bd query "status=open AND priority<=1"
@@ -413,7 +413,7 @@ bd create --title="[service]: investigate deploy failure [date]" --type=task --p
   --description="Rollback triggered during deploy. Error signals: [what you found in Phase 3]. Investigate root cause before next deploy attempt."
 ```
 
-If `.beads/` does not exist, write to `TODO.md`:
+If neither `.beads/` nor `.tacks/` exists, write to `TODO.md`:
 
 ```markdown
 ## Post-rollback: investigate deploy failure [date]
