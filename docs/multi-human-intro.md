@@ -38,14 +38,21 @@ Multi-human workflows solve this by inserting a shared contract phase **before**
 
 ---
 
-## Why Event Storming
+## Example Walkthrough
 
-Event Storming is a collaborative modeling technique where teams identify domain events — things that happened — as the primary unit of shared understanding.
+Product says "add Stripe payments." Two engineers are involved: one owns the payment backend, the other owns the checkout frontend.
 
-It fits this workflow for two reasons:
+**Prep.** Each engineer runs `/storm-prep` on their domain. The backend engineer gets candidate events like `PaymentInitiated`, `PaymentSucceeded`, `PaymentFailed`, `RefundRequested`. The frontend engineer gets `CheckoutStarted`, `CartAbandoned`, `PaymentFormSubmitted`. Neither has seen the other's list yet.
 
-- **Simultaneously builds shared understanding AND produces artifacts.** The Jam phase isn't just a meeting; it produces the shared event catalog that feeds `/formalize`. The artifact is the output, not the notes about the meeting.
-- **Boundary-first design.** Events flow across context boundaries. Naming and owning events forces boundary negotiation early, when it's cheap, rather than late, when agents have already diverged.
+**Jam.** They meet for 30 minutes. The backend engineer says "`PaymentSucceeded` carries `paymentId`, `orderId`, `amount`, and `currency`." The frontend engineer says "We need `orderId` and `amount` to show the confirmation screen — can you guarantee those fields?" They write it down. They discover the backend was calling it `amount` (integer cents) while the frontend assumed `total` (decimal dollars). They agree on `amountCents: integer`. The output is a shared event catalog — a single YAML file both sides will reference.
+
+**Formalize.** Each engineer runs `/formalize` on the shared catalog. Out come JSON schemas for every event, mock payloads for testing, and validation config their agents will use during the sprint. The `PaymentSucceeded` schema now has `amountCents: integer` locked in.
+
+**Execute.** Each engineer sprints independently using `/sprint`. The backend builds the Stripe integration. The frontend builds the checkout flow. Their agents validate against the formalized contracts continuously. If the backend engineer's agent changes `amountCents` to `totalCents`, the contract check flags it immediately — not three days later at merge time.
+
+**Integrate.** Both engineers are done. `/integrate` checks both branches against the contracts, flags any remaining drift, and proposes a merge. The engineers review the merge proposal and ship.
+
+Without the contract phase, you discover at merge time that one side renamed a field. With it, you catch that during the sprint.
 
 ---
 
@@ -66,46 +73,15 @@ Rule of thumb: if two humans would be blocked waiting for each other without a c
 
 ---
 
-## Swim-Lane Diagram
+## Why Event Storming
 
-```
-         PREP          JAM        FORMALIZE      EXECUTE      INTEGRATE
-          |             |             |              |             |
-Human A   |  reviews    | negotiates  | reviews      | sprints on  | reviews
-          |  /storm-prep| boundaries  | contracts    | domain A    | merge prop
-          |             |             |              |             |
-Human B   |  reviews    | negotiates  | reviews      | sprints on  | reviews
-          |  /storm-prep| boundaries  | contracts    | domain B    | merge prop
-          |             |             |              |             |
-Agents A  | /storm-prep |     ---     | /formalize   |  /sprint    | /integrate
-          | (domain A)  |             | (domain A)   |  (domain A) |
-          |             |             |              |             |
-Agents B  | /storm-prep |     ---     | /formalize   |  /sprint    | /integrate
-          | (domain B)  |             | (domain B)   |  (domain B) |
-          |             |             |              |             |
-Shared    |  candidate  | shared      | contracts    | validation  | conflict
-Artifact  |  events     | event       | + schemas    | reports     | report +
-          |  (YAML)     | catalog     | + mocks      |             | merge PR
-```
+Event Storming is a collaborative modeling technique where teams identify domain events — things that happened — as the primary unit of shared understanding.
 
-Agent activity is automated. The Jam phase is human-only — it's the negotiation step that only humans can do well. All other phases are agent-heavy with humans in a review role.
+It fits this workflow for two reasons:
+
+- **Simultaneously builds shared understanding AND produces artifacts.** The Jam phase isn't just a meeting; it produces the shared event catalog that feeds `/formalize`. The artifact is the output, not the notes about the meeting.
+- **Boundary-first design.** Events flow across context boundaries. Naming and owning events forces boundary negotiation early, when it's cheap, rather than late, when agents have already diverged.
 
 ---
-
-## Relationship to Existing Tackline Primitives
-
-Multi-human workflows sit **above** the existing team and sprint system:
-
-```
-multi-human workflows     <- this layer: /storm-prep, /formalize, /integrate
-      |
-  /sprint + /assemble     <- team orchestration layer
-      |
-  /blossom + primitives   <- exploration and composition layer
-```
-
-- `/sprint` still runs inside each bounded context during Execute. Multi-human workflows add the contract envelope around it.
-- `/assemble` can be used to set up each human's agent team before Prep begins.
-- `/blossom` is an alternative to `/storm-prep` for unconstrained exploration — use it when you don't yet know the domain boundaries.
 
 For single-human workflows, see [Workflow Pipelines](pipelines.md). For team setup, see [Team System Guide](team-system-guide.md).
