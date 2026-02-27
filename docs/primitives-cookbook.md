@@ -34,19 +34,19 @@ For chain patterns without annotations, see [primitives-recipes.md](./primitives
    - source: /home/ty/workspace/tackline/skills/assess/SKILL.md:1-8
    - confidence: CONFIRMED
 
-4. **blossom skill** — has name, description, argument-hint, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob, Bash(bd:*), Task, TeamCreate, TaskCreate, SendMessage), PLUS context: fork
+4. **blossom skill** — has name, description, argument-hint, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Task, TeamCreate, TaskCreate, SendMessage), PLUS context: fork
    - source: /home/ty/workspace/tackline/skills/blossom/SKILL.md:1-11
    - confidence: CONFIRMED
 
-5. **retro skill** — has name, description, disable-model-invocation (true), user-invocable (true), allowed-tools (Read, Grep, Glob, Write, Bash(bd:*)), NO argument-hint
+5. **retro skill** — has name, description, disable-model-invocation (true), user-invocable (true), allowed-tools (Read, Grep, Glob, Write, Bash(bd:*), Bash(tk:*)), NO argument-hint
    - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:1-8
    - confidence: CONFIRMED
 
-6. **sprint skill** — has name, description, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob, Task, Bash(bd:*)), NO argument-hint
+6. **sprint skill** — has name, description, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Grep, Glob, Task, Bash(bd:*), Bash(tk:*)), NO argument-hint
    - source: /home/ty/workspace/tackline/skills/sprint/SKILL.md:1-8
    - confidence: CONFIRMED
 
-7. **assemble skill** — has name, description, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Write, Edit, Grep, Glob, Bash(bd:*), TeamCreate, SendMessage), NO argument-hint
+7. **assemble skill** — has name, description, disable-model-invocation (false), user-invocable (true), allowed-tools (Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(tk:*), TeamCreate, SendMessage), NO argument-hint
    - source: /home/ty/workspace/tackline/skills/assemble/SKILL.md:1-8
    - confidence: CONFIRMED
 
@@ -268,17 +268,17 @@ Use this chain (gather → distill → diff-ideas) when making technical decisio
 
 ## Recipe 3: Triage Open Backlog
 
-**Goal**: Prioritize open beads backlog items by value-effort ratio and identify what to tackle next.
+**Goal**: Prioritize open backlog items by value-effort ratio and identify what to tackle next.
 
 **Chain**: gather → rank → decompose
 
-### Step 1: /gather open beads issues
+### Step 1: /gather open backlog issues
 
 ```markdown
-## Findings on Open Beads Issues
+## Findings on Open Backlog Issues
 
 **Source**: /gather
-**Input**: open beads issues from bd stats
+**Input**: open backlog issues from bd stats (or tk stats)
 
 ### Items
 
@@ -287,7 +287,7 @@ Use this chain (gather → distill → diff-ideas) when making technical decisio
    - confidence: CONFIRMED
 
 2. **Interactive /assemble skill** — implement interactive prompting for team member addition in /assemble workflow
-   - source: .beads/ database (inferred from P3 backlog mention in project memory)
+   - source: .beads/ (or .tacks/) database (inferred from P3 backlog mention in project memory)
    - confidence: LIKELY
 
 3. **Team documentation gaps** — improve documentation for team creation, learnings management, and cross-agent coordination
@@ -307,7 +307,7 @@ Use this chain (gather → distill → diff-ideas) when making technical decisio
 Five open/deferred issues identified: interactive /assemble (P3), team docs (P3), hook precedence (untested), cost tracking (missing), plus 5 ready-to-work issues from bd stats. The backlog is small (9 open) with most work complete (95 closed). Two items are explicitly marked P3 (low priority), suggesting the backlog is well-triaged but not yet scheduled.
 ```
 
-**Commentary**: Gather found 5 open/deferred issues from memory and beads stats. Now we rank by value-effort to prioritize.
+**Commentary**: Gather found 5 open/deferred issues from memory and backlog stats. Now we rank by value-effort to prioritize.
 
 ---
 
@@ -328,7 +328,7 @@ Five open/deferred issues identified: interactive /assemble (P3), team docs (P3)
    - source: CLAUDE.md gotchas
 
 3. **Interactive /assemble skill** — add interactive prompting for team member roles in /assemble
-   - source: .beads/ database (P3)
+   - source: .beads/ (or .tacks/) database (P3)
 
 4. **No OTel/cost tracking** — add observability and cost measurement
    - source: project memory MEMORY.md gaps

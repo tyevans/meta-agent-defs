@@ -14,7 +14,7 @@ A comprehensive guide to the persistent learning team system for Claude Code —
 6. [Pruning & Maintenance](#pruning--maintenance)
 7. [Cross-Agent Knowledge Sharing](#cross-agent-knowledge-sharing)
 8. [Workflow Integration](#workflow-integration)
-9. [Working Without Beads](#working-without-beads)
+9. [Working Without Beads/Tacks](#working-without-beadstacks)
 10. [Troubleshooting & Tips](#troubleshooting--tips)
 
 ---
@@ -581,7 +581,7 @@ The team system integrates with four primary skills: `/assemble`, `/standup`, `/
 2. Proposes roles and ownership patterns
 3. Creates `.claude/team.yaml`
 4. Creates `memory/agents/<name>/learnings.md` for each member
-5. Optionally initializes a beads backlog
+5. Optionally initializes a backlog (beads or tacks)
 
 **Output:** A fully configured team ready for dispatch.
 
@@ -600,7 +600,7 @@ The team system integrates with four primary skills: `/assemble`, `/standup`, `/
 **What it does:**
 1. Reads team manifest and learnings files
 2. Checks git activity by ownership patterns
-3. Checks backlog (if beads available)
+3. Checks backlog (if beads or tacks available)
 4. Reports per-member status and learning health
 
 **Output:** A status board showing team activity, learning health, blockers, and suggested actions.
@@ -658,12 +658,12 @@ No blockers
 
 **Output:** Completed tasks + updated learnings files.
 
-**Example with beads:**
+**Example with beads/tacks:**
 ```
 /sprint
 ```
 
-**Example without beads:**
+**Example without beads/tacks:**
 ```
 /sprint Add user authentication
 ```
@@ -785,22 +785,22 @@ The complete team workflow cycle:
 
 ---
 
-## Working Without Beads
+## Working Without Beads/Tacks
 
-The team system **does not require beads** (the `bd` CLI backlog tracker). All team skills support a fallback mode for projects without beads.
+The team system **does not require beads or tacks** (the `bd`/`tk` CLI backlog trackers). All team skills support a fallback mode for projects without either tool.
 
 ### How Skills Adapt
 
-| Skill | With Beads | Without Beads |
-|-------|-----------|---------------|
+| Skill | With Beads/Tacks | Without Beads/Tacks |
+|-------|-----------------|---------------------|
 | `/assemble` | Optionally creates initial epic | Skips backlog initialization |
 | `/standup` | Shows backlog snapshot (ready, in-progress, blocked) | Shows only git activity + learning health |
-| `/sprint` | Pulls tasks from `bd ready` | Accepts manual task descriptions from user |
+| `/sprint` | Pulls tasks from `bd ready` (or `tk ready`) | Accepts manual task descriptions from user |
 | `/retro` | Includes backlog stats in analysis | Relies on git + conversation context only |
 
 ### Manual Task Dispatch
 
-If you don't have beads, you provide task descriptions directly to `/sprint`:
+If you don't have beads or tacks, you provide task descriptions directly to `/sprint`:
 
 ```
 /sprint Add pagination to user listing endpoint
@@ -812,17 +812,17 @@ Sprint will:
 3. Dispatch as normal
 4. Persist learnings as normal
 
-The learning loop works identically — beads just provide backlog structure and task tracking.
+The learning loop works identically — beads/tacks just provide backlog structure and task tracking.
 
-### When to Use Beads
+### When to Use Beads/Tacks
 
-**Use beads if:**
+**Use beads/tacks if:**
 - You want structured backlog management
 - You need dependency tracking between tasks
 - You want to track task status (ready, in-progress, blocked, closed)
 - You're managing 10+ tasks across sessions
 
-**Skip beads if:**
+**Skip if:**
 - You have <5 tasks total
 - Tasks are simple and don't have dependencies
 - You prefer freeform task descriptions
@@ -989,7 +989,7 @@ The persistent learning team system transforms agent dispatch from stateless exe
 4. **Cross-agent notes** route knowledge between team members
 5. **Pruning** keeps learnings focused and high-signal
 6. **Seven skills** integrate the system: `/assemble`, `/standup`, `/sprint`, `/retro`, `/curate`, `/promote`, `/tend`
-7. **Beads are optional** — teams work with or without backlog tracking
+7. **Beads/tacks are optional** — teams work with or without backlog tracking
 
 **Next steps:**
 

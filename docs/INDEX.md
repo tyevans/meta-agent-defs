@@ -17,7 +17,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Optimize something** -> /optimize (profile -> bottleneck -> fix -> measure -> iterate)
 - **Test an implementation** -> /test-strategy (classify spec type, write tests, enforce red-green gates)
 - **Review code** -> /review (structured code review)
-- **File a bug** -> /bug (structured bug report to beads backlog)
+- **File a bug** -> /bug (structured bug report to backlog)
 - **Understand a definition's history** -> /evolution (file change history and stability) or /drift (cross-definition convergence/divergence)
 - **Manage a team** -> /assemble (create) -> /standup (sync) -> /sprint (dispatch)
 - **Understand an agent's capabilities** -> /diagnose-agent (struggle profile from historical evidence)
@@ -75,7 +75,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /tracer | Iterative thin-slice implementation | fork |
 | /deploy | Structured deployment: readiness gate, strategy selection, execution, monitoring, rollback | fork |
 | /review | Structured code review (5 dimensions) | fork |
-| /bug | File structured bug reports to beads backlog | inline |
+| /bug | File structured bug reports to backlog | inline |
 | /consolidate | Backlog dedup, stale detection, cleanup | fork |
 | /session-health | Context load and drift diagnostic | inline |
 | /handoff | Session transition capture | inline |
