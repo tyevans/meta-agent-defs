@@ -28,4 +28,6 @@
 - For project-specific workflow skills (deploy, debug, migrate), the pattern "detect tooling via config file presence, map to concrete commands, fallback to asking user" keeps the skill practical without enumerating every environment (added: 2026-02-25, dispatch: tack-2rli.14)
 - Cross-project skills (those operating on `$PROJECT_PATH` or external directories) are categorically incompatible with worktree isolation — the sandboxing happens in the wrong repo (added: 2026-02-25, dispatch: tack-2rli.7)
 
+- Skills have three tiers of backlog interaction: creation (blossom, consolidate, spec, bootstrap), management (standup, sprint, retro, team-meeting, status), and consumption (tracer, optimize, deploy). Creation-tier skills use .beads/.tacks detection most heavily (added: 2026-02-26, dispatch: sprint-tacks-alt)
+
 ## Task-Relevant

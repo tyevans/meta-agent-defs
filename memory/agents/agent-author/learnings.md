@@ -11,4 +11,6 @@
 
 - team-protocol.md has both Required and Optional field subsections under "Team Manifest" — new optional member fields go in the Optional Fields table and YAML example should show the field on one member only to signal optionality (added: 2026-02-25, dispatch: tack-pca6.6)
 
+- When searching for phrases in definition files, the actual text may embed the phrase differently than expected (e.g., "beads dependencies" appears as "dependencies between beads") — always grep for individual terms and read surrounding context (added: 2026-02-26, dispatch: sprint-tacks-alt)
+
 ## Task-Relevant
