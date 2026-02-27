@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(bd:*)",
+      "Bash(tk:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
@@ -20,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bd prime 2>/dev/null || echo 'Beads context: Run bd ready to see available work'"
+            "command": "BK=''; if [ -d .tacks ]; then BK=tk; elif [ -d .beads ]; then BK=bd; fi; if [ -n \"$BK\" ]; then $BK prime 2>/dev/null || true; else echo 'Backlog context: No task manager found. Install tacks (tk) or beads (bd).'; fi"
           }
         ]
       }
@@ -31,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bd sync 2>/dev/null || true"
+            "command": "if [ -d .beads ]; then bd sync 2>/dev/null || true; fi"
           }
         ]
       }

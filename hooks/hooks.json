@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== Session Start ==='; git log --oneline -3 2>/dev/null | sed 's/^/Last:    /'; git diff --stat --cached 2>/dev/null; echo \"Tree:    $(git status --short 2>/dev/null | wc -l) uncommitted files\"; bd status --no-activity 2>/dev/null || true; bd prime 2>/dev/null || true; echo '=== ==='"
+            "command": "echo '=== Session Start ==='; git log --oneline -3 2>/dev/null | sed 's/^/Last:    /'; git diff --stat --cached 2>/dev/null; echo \"Tree:    $(git status --short 2>/dev/null | wc -l) uncommitted files\"; BK=''; if [ -d .tacks ]; then BK=tk; elif [ -d .beads ]; then BK=bd; fi; if [ -n \"$BK\" ]; then $BK prime 2>/dev/null || true; fi; echo '=== ==='"
           },
           {
             "type": "command",
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bd sync 2>/dev/null || true; mkdir -p memory/sessions && { NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ); printf '## Pre-Compact Snapshot\\n**Time**: %s\\n\\n### In-Progress Tasks\\n' \"$NOW\"; bd list --status=in_progress 2>/dev/null || echo '(beads unavailable)'; printf '\\n### Recent Commits\\n'; git log --oneline -5 2>/dev/null || echo '(no git)'; printf '\\n### Working Tree\\n'; git status --short 2>/dev/null || echo '(no git)'; printf '\\n### Open Questions\\n(fill in before context is lost)\\n\\n### Working Theories\\n(fill in before context is lost)\\n\\n### Key Decisions\\n(fill in before context is lost)\\n'; } > memory/sessions/pre-compact.md 2>/dev/null || true"
+            "command": "BK=''; if [ -d .tacks ]; then BK=tk; elif [ -d .beads ]; then BK=bd; fi; if [ \"$BK\" = bd ]; then bd sync 2>/dev/null || true; fi; mkdir -p memory/sessions && { NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ); printf '## Pre-Compact Snapshot\\n**Time**: %s\\n\\n### In-Progress Tasks\\n' \"$NOW\"; if [ -n \"$BK\" ]; then $BK list --status=in_progress 2>/dev/null || echo '(backlog unavailable)'; else echo '(no backlog tool)'; fi; printf '\\n### Recent Commits\\n'; git log --oneline -5 2>/dev/null || echo '(no git)'; printf '\\n### Working Tree\\n'; git status --short 2>/dev/null || echo '(no git)'; printf '\\n### Open Questions\\n(fill in before context is lost)\\n\\n### Working Theories\\n(fill in before context is lost)\\n\\n### Key Decisions\\n(fill in before context is lost)\\n'; } > memory/sessions/pre-compact.md 2>/dev/null || true"
           }
         ]
       }
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\"git push' 2>/dev/null; then if [ -d .beads ]; then bd sync 2>/dev/null || true; fi; fi"
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE '\"git push' 2>/dev/null; then if [ -d .tacks ] || [ -d .beads ]; then if [ -d .beads ]; then bd sync 2>/dev/null || true; fi; fi; fi"
           }
         ]
       },
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=\"$CLAUDE_TOOL_INPUT\"; if echo \"$INPUT\" | grep -qE '\"git reset --hard' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git reset --hard will discard all uncommitted changes. This is irreversible.' >&2; elif echo \"$INPUT\" | grep -qE '\"git checkout \\.' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git checkout . will discard all unstaged changes. This is irreversible.' >&2; elif echo \"$INPUT\" | grep -qE '\"git clean -f' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git clean -f will permanently delete untracked files.' >&2; elif echo \"$INPUT\" | grep -qE '\"rm -rf [^\"]*[^/.]' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: rm -rf detected on a non-trivial path. Verify the target before proceeding.' >&2; elif echo \"$INPUT\" | grep -qE '\\.beads/' 2>/dev/null && echo \"$INPUT\" | grep -qvE '\"bd ' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: Direct .beads/ file operation detected. Use bd commands instead of modifying .beads/ internals directly.' >&2; fi"
+            "command": "INPUT=\"$CLAUDE_TOOL_INPUT\"; if echo \"$INPUT\" | grep -qE '\"git reset --hard' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git reset --hard will discard all uncommitted changes. This is irreversible.' >&2; elif echo \"$INPUT\" | grep -qE '\"git checkout \\.' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git checkout . will discard all unstaged changes. This is irreversible.' >&2; elif echo \"$INPUT\" | grep -qE '\"git clean -f' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: git clean -f will permanently delete untracked files.' >&2; elif echo \"$INPUT\" | grep -qE '\"rm -rf [^\"]*[^/.]' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: rm -rf detected on a non-trivial path. Verify the target before proceeding.' >&2; elif echo \"$INPUT\" | grep -qE '\\.(beads|tacks)/' 2>/dev/null && echo \"$INPUT\" | grep -qvE '\"(bd|tk) ' 2>/dev/null; then echo 'DESTRUCTIVE WARNING: Direct backlog file operation detected. Use bd/tk commands instead of modifying internals directly.' >&2; fi"
           }
         ]
       }
@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'REVIEW GATE: Agent completed. Verify deliverable quality before proceeding:' >&2; echo '  [ ] Spike sections present: Firm Tasks Found | Areas Needing Deeper Spikes | Clean Areas | Summary' >&2; echo '  [ ] Findings tagged with confidence: CONFIRMED | LIKELY | POSSIBLE' >&2; echo '  [ ] Evidence includes file paths and line numbers' >&2; echo '  [ ] Gaps captured as new beads | Downstream connections identified' >&2"
+            "command": "echo 'REVIEW GATE: Agent completed. Verify deliverable quality before proceeding:' >&2; echo '  [ ] Spike sections present: Firm Tasks Found | Areas Needing Deeper Spikes | Clean Areas | Summary' >&2; echo '  [ ] Findings tagged with confidence: CONFIRMED | LIKELY | POSSIBLE' >&2; echo '  [ ] Evidence includes file paths and line numbers' >&2; echo '  [ ] Gaps captured as new tasks | Downstream connections identified' >&2"
           }
         ]
       },
@@ -83,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mkdir -p memory/sessions && NOW=$(date -u '+%Y-%m-%dT%H-%M-%SZ') && FILE=\"memory/sessions/${NOW}.md\" && echo \"## Session: $NOW\" > \"$FILE\" && echo '' >> \"$FILE\" && echo '### Commits' >> \"$FILE\" && COMMITS=$(git log --oneline -10 2>/dev/null); if [ -n \"$COMMITS\" ]; then echo \"$COMMITS\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Working Tree' >> \"$FILE\" && TREE=$(git status --short 2>/dev/null); if [ -n \"$TREE\" ]; then echo \"$TREE\" >> \"$FILE\"; else echo 'clean' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Backlog' >> \"$FILE\" && BACKLOG=$(bd status --no-activity 2>/dev/null); if [ -n \"$BACKLOG\" ]; then echo \"$BACKLOG\" >> \"$FILE\"; else echo '(beads unavailable)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### In Progress' >> \"$FILE\" && INPROG=$(bd list --status=in_progress 2>/dev/null); if [ -n \"$INPROG\" ]; then echo \"$INPROG\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && cp \"$FILE\" memory/sessions/last.md 2>/dev/null || true && ls -t memory/sessions/[0-9]*.md 2>/dev/null | tail -n +4 | xargs rm -f 2>/dev/null || true; bd sync 2>/dev/null || true"
+            "command": "BK=''; if [ -d .tacks ]; then BK=tk; elif [ -d .beads ]; then BK=bd; fi; mkdir -p memory/sessions && NOW=$(date -u '+%Y-%m-%dT%H-%M-%SZ') && FILE=\"memory/sessions/${NOW}.md\" && echo \"## Session: $NOW\" > \"$FILE\" && echo '' >> \"$FILE\" && echo '### Commits' >> \"$FILE\" && COMMITS=$(git log --oneline -10 2>/dev/null); if [ -n \"$COMMITS\" ]; then echo \"$COMMITS\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Working Tree' >> \"$FILE\" && TREE=$(git status --short 2>/dev/null); if [ -n \"$TREE\" ]; then echo \"$TREE\" >> \"$FILE\"; else echo 'clean' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Backlog' >> \"$FILE\" && if [ -n \"$BK\" ]; then BACKLOG=$($BK status --no-activity 2>/dev/null); if [ -n \"$BACKLOG\" ]; then echo \"$BACKLOG\" >> \"$FILE\"; else echo '(no backlog tool)' >> \"$FILE\"; fi; else echo '(no backlog tool)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### In Progress' >> \"$FILE\" && if [ -n \"$BK\" ]; then INPROG=$($BK list --status=in_progress 2>/dev/null); if [ -n \"$INPROG\" ]; then echo \"$INPROG\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi; else echo '(none)' >> \"$FILE\"; fi && cp \"$FILE\" memory/sessions/last.md 2>/dev/null || true && ls -t memory/sessions/[0-9]*.md 2>/dev/null | tail -n +4 | xargs rm -f 2>/dev/null || true; if [ \"$BK\" = bd ]; then bd sync 2>/dev/null || true; fi"
           }
         ]
       }
