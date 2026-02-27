@@ -1,0 +1,24 @@
+{
+  "name": "tackline",
+  "owner": {
+    "name": "ty"
+  },
+  "metadata": {
+    "description": "Composable workflow skills, agents, and hooks for Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "tackline",
+      "source": "./",
+      "description": "47 composable workflow skills, specialized agents, and session hooks for Claude Code orchestration",
+      "version": "1.0.0",
+      "author": {
+        "name": "ty"
+      },
+      "repository": "https://github.com/tyevans/tackline",
+      "license": "MIT",
+      "keywords": ["workflow", "skills", "agents", "orchestration", "composable"],
+      "category": "productivity"
+    }
+  ]
+}
