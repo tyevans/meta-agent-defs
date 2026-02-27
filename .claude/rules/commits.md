@@ -18,7 +18,7 @@ This project uses conventional commits.
 - `feat:` New agent, command, hook, or workflow definition
 - `fix:` Correct an error in an existing definition
 - `docs:` README updates, CLAUDE.md changes, inline documentation
-- `chore:` Installer changes, gitignore updates, beads state commits, tooling config
+- `chore:` Installer changes, gitignore updates, backlog state commits, tooling config
 - `refactor:` Restructure existing definitions without changing behavior
 
 ## Do This

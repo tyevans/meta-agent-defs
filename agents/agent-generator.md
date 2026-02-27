@@ -1,7 +1,7 @@
 ---
 name: agent-generator
 description: Explores a project's codebase to understand its architecture, patterns, and workflows, then generates tailored project-level agents in .claude/agents/. Use when setting up a new project with Claude Code or when the project needs specialized agents.
-tools: Read, Grep, Glob, Bash(ls:*), Bash(tree:*), Bash(find:*), Bash(cat:*), Bash(bd:*), Bash(mkdir:*), Write, Edit
+tools: Read, Grep, Glob, Bash(ls:*), Bash(tree:*), Bash(find:*), Bash(cat:*), Bash(bd:*), Bash(tk:*), Bash(mkdir:*), Write, Edit
 model: opus
 output-contract: |
   Summary of agents generated (name, purpose, confidence level per agent), agent catalog location, supporting hooks added, recommendations for additional agents. Orchestrator reads summary to verify coverage and dispatch definition-tester for review.

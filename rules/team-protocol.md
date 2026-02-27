@@ -51,7 +51,7 @@ members:
 
 **When to set `isolation: worktree`:**
 - The member's `owns` patterns don't overlap with any other member's patterns
-- The member's tasks don't require reading or writing shared state files (e.g., `memory/team/decisions.md`, `.beads/`)
+- The member's tasks don't require reading or writing shared state files (e.g., `memory/team/decisions.md`, `.beads/`, `.tacks/`)
 - The member's work is self-contained within its owned paths for the duration of the sprint
 
 **Consumed by /sprint**: The sprint skill reads `isolation` at dispatch time and passes worktree-isolated members to the worktree dispatch path. Members with `isolation: none` (or no `isolation` field) are dispatched in the main context.
@@ -171,7 +171,7 @@ Default to Task tool dispatch. Prefer native TeamCreate only when agents must ex
 | Agents must communicate mid-execution (e.g., one agent's output shapes another's next step in real time) | Native TeamCreate |
 | Tasks have shared dependencies but no runtime message exchange | Task tool |
 
-Having dependencies between beads is not sufficient justification for native teams. Use `bd dep add` for ordering, Task for dispatch.
+Having dependencies between beads (or tacks) is not sufficient justification for native teams. Use `bd dep add` (or `tk dep add`) for ordering, Task for dispatch.
 
 ### Injection Invariant
 
