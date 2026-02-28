@@ -61,10 +61,10 @@ Gather finds the current state, assess categorizes by severity, filter focuses o
 ### Example Session
 
 ```
-User: /gather how beads integration works in this repo
-  → Findings on bd commands, hooks, session lifecycle, backlog sync
+User: /gather how backlog integration works in this repo
+  → Findings on bd/tk commands, hooks, session lifecycle, backlog sync
 User: /distill to 6 bullets
-  → bd create/close workflow, SessionStart hook injection, sync export, epic dependencies
+  → bd create/close (or tk create/close) workflow, SessionStart hook injection, sync export, epic dependencies
 User: /verify
   → VERIFIED: SessionStart hook exists in settings.json (line 14); REFUTED: "bd sync runs on every commit" (no git hook found)
 ```

@@ -84,7 +84,7 @@ If any epic state files exist, read them. These contain spike findings, priority
 
 ### 1d. Load Backlog (conditional)
 
-**If `.beads/` exists in the project root**, check the backlog:
+**If `.beads/` or `.tacks/` exists in the project root**, check the backlog:
 
 ```bash
 bd ready
@@ -94,7 +94,7 @@ bd blocked
 
 If a focus area was provided via `$ARGUMENTS`, filter to relevant beads.
 
-**If `.beads/` does not exist**, skip this step. The sprint will accept manual task descriptions from the user instead of pulling from the backlog.
+**If neither `.beads/` nor `.tacks/` exists**, skip this step. The sprint will accept manual task descriptions from the user instead of pulling from the backlog.
 
 ### 1e. Prerequisite Gate (STOP if incomplete)
 

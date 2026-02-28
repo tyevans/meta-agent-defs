@@ -47,7 +47,7 @@ Read `memory/sessions/last.md`. If it does not exist, note "No previous session 
 
 ### 1b. Backlog
 
-**If `.beads/` exists**, run:
+**If `.beads/` or `.tacks/` exists**, run:
 
 ```bash
 bd stats
@@ -55,7 +55,7 @@ bd ready
 bd epic status
 ```
 
-**If `.beads/` does not exist**, note "Beads not configured."
+**If neither `.beads/` nor `.tacks/` exists**, note "Beads not configured."
 
 ### 1c. Recent Activity
 

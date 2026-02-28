@@ -19,7 +19,7 @@ This demo shows how composable primitives chain together via conversation contex
 ### Items
 
 1. **Session data collection** — What recap needs to read
-   - Scope: Git activity (commits, diffs), beads activity (bd stats, task lists), conversation context (major actions taken)
+   - Scope: Git activity (commits, diffs), backlog activity (bd stats or tk stats, task lists), conversation context (major actions taken)
    - Boundary: Does NOT include agent memory or team learnings (that's /retro's domain)
 
 2. **Output format design** — How recap presents information
@@ -36,7 +36,7 @@ This demo shows how composable primitives chain together via conversation contex
 
 ### Summary
 
-Adding /recap requires four bounded sub-parts: determining what data to collect from the session (git + beads + context), designing the output format (structured markdown), integrating with the skill system (frontmatter + tools), and defining the user experience (when to invoke, how much detail). These areas are independently investigable and collectively cover the full feature scope.
+Adding /recap requires four bounded sub-parts: determining what data to collect from the session (git + backlog + context), designing the output format (structured markdown), integrating with the skill system (frontmatter + tools), and defining the user experience (when to invoke, how much detail). These areas are independently investigable and collectively cover the full feature scope.
 ```
 
 > **Commentary**: Decompose split "add /recap" into 4 investigation areas grounded in how this repo's skills actually work. Notice it distinguishes /recap from /retro (which handles learnings) and identifies that recap is NOT a composable primitive (it's a terminal skill). Now we know what to investigate.
@@ -61,7 +61,7 @@ Adding /recap requires four bounded sub-parts: determining what data to collect 
 2. **Beads activity via bd commands** — /retro, /handoff, /session-health query backlog
    - source: /home/ty/workspace/tackline/skills/session-health/SKILL.md:62-65
    - confidence: CONFIRMED
-   - Detail: `bd stats` for overview, `bd list --status=closed` for completed work, `bd ready` for available work. All use `2>/dev/null` for graceful failure when .beads/ doesn't exist.
+   - Detail: `bd stats` (or `tk stats`) for overview, `bd list --status=closed` (or `tk list --status=closed`) for completed work, `bd ready` (or `tk ready`) for available work. All use `2>/dev/null` for graceful failure when .beads/ (or .tacks/) doesn't exist.
 
 3. **Conversation context via self-reflection** — All three skills review conversation turns
    - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:60-65
@@ -73,17 +73,17 @@ Adding /recap requires four bounded sub-parts: determining what data to collect 
    - confidence: POSSIBLE
    - Detail: Could use `git diff --stat` or `git diff --name-status` to show which files were modified. Would complement git log's commit messages.
 
-5. **Conditional beads support** — Skills check for .beads/ existence before running bd
+5. **Conditional backlog support** — Skills check for .beads/ (or .tacks/) existence before running bd/tk
    - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:46-57
    - confidence: CONFIRMED
-   - Detail: Retro explicitly says "If `.beads/` exists... check backlog activity. If not, skip this step and rely on git + context alone."
+   - Detail: Retro explicitly says "If `.beads/` exists... check backlog activity. If not, skip this step and rely on git + context alone." (applies to tacks too)
 
 ### Summary
 
-Existing skills (/retro, /handoff, /session-health) collect session data via three mechanisms: git bash commands (log, status), beads commands (bd stats, bd list with status filters), and direct conversation context review. All beads commands use `2>/dev/null` for graceful degradation. File change inventory (git diff --stat) is NOT currently used but would be a natural addition for /recap.
+Existing skills (/retro, /handoff, /session-health) collect session data via three mechanisms: git bash commands (log, status), backlog commands (bd/tk stats, bd/tk list with status filters), and direct conversation context review. All backlog commands use `2>/dev/null` for graceful degradation. File change inventory (git diff --stat) is NOT currently used but would be a natural addition for /recap.
 ```
 
-> **Commentary**: Gather found 5 patterns by reading actual skill files. Three are CONFIRMED (seen in code), one is POSSIBLE (file change inventory — not currently used but logical), one shows conditional behavior (beads-optional). Now we have concrete patterns to work with.
+> **Commentary**: Gather found 5 patterns by reading actual skill files. Three are CONFIRMED (seen in code), one is POSSIBLE (file change inventory — not currently used but logical), one shows conditional behavior (backlog-optional). Now we have concrete patterns to work with.
 
 ---
 
@@ -137,7 +137,7 @@ Conversation context wins on availability, intent capture, and user value becaus
 
 1. **What Got Done** — Narrative summary of completed work
    - High user value: Answers "what did I accomplish?" without reading code
-   - Based on conversation context + closed beads
+   - Based on conversation context + closed backlog tasks
 
 2. **Files Changed** — Inventory of modified files with change types
    - Medium user value: Shows scope quantitatively, useful for PR prep
@@ -153,7 +153,7 @@ Conversation context wins on availability, intent capture, and user value becaus
 
 5. **Next Steps** — Recommended actions for the next session
    - Medium user value: Helpful for continuity, but /handoff already does this deeply
-   - Based on conversation context + bd ready
+   - Based on conversation context + bd ready (or tk ready)
 
 ### Criteria
 
@@ -195,7 +195,7 @@ description: "Summarize what happened in the current session via narrative, time
 argument-hint: "[optional: last N commits | topic filter]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(bd:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(bd:*), Bash(tk:*)
 ---
 
 # Recap: Session Summary
@@ -216,7 +216,7 @@ You are running a **session recap** — summarizing what happened in the current
 # TODO: Implement git log collection
 
 #### 1b. Beads Activity (conditional)
-# TODO: Implement bd stats/list queries with graceful failure
+# TODO: Implement bd/tk stats/list queries with graceful failure
 
 #### 1c. File Changes
 # TODO: Implement git diff --stat collection
@@ -248,7 +248,7 @@ You are running a **session recap** — summarizing what happened in the current
 - Keep it under 30 lines — this is a quick scan, not a full retro
 - TODO: Define brevity vs. detail tradeoff based on $ARGUMENTS
 - TODO: Handle sessions with no git activity gracefully
-- TODO: Skip beads section if .beads/ doesn't exist
+- TODO: Skip backlog section if .beads/ or .tacks/ doesn't exist
 ```
 
 2. **install.sh symlink entry** — No changes needed
@@ -259,10 +259,10 @@ You are running a **session recap** — summarizing what happened in the current
 
 ### Summary
 
-The sketch shows /recap's file structure, frontmatter, and three-phase workflow (gather session data, generate summary, emit output). All implementation points are marked with TODO comments. The skill follows existing patterns from /retro and /handoff (conditional beads support, git bash usage, conversation context review) but focuses narrowly on summarization rather than reflection or transition. Estimated total: ~150 lines once TODOs are filled in, placing it between /session-health (~100 lines) and /handoff (~180 lines).
+The sketch shows /recap's file structure, frontmatter, and three-phase workflow (gather session data, generate summary, emit output). All implementation points are marked with TODO comments. The skill follows existing patterns from /retro and /handoff (conditional backlog support, git bash usage, conversation context review) but focuses narrowly on summarization rather than reflection or transition. Estimated total: ~150 lines once TODOs are filled in, placing it between /session-health (~100 lines) and /handoff (~180 lines).
 ```
 
-> **Commentary**: Sketch produced the actual file with structure and TODO placeholders showing where implementation goes. Notice it uses the ranked output sections (What Got Done, Key Actions, Files Changed) and mirrors patterns from /retro (conditional beads, git commands). No actual implementation — just the skeleton. Now we know what the file looks like.
+> **Commentary**: Sketch produced the actual file with structure and TODO placeholders showing where implementation goes. Notice it uses the ranked output sections (What Got Done, Key Actions, Files Changed) and mirrors patterns from /retro (conditional backlog, git commands). No actual implementation — just the skeleton. Now we know what the file looks like.
 
 ---
 
@@ -282,9 +282,9 @@ The sketch shows /recap's file structure, frontmatter, and three-phase workflow 
    - source: /home/ty/workspace/tackline/install.sh:89-95
    - confidence: CONFIRMED
 
-2. **Claim: /retro uses conditional beads support**
+2. **Claim: /retro uses conditional backlog support**
    - Status: VERIFIED
-   - Evidence: Retro Phase 1b explicitly checks "If `.beads/` exists in the project root" before running bd commands
+   - Evidence: Retro Phase 1b explicitly checks "If `.beads/` exists in the project root" before running bd commands (applies to tacks equivalently)
    - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:46-57
    - confidence: CONFIRMED
 
@@ -296,7 +296,7 @@ The sketch shows /recap's file structure, frontmatter, and three-phase workflow 
 
 4. **Claim: allowed-tools Bash(git:*) restricts to git commands only**
    - Status: VERIFIED
-   - Evidence: Existing skills use Bash(bd:*) and Bash(git:*) syntax. settings.json hook matcher uses similar prefix patterns.
+   - Evidence: Existing skills use Bash(bd:*), Bash(tk:*), and Bash(git:*) syntax. settings.json hook matcher uses similar prefix patterns.
    - source: /home/ty/workspace/tackline/skills/retro/SKILL.md:7, /home/ty/workspace/tackline/settings.json
    - confidence: CONFIRMED
 
@@ -314,7 +314,7 @@ The sketch shows /recap's file structure, frontmatter, and three-phase workflow 
 
 ### Summary
 
-Five of six claims verified. Install.sh auto-symlinking (VERIFIED), conditional beads pattern (VERIFIED), allowed-tools prefix syntax (VERIFIED), disable-model-invocation semantics (VERIFIED), and file length estimates (VERIFIED with minor correction). The claim about excluding Next Steps is UNCERTAIN — while /handoff owns session transitions, /session-health also suggests next steps for its diagnostic use case. Recommendation: Include a lightweight "Suggested Next" section in /recap (1-2 bullets max) for continuity, but keep it minimal to avoid overlap with /handoff's detailed transition planning.
+Five of six claims verified. Install.sh auto-symlinking (VERIFIED), conditional backlog pattern (VERIFIED), allowed-tools prefix syntax (VERIFIED), disable-model-invocation semantics (VERIFIED), and file length estimates (VERIFIED with minor correction). The claim about excluding Next Steps is UNCERTAIN — while /handoff owns session transitions, /session-health also suggests next steps for its diagnostic use case. Recommendation: Include a lightweight "Suggested Next" section in /recap (1-2 bullets max) for continuity, but keep it minimal to avoid overlap with /handoff's detailed transition planning.
 ```
 
 > **Commentary**: Verify checked 6 claims from the sketch against actual codebase evidence. Found 5 VERIFIED, 0 REFUTED, 1 UNCERTAIN. The UNCERTAIN finding (Next Steps section) surfaced nuance — /session-health includes next steps despite not being a transition tool, so /recap could reasonably include a minimal version. This shows verify's value: it found a design decision that needed refinement.

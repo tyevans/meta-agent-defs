@@ -33,7 +33,7 @@ User: /gather skill quality patterns in skills/
    - source: skills/blossom/SKILL.md:30, skills/gather/SKILL.md:23, skills/distill/SKILL.md:21
    - confidence: CONFIRMED
 
-4. **Bash tool restriction violations** — Several skills use `Bash(bd:*)` and `Bash(git:*)` prefixes, but consolidate line 11 uses `!bd list --status=open` which violates the restriction format. The `!` prefix is not documented in skill-authoring rules.
+4. **Bash tool restriction violations** — Several skills use `Bash(bd:*)`, `Bash(tk:*)`, and `Bash(git:*)` prefixes, but consolidate line 11 uses `!bd list --status=open` which violates the restriction format. The `!` prefix is not documented in skill-authoring rules.
    - source: skills/consolidate/SKILL.md:11, .claude/rules/skill-authoring.md:35
    - confidence: CONFIRMED
 
@@ -318,11 +318,11 @@ User: /sketch fixes for critical issues
    ```markdown
    ---
    name: consolidate
-   description: "Review and tighten the beads backlog..."
+   description: "Review and tighten the backlog..."
    argument-hint: "[area or scope]"
    disable-model-invocation: true
    user-invocable: true
-   allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
+   allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
    context: fork
    ---
 

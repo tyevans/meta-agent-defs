@@ -8,14 +8,14 @@ Hooks are configured in `~/.claude/settings.json` (managed by the user, not by t
 
 | Hook | When | What |
 |------|------|------|
-| SessionStart | Every new session | Pre-session diagnostics (dirty tree, unpushed commits) + loads beads context |
-| PreCompact | Before context compaction | Flushes beads state so nothing is lost |
-| PreToolUse (Bash) | Before `git push` | Warns if beads changes are uncommitted |
+| SessionStart | Every new session | Pre-session diagnostics (dirty tree, unpushed commits) + loads backlog context (auto-detects beads or tacks) |
+| PreCompact | Before context compaction | Flushes backlog state so nothing is lost (auto-detects beads or tacks) |
+| PreToolUse (Bash) | Before `git push` | Warns if backlog changes are uncommitted |
 | PreToolUse (Bash) | Before destructive commands | Warns on `git reset --hard`, `git checkout .`, `git clean -f`, `rm -rf` |
 | PostToolUse (Task) | After any subagent completes | Review gate reminder: verify deliverable before moving on |
-| SessionEnd | Session closes | Auto-syncs beads state |
+| SessionEnd | Session closes | Auto-syncs backlog state (auto-detects beads or tacks) |
 
-All hooks fail gracefully with `|| true` for optional tools, so projects without beads installed still work fine.
+All hooks fail gracefully with `|| true` for optional tools, so projects without beads or tacks installed still work fine.
 
 ## MCP Servers
 

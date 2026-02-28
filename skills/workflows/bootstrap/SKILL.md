@@ -240,7 +240,7 @@ If `settings.json` is invalid JSON, report it and stop -- broken settings will s
 
 ### 3c. Beads Doctor (conditional)
 
-If `.beads/` exists in `$PROJECT_PATH`:
+If `.beads/` or `.tacks/` exists in `$PROJECT_PATH`:
 
 ```bash
 cd "$PROJECT_PATH" && bd doctor

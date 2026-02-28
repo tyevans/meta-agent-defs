@@ -330,14 +330,14 @@ After completing the report, extract architectural findings discovered during im
 
 If follow-up work was identified:
 
-**If `.beads/` exists in the project root**, create beads tasks:
+**If `.beads/` or `.tacks/` exists in the project root**, create beads tasks:
 
 ```bash
 bd create --title="[follow-up task]" --type=task --priority=[0-4] \
   --description="Follow-up from tracer: [feature name]. [Details and context.]"
 ```
 
-**If `.beads/` does not exist**, write follow-up tasks to `TODO.md` in the project root:
+**If neither `.beads/` nor `.tacks/` exists**, write follow-up tasks to `TODO.md` in the project root:
 
 ```markdown
 ## Follow-up from tracer: [feature name]
@@ -393,7 +393,7 @@ Task({
 8. **Stop at any phase.** If the session ends early, you have working code at the last committed phase.
 9. **Widen one concern at a time.** Don't mix error handling and validation in the same pass -- each pass is focused.
 10. **Follow project conventions.** Match existing patterns for error handling, validation, testing, and file organization.
-11. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks (or in `TODO.md` if `.beads/` is not present).
+11. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks (or in `TODO.md` if a backlog tool is not available).
 
 ## See Also
 

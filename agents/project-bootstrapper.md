@@ -1,7 +1,7 @@
 ---
 name: project-bootstrapper
 description: Bootstraps a new project with beads task management, CLAUDE.md, hooks, and Claude Code settings. Use when starting a new project or adding Claude Code support to an existing project.
-tools: Read, Grep, Glob, Bash(ls:*), Bash(cat:*), Bash(which:*), Bash(bd:*), Bash(git log:*), Bash(mkdir:*), Bash(MEMORY_DIR:*), Bash(echo:*), Write, Edit
+tools: Read, Grep, Glob, Bash(ls:*), Bash(cat:*), Bash(which:*), Bash(bd:*), Bash(tk:*), Bash(git log:*), Bash(mkdir:*), Bash(MEMORY_DIR:*), Bash(echo:*), Write, Edit
 model: opus
 output-contract: |
   Bootstrap report: stack detected (language, framework, build, test), artifacts created vs skipped (with reasons), missing tools requiring manual install, recommended next step. Orchestrator reads artifacts list to verify completeness.

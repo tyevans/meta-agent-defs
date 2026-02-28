@@ -76,7 +76,7 @@ Read `memory/team/decisions.md` for prior decisions that constrain this goal.
 
 ### 1d. Load Backlog (conditional)
 
-If `.beads/` exists, run:
+If `.beads/` or `.tacks/` exists, run:
 
 ```bash
 bd ready
@@ -299,7 +299,7 @@ TeamDelete()
 
 ### 5b. Create Beads (conditional)
 
-If `.beads/` exists, offer to create beads from the approved plan. First create an epic for the goal, then create tasks as children:
+If `.beads/` or `.tacks/` exists, offer to create beads from the approved plan. First create an epic for the goal, then create tasks as children:
 
 ```bash
 bd create --title="EPIC: [goal]" --type=epic --priority=2

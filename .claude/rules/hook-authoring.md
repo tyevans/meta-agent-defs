@@ -11,7 +11,7 @@ Rules for writing hooks in `~/.claude/settings.json` (global) and `.claude/setti
 
 ## Fail Gracefully
 
-- Always append `|| true` when calling optional tools (`bd`, project-specific CLIs) so hooks do not block the session if the tool is missing
+- Always append `|| true` when calling optional tools (`bd`, `tk`, project-specific CLIs) so hooks do not block the session if the tool is missing
 - Test hook behavior when dependency tools are not installed -- the hook should degrade silently or emit a stderr warning, never error out
 - Use `command -v <tool> >/dev/null 2>&1` to check for tool existence before calling it
 

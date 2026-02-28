@@ -6,16 +6,16 @@ Portable Claude Code workflow definitions (agents, skills, hooks, settings) main
 
 **Posture depends on project type:**
 - **Content-only projects** (no `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, or `Makefile` at root): prefer direct implementation over subagent dispatch for simple edits.
-- **Code projects**: orchestrator-only. Dispatch all implementation to subagents and manage the beads backlog.
+- **Code projects**: orchestrator-only. Dispatch all implementation to subagents and manage the backlog.
 
 This repo itself (tackline) is content-only -- direct edits to `.md` and `.json` files are preferred over spawning agents for trivial changes.
 
 ### Orchestrator Responsibilities
 
-1. **Backlog Management**: Use `bd` commands to triage, prioritize, and track issues
+1. **Backlog Management**: Use `bd`/`tk` commands to triage, prioritize, and track issues
 2. **Task Dispatch**: Delegate implementation work to appropriate subagents via the Task tool
 3. **Coordination**: Manage dependencies between tasks, unblock work, review agent outputs
-4. **Session Management**: Run `bd sync` before completing sessions
+4. **Session Management**: Run `bd sync` (beads) before completing sessions — not needed for tacks
 
 ### Dispatching Strategy
 
@@ -41,22 +41,33 @@ This repo itself (tackline) is content-only -- direct edits to `.md` and `.json`
 
 # Uninstall (uses manifest written during install)
 xargs rm -f < ~/.claude/.tackline.manifest
-
-# Beads
-bd stats                        # Backlog overview
-bd ready                        # Available work
-bd create --title="..." --type=task
-bd create --type=epic --title="..."  # Create epic
-bd create --type=task --parent=<epic-id> --title="..."  # Child of epic
-bd children <epic-id>           # List children
-bd epic status                  # Epic completion progress
-bd epic close-eligible          # Auto-close finished epics
-bd swarm validate <epic-id>     # Validate epic DAG
-bd dep cycles                   # Detect dependency cycles
-bd sync                         # Export to JSONL before session end
-bd query "status=open AND priority<=1"  # Find urgent open work
-bd stale                        # Find forgotten issues
 ```
+
+## Backlog Tool
+
+This project supports both **beads** (`bd`) and **tacks** (`tk`) for task management. Hooks auto-detect which is available by checking for `.beads/` or `.tacks/` directories.
+
+```bash
+# Commands work the same for both tools — substitute tk for bd if using tacks
+bd stats                        # Backlog overview (tk stats)
+bd ready                        # Available work (tk ready)
+bd create --title="..." --type=task  # New task (tk create "..." — uses tags not types)
+bd create --type=epic --title="..."  # Create epic (tk: auto-tagged when subtask created)
+bd create --type=task --parent=<epic-id> --title="..."  # Child of epic (tk create --parent <id> "...")
+bd children <epic-id>           # List children (tk children <id>)
+bd epic status                  # Epic completion progress (tk epic)
+bd epic close-eligible          # Auto-close finished epics
+bd swarm validate <epic-id>     # Validate epic DAG (no tk equivalent)
+bd dep cycles                   # Detect dependency cycles (no tk equivalent)
+bd sync                         # Export to JSONL before session end (not needed for tk)
+bd query "status=open AND priority<=1"  # Find urgent open work (no tk equivalent — use tk list --json | jq)
+bd stale                        # Find forgotten issues (no tk equivalent)
+```
+
+### Key Differences
+- **Types vs Tags**: beads uses `--type=epic|task|bug`; tacks uses tags (`-t epic`, `-t bug`). The `epic` tag is auto-added when a subtask is created.
+- **Sync**: beads requires `bd sync` to export state; tacks is local-only (SQLite), no sync needed.
+- **Missing in tacks**: `bd query`, `bd stale`, `bd swarm validate`, `bd dep cycles`, `bd doctor` — use `tk list --json | jq` for filtering.
 
 ## Skill Quick Reference
 
@@ -132,7 +143,8 @@ tackline/
 │   ├── rules/                  # Architectural guardrails
 │   └── skills/                 # Project-local skill overrides
 ├── CONTRIBUTING.md             # Contribution guidelines
-└── .beads/                     # Task management state
+├── .beads/                     # Task management state (beads)
+└── .tacks/                     # Task management state (tacks) — alternative to .beads/
 ```
 
 ## Architecture
@@ -155,4 +167,5 @@ tackline/
 ## Do Not Modify
 
 - `.beads/` internals (use `bd` commands only)
+- `.tacks/` internals (use `tk` commands only)
 - Symlink targets while symlinks are active (edit source files in this repo instead)

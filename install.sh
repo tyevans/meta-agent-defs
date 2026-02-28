@@ -21,14 +21,16 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 PROJECT_DIR=""
 USE_HARDLINKS=false
 RULES_ONLY=false
+USE_TACKS=false
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--tacks] [--help]
 
 Options:
   project_dir      Install to project_dir/.claude/ instead of ~/.claude/
   --hardlink       Use hardlinks instead of symlinks
   --rules-only     Install only rules and templates (use with plugin install)
+  --tacks          Prefer tacks (tk) over beads (bd) for task management
   --help, -h       Show this help message
 
 Install modes:
@@ -50,6 +52,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --rules-only)
             RULES_ONLY=true
+            shift
+            ;;
+        --tacks)
+            USE_TACKS=true
             shift
             ;;
         -*)
@@ -201,6 +207,9 @@ elif [ "$RULES_ONLY" = true ]; then
 else
     echo "Scope:  global"
 fi
+if [ "$USE_TACKS" = true ]; then
+    echo "Backlog: tacks (--tacks)"
+fi
 echo ""
 
 # --- Plugin conflict detection ---
@@ -242,9 +251,27 @@ if ! command -v git &>/dev/null; then
     exit 1
 fi
 
-if ! command -v bd &>/dev/null; then
-    warn "RECOMMENDED: bd (beads) not found. Session hooks depend on it for backlog management."
-    warn "Install beads or hooks will degrade gracefully with fallback messages."
+# --- Task manager detection ---
+if [ "$USE_TACKS" = true ]; then
+    if ! command -v tk &>/dev/null; then
+        warn "REQUIRED: tk (tacks) not found but --tacks was specified."
+        warn "Install tacks: cargo install tacks"
+        exit 1
+    fi
+    BACKLOG_TOOL="tk"
+    log "Task manager: tacks (tk)"
+elif command -v tk &>/dev/null; then
+    BACKLOG_TOOL="tk"
+    log "Task manager: tacks (tk)"
+elif command -v bd &>/dev/null; then
+    BACKLOG_TOOL="bd"
+    log "Task manager: beads (bd)"
+else
+    warn "RECOMMENDED: Neither tk (tacks) nor bd (beads) found."
+    warn "Session hooks depend on a task manager for backlog management."
+    warn "Install tacks: cargo install tacks"
+    warn "Install beads: see beads documentation"
+    BACKLOG_TOOL=""
 fi
 
 if ! command -v claude &>/dev/null; then
@@ -418,7 +445,7 @@ info "Writing installation manifest..."
     else
         LINK_MODE="symlink"
     fi
-    echo "# mode=$LINK_MODE target=$TARGET_DIR date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "# mode=$LINK_MODE backend=${BACKLOG_TOOL:-none} target=$TARGET_DIR date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo ""
     # Sort and deduplicate
     printf '%s\n' "${INSTALLED_FILES[@]}" | sort -u
@@ -455,6 +482,9 @@ else
     if [ -f "$MCP_CONFIG" ] && command -v claude &>/dev/null; then
         echo "  MCP:      $(python3 -c "import json; print(len(json.load(open('$MCP_CONFIG'))))" 2>/dev/null || echo '?') server(s)"
     fi
+fi
+if [ -n "$BACKLOG_TOOL" ]; then
+    echo "  Backlog: $BACKLOG_TOOL ($(command -v $BACKLOG_TOOL))"
 fi
 echo ""
 info "To verify:"

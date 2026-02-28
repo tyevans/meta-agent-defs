@@ -302,7 +302,7 @@ Read the final spec, change status from `DRAFT` to `READY FOR REVIEW`.
 
 ### 5b. Create Beads (conditional)
 
-If `.beads/` exists, create a bead to track the spec:
+If `.beads/` or `.tacks/` exists, create a bead to track the spec:
 
 ```bash
 bd create --title="SPEC: [Feature Name]" --type=task --priority=2 --description="Spec at .specs/<name>.md is READY FOR REVIEW. Key decisions: [1-2 sentence summary of proposed approach]. Next: /blossom to generate implementation backlog."
