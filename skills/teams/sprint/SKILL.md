@@ -190,7 +190,8 @@ Build the task prompt following the spawn protocol from team-protocol.md:
 2. **Compute the agent identity trailer**: Run `git log -1 --format=%h -- memory/agents/<name>/learnings.md` to get the short SHA of the last commit that modified this member's learnings. The trailer value is `<name>@<sha>`. If the learnings file has no git history (new member), use `git log -1 --format=%h` to get HEAD instead.
 3. Compose a prompt that includes: member identity (name, role, owns), learnings, task description, and reflection instructions
 4. Include any relevant context from previous dispatches in this sprint
-5. **Add commit trailer instruction**: Tell the agent that when making git commits, they must include this trailer on a new line after the commit message body:
+5. **Include the Commit Discipline section** from team-protocol.md's Prompt Template. Worktree agents must commit their own changes — uncommitted work in a worktree is effectively lost when the orchestrator merges results.
+6. **Add commit trailer instruction**: Tell the agent that when making git commits, they must include this trailer on a new line after the commit message body:
    ```
    Agent: <computed-trailer-value>
    ```
@@ -363,10 +364,11 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
 
 1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/sprint-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
 2. **Parallelize with worktree isolation by default.** Dispatch independent tasks concurrently using `isolation: "worktree"` and `run_in_background: true`. Each agent gets its own repo copy, so parallelization is safe even for tasks touching overlapping files. Fall back to serial dispatch only when tasks have true sequential dependencies (each task needs the previous one's output).
-3. **Learnings are the product.** A sprint that completes tasks but doesn't persist learnings has wasted half its value. Always update learnings files.
-4. **Validate learnings.** Don't blindly append everything an agent suggests. Filter out ephemeral observations and duplicates.
-5. **Date every entry.** Always add `(added: YYYY-MM-DD)` to new learnings for staleness tracking.
-6. **Watch for bloat.** If a learnings file exceeds 120 lines during a sprint, flag it for pruning in the next `/retro`.
-7. **Context carries forward.** When dispatching the second+ task in a sprint, include a brief summary of what previous agents found/changed.
+3. **Agents must commit their work.** Worktree agents that finish without committing produce results the orchestrator cannot merge. The Commit Discipline section in the prompt template ensures agents commit focused, incremental changes. If Phase 4 reveals a worktree with no commits, treat it as a partial/failed result.
+4. **Learnings are the product.** A sprint that completes tasks but doesn't persist learnings has wasted half its value. Always update learnings files.
+5. **Validate learnings.** Don't blindly append everything an agent suggests. Filter out ephemeral observations and duplicates.
+6. **Date every entry.** Always add `(added: YYYY-MM-DD)` to new learnings for staleness tracking.
+7. **Watch for bloat.** If a learnings file exceeds 120 lines during a sprint, flag it for pruning in the next `/retro`.
+8. **Context carries forward.** When dispatching the second+ task in a sprint, include a brief summary of what previous agents found/changed.
 
 See also: /review (structured code review after agent implementation), /retro (capture sprint learnings at session end), /curate (optimize agent learnings before sprint dispatch), /tend (full learnings lifecycle: curate + promote).
