@@ -31,6 +31,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Plan a goal with your team** -> /team-meeting (collaborative planning -> sprint-ready tasks)
 - **Just do something** -> /do (match goal to skill/pipeline and execute it)
 - **Find the right skill for a goal** -> /discover (semantic recommendation + pipeline suggestion)
+- **Distribute work across multiple humans** -> /storm-prep (prep) -> human jam session -> /formalize (contracts) -> /sprint (execute) -> /integrate (merge)
 
 ## Skills by Category
 
@@ -59,7 +60,7 @@ Composable primitives following [pipe format](../rules/pipe-format.md), plus the
 | /do | Primary entrypoint: match goal to skill/pipeline and execute it | Router |
 | /discover | Recommend skills or pipelines for a described goal | Router |
 
-### Workflows (24) — `skills/workflows/`
+### Workflows (27) — `skills/workflows/`
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -89,6 +90,9 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /domain | Capture or query project-specific terminology and disambiguation rules | inline |
 | /test-strategy | Classify spec type, write tests from specs, enforce red-green gates | fork |
 | /optimize | Profile, identify bottleneck, implement fix, measure, iterate toward target | fork |
+| /storm-prep | Domain event discovery for multi-human Event Storming — generates candidate events/aggregates/assumptions as YAML | inline |
+| /formalize | Convert jam session artifacts into machine-readable event contracts, mocks, and validation config | inline |
+| /integrate | Validate cross-boundary contracts and propose integration after parallel bounded-context execution | inline |
 
 ### Teams (9) — `skills/teams/`
 
@@ -108,7 +112,7 @@ Persistent team orchestration and the learning lifecycle (curation, promotion, r
 
 ## Skills by Context Type
 
-**Inline (37):** gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, do, discover, fractal, meeting, bug, session-health, handoff, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, domain, assemble, standup, sprint, team-meeting, curate, promote, tend, retro
+**Inline (40):** gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, do, discover, fractal, meeting, bug, session-health, handoff, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, domain, assemble, standup, sprint, team-meeting, curate, promote, tend, retro, storm-prep, formalize, integrate
 
 **Fork (12):** blossom, bootstrap, consensus, consolidate, deploy, optimize, premortem, review, spec, test-strategy, tracer, active-learn
 
@@ -137,6 +141,7 @@ Common composition sequences (each step's output feeds the next via context):
 /curate -> /promote                                 # Optimize learnings -> graduate to rules
 /curate rules                                       # Audit project rules: scores, budget, gaps
 /tend                                               # Full lifecycle: curate agents -> curate rules -> promote -> demotion -> summary
+/storm-prep -> [human jam] -> /formalize -> /sprint -> /integrate  # Multi-human: prep -> negotiate -> contracts -> execute -> merge
 ```
 
 **Note**: Multi-step chains (3+ primitives) are best run in the main session. If dispatching to a subagent, set `max_turns: 40` to avoid turn limits.

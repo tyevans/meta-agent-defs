@@ -28,6 +28,8 @@
 - For project-specific workflow skills (deploy, debug, migrate), the pattern "detect tooling via config file presence, map to concrete commands, fallback to asking user" keeps the skill practical without enumerating every environment (added: 2026-02-25, dispatch: tack-2rli.14)
 - Cross-project skills (those operating on `$PROJECT_PATH` or external directories) are categorically incompatible with worktree isolation — the sandboxing happens in the wrong repo (added: 2026-02-25, dispatch: tack-2rli.7)
 
-- Skills have three tiers of backlog interaction: creation (blossom, consolidate, spec, bootstrap), management (standup, sprint, retro, team-meeting, status), and consumption (tracer, optimize, deploy). Creation-tier skills use .beads/.tacks detection most heavily (added: 2026-02-26, dispatch: sprint-tacks-alt)
+- When a skill is part of a trilogy/series, explicitly document upstream and downstream skills with their consumption interfaces in See Also, even if sibling skills don't exist yet — it makes the integration intent legible and gives future authors a contract to implement against (added: 2026-02-27, dispatch: tack-v9go.2)
+- Named laws (like "NO SCHEMA WITHOUT JAM ARTIFACT") are most effective when placed before the phase structure, not at the end in guidelines — they need to be impossible to miss (added: 2026-02-27, dispatch: tack-v9go.2)
+- When the upstream skill in a trilogy doesn't exist yet, the consuming skill should name it explicitly in Phase 0 fallback messages and See Also — makes the trilogy dependency traceable without requiring both skills to be present simultaneously (added: 2026-02-27, dispatch: tack-v9go.3)
 
 ## Task-Relevant
