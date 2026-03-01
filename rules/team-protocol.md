@@ -145,6 +145,14 @@ Owns: <owns patterns>
 ## Task
 <task description with bead reference>
 
+## Commit Discipline
+You are working in an isolated worktree. You MUST commit your changes before finishing.
+- Commit early and often — each logical change gets its own commit
+- Keep commits focused: one concern per commit (e.g., separate "add feature" from "update tests")
+- Do not batch all changes into a single large commit
+- Use conventional commit messages (feat:, fix:, refactor:, docs:, chore:)
+- If your task is partially complete, commit what you have — partial progress committed is better than full progress uncommitted
+
 ## Reflection Protocol
 After completing your task, end your response with a structured reflection:
 - task_result: status (completed/partial/blocked/failed), summary, files_changed
