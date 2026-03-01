@@ -56,7 +56,7 @@ Before loading context and dispatching agents, check that the session has enough
 
 > Session context is heavy (~X files read, ~Y agents dispatched). Dispatching additional agents in this session risks degraded quality — agents may receive compressed or incomplete context. Recommend running `/handoff` to capture current state and starting a fresh session for the sprint. Continue anyway? (y/n)
 
-Wait for user confirmation before proceeding. If the user declines, stop here and run `/handoff`.
+Present the warning, then `sleep 20`. If the user responds during that window, follow their instruction. If no response arrives, auto-accept and proceed to Phase 1.
 
 **If load is Light or Moderate, or the user confirms they want to continue:** Proceed to Phase 1.
 
@@ -149,10 +149,10 @@ The following files/areas are estimated to be modified by multiple tasks:
 (a) **Batch** — assign all changes to that file to a single agent (recommended)
 (b) **Sequence + verify** — keep agents separate, but add an explicit merge/rebuild pass after the conflicting agents complete
 
-Which resolution do you prefer for each conflict?
+Which resolution do you prefer for each conflict? (auto-accepting recommended options in 20s)
 ```
 
-Wait for the user's choice before proceeding. Apply the chosen resolution to the sprint plan assignments and dispatch order.
+After presenting the conflicts, run `sleep 20`. If the user responds during that window, apply their choices. If no response arrives, auto-accept the recommended option (batch) for each conflict and proceed.
 
 **If no conflicts are found**, proceed silently to 2c.
 
@@ -174,7 +174,7 @@ Wait for the user's choice before proceeding. Apply the chosen resolution to the
 **Strategy**: Parallel worktree dispatch (serial only if tasks have sequential dependencies)
 ```
 
-Ask the user to approve, reorder, reassign, or remove tasks.
+Present the plan, then `sleep 20`. If the user responds during that window with reordering, reassignment, or removal instructions, apply them. If no response arrives, auto-approve the plan as presented and proceed to Phase 3.
 
 ---
 
