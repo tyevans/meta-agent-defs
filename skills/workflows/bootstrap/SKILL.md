@@ -4,7 +4,7 @@ description: "Bootstrap a new project end-to-end: set up Claude Code infrastruct
 argument-hint: "<project path or description>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(ls:*), Bash(test:*), Bash(mkdir:*), Task
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(ls:*), Bash(test:*), Bash(mkdir:*), Task
 context: inline
 ---
 
@@ -238,13 +238,15 @@ cat "$PROJECT_PATH/.claude/settings.json" | grep -c "hooks"
 
 If `settings.json` is invalid JSON, report it and stop -- broken settings will silently disable all hooks.
 
-### 3c. Beads Doctor (conditional)
+### 3c. Backlog Doctor (conditional)
 
-If `.beads/` or `.tacks/` exists in `$PROJECT_PATH`:
+If `.beads/` exists in `$PROJECT_PATH` (beads-only command):
 
 ```bash
 cd "$PROJECT_PATH" && bd doctor
 ```
+
+If `.tacks/` exists instead, tacks has no `doctor` command — skip this check.
 
 Report any issues found. Non-fatal issues (warnings) can be noted but do not block completion.
 
@@ -262,7 +264,7 @@ Collect all check results into a pass/fail table for the Phase 4 report:
 | All agents have required frontmatter | pass/fail |
 | Hook scripts executable | pass/fail |
 | `settings.json` is valid JSON | pass/fail |
-| `bd doctor` clean (if beads present) | pass/fail/skipped |
+| `bd doctor` clean (if `.beads/` present) | pass/fail/skipped |
 
 ---
 
@@ -326,7 +328,7 @@ After the pipe-format block, present a human-readable next steps section:
 1. **Review CLAUDE.md** -- adjust project description, commands, and key patterns to your preferences
 2. **Review generated agents** -- read `.claude/AGENTS.md` for the full catalog
 3. **Resolve manual steps** -- install any missing tools flagged above
-4. **Explore the backlog** -- run `bd ready` to see initial backlog items (if beads was set up)
+4. **Explore the backlog** -- run `tk ready` (or `bd ready`) to see initial backlog items (if a backlog tool was set up)
 5. **Orient the session** -- run `/status` to start working
 ```
 

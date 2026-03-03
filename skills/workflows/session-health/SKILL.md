@@ -3,10 +3,10 @@ name: session-health
 description: "Run a session health diagnostic to assess context load, scope drift, and quality degradation. Use when responses feel degraded, before starting major new work in a long session, or when the user asks if you're still tracking well."
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
 ---
 
-!`bd stats 2>/dev/null`
+!`tk stats 2>/dev/null || bd stats 2>/dev/null`
 !`git log --oneline -5`
 
 # Session Health Check
@@ -67,9 +67,10 @@ Rate each signal: Good / Watch / Degrading. If two or more signals are Degrading
 ### 4. Check Session State
 
 ```bash
-bd list --status=in_progress   # What's claimed but not done?
-bd ready                       # What's available?
+tk list --status=in_progress   # What's claimed but not done?
+tk ready                       # What's available?
 git status                     # Any uncommitted work?
+# bd equivalents: bd list --status=in_progress / bd ready
 ```
 
 ### 5. Check Team Health (conditional)

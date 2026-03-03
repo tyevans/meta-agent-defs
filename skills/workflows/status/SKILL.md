@@ -4,7 +4,7 @@ description: "Show unified system status: backlog, recent activity, team health,
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, TaskList, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)"]
+allowed-tools: [Read, Glob, Grep, TaskList, "Bash(bd:*)", "Bash(tk:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)"]
 context: inline
 ---
 
@@ -25,7 +25,7 @@ You are generating a **system status snapshot** — a single-command overview of
 
 - You need deep diagnosis of why a session feels wrong — use /session-health instead
 - You already know what to work on and just need to start — /status adds no value if the path is already clear
-- You only need backlog info — run `bd ready` or `bd stats` directly rather than the full status view
+- You only need backlog info — run `tk ready` or `tk stats` directly rather than the full status view
 
 ## How It Works
 
@@ -47,15 +47,17 @@ Read `memory/sessions/last.md`. If it does not exist, note "No previous session 
 
 ### 1b. Backlog
 
-**If `.beads/` or `.tacks/` exists**, run:
+**If `.tacks/` or `.beads/` exists**, run:
 
 ```bash
-bd stats
-bd ready
-bd epic status
+# tacks
+tk stats
+tk ready
+tk epic
+# bd equivalents: bd stats / bd ready / bd epic status
 ```
 
-**If neither `.beads/` nor `.tacks/` exists**, note "Beads not configured."
+**If neither `.tacks/` nor `.beads/` exists**, note "Backlog not configured."
 
 ### 1c. Recent Activity
 
@@ -111,13 +113,13 @@ Present all collected data in this structure. Do not add commentary or analysis 
 [Or: "No previous session data."]
 
 ### Backlog
-[bd stats output, formatted]
-[bd ready output — show task titles, max 5]
-[Or: "Beads not configured."]
+[tk stats output, formatted]
+[tk ready output — show task titles, max 5]
+[Or: "Backlog not configured."]
 
 ### Epic Progress
-[bd epic status output — show each epic with completion %]
-[Omit section if no epics exist or beads not configured]
+[tk epic output — show each epic with completion %]
+[Omit section if no epics exist or backlog not configured]
 
 ### Recent Activity
 [git log --oneline -5 output]
@@ -168,7 +170,7 @@ Generate 1-5 suggestions based purely on observed state. Use these rules:
 | Any team member is cold | "Dispatch work to [member] to build learnings" |
 | No last session file | "First session — review backlog and pick a starting task" |
 | In-progress tasks exist | "Resume in-progress work: [task titles]" |
-| Epics with all children complete | "Run `bd epic close-eligible` to auto-close completed epics" |
+| Epics with all children complete | "Run `tk epic` to check and close completed epics (or `bd epic close-eligible` for beads)" |
 | Everything is clean and no ready tasks | "Backlog is clear — create new tasks or run `/blossom` to explore" |
 | Completed tasks awaiting review (from TaskList) | "Review results from [agent name]: [task description]" |
 | Idle agents with ready backlog tasks | "Dispatch [agent name] to: [top ready task title]" |

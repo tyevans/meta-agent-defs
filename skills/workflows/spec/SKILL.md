@@ -4,7 +4,7 @@ description: "Create a structured specification document through progressive ela
 argument-hint: "<goal or feature to specify>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(git:*), Task
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(tk:*), Bash(git:*), Task
 context: fork
 ---
 
@@ -302,10 +302,13 @@ Read the final spec, change status from `DRAFT` to `READY FOR REVIEW`.
 
 ### 5b. Create Beads (conditional)
 
-If `.beads/` or `.tacks/` exists, create a bead to track the spec:
+If `.tacks/` or `.beads/` exists, create a task to track the spec:
 
 ```bash
-bd create --title="SPEC: [Feature Name]" --type=task --priority=2 --description="Spec at .specs/<name>.md is READY FOR REVIEW. Key decisions: [1-2 sentence summary of proposed approach]. Next: /blossom to generate implementation backlog."
+# tacks
+tk create "SPEC: [Feature Name]"
+# bd equivalent: bd create --title="SPEC: [Feature Name]" --type=task --priority=2 \
+#   --description="Spec at .specs/<name>.md is READY FOR REVIEW. Key decisions: [1-2 sentence summary of proposed approach]. Next: /blossom to generate implementation backlog."
 ```
 
 This ensures the spec is tracked in the backlog and linkable as a dependency for implementation tasks created by `/blossom`.

@@ -4,10 +4,10 @@ description: "Capture the orchestrator's mental model for a structured session t
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
 ---
 
-!`bd list --status=in_progress 2>/dev/null`
+!`tk list --status=in_progress 2>/dev/null || bd list --status=in_progress 2>/dev/null`
 !`git log --oneline -10`
 
 # Handoff: Structured Session Transition
@@ -39,10 +39,12 @@ Gather state (backlog + git + context)
 ### 1a. Backlog Snapshot
 
 ```bash
-bd stats
-bd list --status=in_progress
-bd ready
-bd blocked
+# tacks
+tk stats
+tk list --status=in_progress
+tk ready
+tk blocked
+# bd equivalents: bd stats / bd list --status=in_progress / bd ready / bd blocked
 ```
 
 Note which tasks are in-progress, what is blocked, and what is ready to pick up.
@@ -182,8 +184,10 @@ Produce a structured handoff document:
 If `$ARGUMENTS` specifies a focus area, use it as the filename context. Write the handoff note to the project's memory:
 
 ```bash
-bd create --title="HANDOFF: [summary of session]" --type=task --priority=1 \
-  --description="[full handoff note content]"
+# tacks
+tk create "HANDOFF: [summary of session]"
+# bd equivalent: bd create --title="HANDOFF: [summary of session]" --type=task --priority=1 \
+#   --description="[full handoff note content]"
 ```
 
 If the project has a `memory/` directory, optionally write the handoff note there as `memory/handoff-[date].md` for persistent reference.

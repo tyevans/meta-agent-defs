@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
 context: fork
 ---
 
-!`bd list --status=open 2>/dev/null`
+!`tk list --status=open 2>/dev/null || bd list --status=open 2>/dev/null`
 
 # Consolidate: Backlog Review and Tightening
 

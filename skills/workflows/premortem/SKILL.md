@@ -4,7 +4,7 @@ description: "Identify how a feature could fail before building it, then design 
 argument-hint: "<feature or change to stress-test>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Task, AskUserQuestion
 context: fork
 ---
 
@@ -314,22 +314,27 @@ Items include only the prioritized scenarios (user-selected in Phase 3). Unprior
 Create an epic to group mitigations, then create each mitigation as a child:
 
 ```bash
-bd create --title="EPIC: Pre-mortem mitigations for [feature]" --type=epic --priority=1
+# tacks
+tk create "EPIC: Pre-mortem mitigations for [feature]"
+# bd equivalent: bd create --title="EPIC: Pre-mortem mitigations for [feature]" --type=epic --priority=1
 ```
 
 For each mitigation in the plan:
 
 ```bash
-bd create --title="[MITIGATION]: [scenario title]" --type=task \
-  --priority=<0-for-catastrophic,1-for-major,2-for-minor> \
-  --parent=<mitigation-epic-id> \
-  --description="Pre-mortem mitigation for [feature]. Failure scenario: [brief]. Prevention: [what to build]. Detection: [monitoring]. Test: [verification]. Effort: [S/M/L]."
+# tacks
+tk create --parent <mitigation-epic-id> "[MITIGATION]: [scenario title]"
+# bd equivalent: bd create --title="[MITIGATION]: [scenario title]" --type=task \
+#   --priority=<0-for-catastrophic,1-for-major,2-for-minor> \
+#   --parent=<mitigation-epic-id> \
+#   --description="Pre-mortem mitigation for [feature]. Failure scenario: [brief]. Prevention: [what to build]. Detection: [monitoring]. Test: [verification]. Effort: [S/M/L]."
 ```
 
 Wire the mitigation epic as a dependency of the main feature task so mitigations complete before implementation:
 
 ```bash
-bd dep add <feature-task> <mitigation-epic-id>
+tk dep add <feature-task> <mitigation-epic-id>
+# bd equivalent: bd dep add <feature-task> <mitigation-epic-id>
 ```
 
 Create the feature task if it doesn't exist yet.

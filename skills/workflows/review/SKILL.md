@@ -4,7 +4,7 @@ description: "Run a structured code review across correctness, security, style, 
 argument-hint: "[target: staged changes, commit, range, PR#]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(gh:*), Bash(bd:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(gh:*), Bash(bd:*), Bash(tk:*)
 context: fork
 ---
 
@@ -272,11 +272,13 @@ and recommended next actions.]
 
 ### 5b. Create Tasks for Findings
 
-For CRITICAL and WARNING findings, create beads tasks so they are tracked. Use /bug to file each finding as a tracked issue, or create tasks directly:
+For CRITICAL and WARNING findings, create tasks so they are tracked. Use /bug to file each finding as a tracked issue, or create tasks directly:
 
 ```bash
-bd create --title="[SEVERITY]: [finding title]" --type=task --priority=<1-for-critical,2-for-warning> \
-  --description="Found during code review of [target]. Location: [file:line]. Issue: [description]. Suggestion: [fix]."
+# tacks
+tk create -t bug "[SEVERITY]: [finding title]"
+# bd equivalent: bd create --title="[SEVERITY]: [finding title]" --type=task --priority=<1-for-critical,2-for-warning> \
+#   --description="Found during code review of [target]. Location: [file:line]. Issue: [description]. Suggestion: [fix]."
 ```
 
 ---

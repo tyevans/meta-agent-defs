@@ -4,7 +4,7 @@ description: "Build a feature iteratively by implementing the thinnest end-to-en
 argument-hint: "<feature to implement>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(git:*), Bash(npm:*), Bash(npx:*), Task
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(npm:*), Bash(npx:*), Task
 context: fork
 ---
 
@@ -330,11 +330,13 @@ After completing the report, extract architectural findings discovered during im
 
 If follow-up work was identified:
 
-**If `.beads/` or `.tacks/` exists in the project root**, create beads tasks:
+**If `.tacks/` or `.beads/` exists in the project root**, create tasks:
 
 ```bash
-bd create --title="[follow-up task]" --type=task --priority=[0-4] \
-  --description="Follow-up from tracer: [feature name]. [Details and context.]"
+# tacks
+tk create "[follow-up task]"
+# bd equivalent: bd create --title="[follow-up task]" --type=task --priority=[0-4] \
+#   --description="Follow-up from tracer: [feature name]. [Details and context.]"
 ```
 
 **If neither `.beads/` nor `.tacks/` exists**, write follow-up tasks to `TODO.md` in the project root:

@@ -4,7 +4,7 @@ description: "Run goal-directed recursive exploration that prunes paths not serv
 argument-hint: "<goal>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(mkdir:*), Task, Write
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(mkdir:*), Task, Write
 ---
 
 # Fractal: Goal-Directed Recursive Exploration
@@ -228,13 +228,15 @@ Example:
 [One paragraph synthesis of all findings relative to the goal.]
 ```
 
-### 3b. Optional: Create Beads
+### 3b. Optional: Create Tasks
 
-If the findings suggest concrete follow-up work, ask the user if they want beads created. If yes:
+If the findings suggest concrete follow-up work, ask the user if they want tasks created. If yes:
 
 ```bash
-bd create --title="[action from findings]" --type=task --priority=[0-4] \
-  --description="From fractal exploration of [goal]. Evidence: [summary]"
+# tacks
+tk create "[action from findings]"
+# bd equivalent: bd create --title="[action from findings]" --type=task --priority=[0-4] \
+#   --description="From fractal exploration of [goal]. Evidence: [summary]"
 ```
 
 ### 3c. Cleanup
