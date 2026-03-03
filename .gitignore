@@ -8,6 +8,7 @@ CLAUDE.local.md
 
 # Runtime state (created by hooks and skills, not distributable)
 memory/
+.tacks/
 
 # Python artifacts
 __pycache__/
