@@ -22,21 +22,27 @@ PROJECT_DIR=""
 USE_HARDLINKS=false
 RULES_ONLY=false
 USE_TACKS=false
+USE_BEADS=false
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--tacks] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--beads] [--tacks] [--help]
 
 Options:
   project_dir      Install to project_dir/.claude/ instead of ~/.claude/
   --hardlink       Use hardlinks instead of symlinks
   --rules-only     Install only rules and templates (use with plugin install)
-  --tacks          Prefer tacks (tk) over beads (bd) for task management
+  --beads          Require beads (bd) for task management (opt-in; tacks is default)
+  --tacks          No-op (tacks is already the default); kept for backward compatibility
   --help, -h       Show this help message
 
 Install modes:
   Full install (default)  Symlinks agents, skills, rules, templates, MCP servers
   Plugin companion        Use --rules-only to install what plugins can't provide
   Project-local           Provide project_dir for agents + skills only
+
+Task management:
+  Default: auto-detects tacks (tk) first, then beads (bd)
+  --beads: require beads and prefer it over tacks
 EOF
     exit 0
 }
@@ -56,6 +62,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --tacks)
             USE_TACKS=true
+            shift
+            ;;
+        --beads)
+            USE_BEADS=true
             shift
             ;;
         -*)
@@ -207,8 +217,8 @@ elif [ "$RULES_ONLY" = true ]; then
 else
     echo "Scope:  global"
 fi
-if [ "$USE_TACKS" = true ]; then
-    echo "Backlog: tacks (--tacks)"
+if [ "$USE_BEADS" = true ]; then
+    echo "Backlog: beads (--beads)"
 fi
 echo ""
 
@@ -252,14 +262,14 @@ if ! command -v git &>/dev/null; then
 fi
 
 # --- Task manager detection ---
-if [ "$USE_TACKS" = true ]; then
-    if ! command -v tk &>/dev/null; then
-        warn "REQUIRED: tk (tacks) not found but --tacks was specified."
-        warn "Install tacks: cargo install tacks"
+if [ "$USE_BEADS" = true ]; then
+    if ! command -v bd &>/dev/null; then
+        warn "REQUIRED: bd (beads) not found but --beads was specified."
+        warn "Install beads: see beads documentation"
         exit 1
     fi
-    BACKLOG_TOOL="tk"
-    log "Task manager: tacks (tk)"
+    BACKLOG_TOOL="bd"
+    log "Task manager: beads (bd)"
 elif command -v tk &>/dev/null; then
     BACKLOG_TOOL="tk"
     log "Task manager: tacks (tk)"
