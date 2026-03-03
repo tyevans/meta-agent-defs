@@ -86,8 +86,9 @@ bd stale                        # Find forgotten issues (no tk equivalent)
 | Discuss with panels | /meeting |
 | Plan a goal with your team | /team-meeting |
 | Optimize agent learnings | /curate or /tend (curate + promote) |
+| Implement a plan autonomously | /drive (sustained sprint/retro loops) |
 
-All 47 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
+All 48 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
 
 ## Project Structure
 
@@ -105,7 +106,7 @@ tackline/
 │   │   ├── expand/, transform/, decompose/, critique/, plan/
 │   │   ├── merge/, diff-ideas/, sketch/
 │   │   └── do/, discover/       # Skill routing entrypoints
-│   ├── workflows/               # Exploration, review, lifecycle, session mgmt (24 skills)
+│   ├── workflows/               # Exploration, review, lifecycle, session mgmt (25 skills)
 │   │   ├── blossom/, fractal/, consolidate/, review/, bootstrap/
 │   │   ├── meeting/, consensus/, premortem/, spec/, bug/
 │   │   ├── advise/, handoff/, status/, session-health/, domain/
