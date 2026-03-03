@@ -4,7 +4,7 @@ description: "Plan and dispatch work to team members with the learning loop: ass
 argument-hint: "[task filter or focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Task
 ---
 
 # Sprint: Plan, Dispatch, Learn
@@ -84,12 +84,12 @@ If any epic state files exist, read them. These contain spike findings, priority
 
 ### 1d. Load Backlog (conditional)
 
-**If `.beads/` or `.tacks/` exists in the project root**, check the backlog:
+**If `.tacks/` or `.beads/` exists in the project root**, check the backlog:
 
 ```bash
-bd ready
-bd list --status=in_progress
-bd blocked
+tk ready
+tk list --status=in_progress
+tk blocked
 ```
 
 If a focus area was provided via `$ARGUMENTS`, filter to relevant beads.
@@ -102,7 +102,7 @@ Do not proceed to Phase 2 until all context is loaded:
 - [ ] team.yaml was read (not just referenced — Read tool returned its contents)
 - [ ] Every member's learnings.md was read
 - [ ] Epic state files checked (loaded if present)
-- [ ] Backlog state is known (bd ready output is in context, or user provided tasks)
+- [ ] Backlog state is known (tk ready output is in context, or user provided tasks)
 
 If any prerequisite is missing, go back and complete it now. Planning without loaded context produces wrong assignments.
 
@@ -226,13 +226,13 @@ Task({
 
 ### 3c. Mark Bead In-Progress (conditional)
 
-**If beads are available**:
+**If `.tacks/` or `.beads/` exists**:
 
 ```bash
-bd update <bead-id> --status=in_progress
+tk update <id> --status in_progress
 ```
 
-**If beads are not available**, skip this step.
+**If neither exists**, skip this step.
 
 ---
 
@@ -272,13 +272,13 @@ The `dispatch:` field is optional but recommended. Use the bead ID if beads are 
 
 ### 4c. Update Bead (conditional)
 
-**If beads are available**, based on `task_result.status`:
-- **completed**: `bd close <bead-id>`
+**If `.tacks/` or `.beads/` exists**, based on `task_result.status`:
+- **completed**: `tk close <id>`
 - **partial**: Keep in-progress, note what remains. Record the agent ID for potential resume.
-- **blocked**: `bd update <bead-id> --notes="Blocked: <blocked_by>"`. Record the agent ID for potential resume.
-- **failed**: `bd update <bead-id> --notes="Failed: <summary>"`
+- **blocked**: `tk update <id> --status blocked` (add notes via `tk update <id>`). Record the agent ID for potential resume.
+- **failed**: `tk update <id> --status blocked` with failure note.
 
-**If beads are not available**, skip bead updates and simply note the task status in the sprint report.
+**If neither exists**, skip task updates and simply note the task status in the sprint report.
 
 ### 4d. Report Progress
 

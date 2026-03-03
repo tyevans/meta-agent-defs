@@ -4,7 +4,7 @@ description: "Run an automated session retrospective to evaluate velocity, quali
 argument-hint: "[focus area or session topic]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(wc:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(wc:*), Write, Edit
 ---
 
 # Retro: Automated Session Retrospective
@@ -48,11 +48,11 @@ Note which commits were made this session, how many files were touched, and the 
 
 ### 1b. Backlog Activity (conditional)
 
-**If `.beads/` or `.tacks/` exists in the project root**, check backlog activity:
+**If `.tacks/` or `.beads/` exists in the project root**, check backlog activity:
 
 ```bash
-bd stats
-bd list --status=closed
+tk stats
+tk list --status=closed
 ```
 
 Note how many tasks were completed, what types they were, and whether any were closed as duplicates or stale (vs. genuinely completed).
@@ -215,7 +215,7 @@ Determine which learnings are **durable** (useful across sessions) vs. **ephemer
 Durable examples:
 - "Agent teams work well for parallel audits but add overhead for < 5 tasks"
 - "Always read existing skill files before writing new ones to match format"
-- "Use --parent for epic hierarchy: bd create --parent=<epic-id>, not bd dep add"
+- "Use --parent for epic hierarchy: tk create --parent <epic-id> (or bd create --parent=<epic-id>), not dep add"
 
 Ephemeral examples (do NOT persist):
 - "Completed 8 tasks today"
@@ -250,16 +250,19 @@ Read MEMORY.md after edits to confirm it is well-structured and under the line l
 
 ## Phase 6: Capture Action Items (conditional)
 
-**If `.beads/` or `.tacks/` exists**, create a bead for each sharpened action item from Phase 3 (items that passed the sharpening gate):
+**If `.tacks/` or `.beads/` exists**, create a task for each sharpened action item from Phase 3 (items that passed the sharpening gate):
 
 ```bash
-bd create --title="<concrete action from sharpening gate>" --type=task --priority=<2-4> \
-  --description="From retro on [date]. Context: [relevant finding from Phase 2]. What to change: [specific code/file/workflow change]."
+# tacks
+tk create -t task --priority 2 "<concrete action from sharpening gate>"
+# bd equivalent: bd create --title="..." --type=task --priority=<2-4> --description="..."
 ```
 
-Every item here already passed the sharpening gate, so it should be implementable in one session without design decisions. Typically 1-3 beads per retro; zero is fine if no concrete follow-ups emerged.
+Add the description inline or via `tk update` after creation. Include: from retro on [date], context: [relevant finding from Phase 2], what to change: [specific code/file/workflow change].
 
-**If neither `.beads/` nor `.tacks/` exists**, list action items in the report only.
+Every item here already passed the sharpening gate, so it should be implementable in one session without design decisions. Typically 1-3 tasks per retro; zero is fine if no concrete follow-ups emerged.
+
+**If neither `.tacks/` nor `.beads/` exists**, list action items in the report only.
 
 ---
 

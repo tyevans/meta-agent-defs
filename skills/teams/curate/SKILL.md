@@ -4,7 +4,7 @@ description: "Optimize an agent's learnings or audit project rules: score each e
 argument-hint: "<agent-name> | rules"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(ls:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(ls:*), Write, Edit
 ---
 
 # Curate: Optimize Agent Learnings or Audit Project Rules
@@ -110,8 +110,8 @@ Also read `CLAUDE.md` and note any overlap between CLAUDE.md content and rule fi
 Gather the upcoming task signal from whichever sources are available:
 
 ```bash
-bd ready 2>/dev/null
-bd list --status=in_progress 2>/dev/null
+tk ready 2>/dev/null
+tk list --status=in_progress 2>/dev/null
 ls memory/epics/*/epic.md 2>/dev/null
 ```
 

@@ -51,14 +51,14 @@ Note the member count. You must produce a status entry for every member — miss
 
 ### 1b. Check Backlog (conditional)
 
-**If `.beads/` or `.tacks/` exists in the project root**, run:
+**If `.tacks/` or `.beads/` exists in the project root**, run:
 
 ```bash
-bd stats
-bd ready
-bd list --status=in_progress
-bd blocked
-bd epic status
+tk stats
+tk ready
+tk list --status=in_progress
+tk blocked
+tk epic
 ```
 
 **If neither `.beads/` nor `.tacks/` exists**, skip this step. The standup will focus on git activity and learning health only.
@@ -124,8 +124,8 @@ Before synthesizing, verify the data you gathered is complete and consistent.
 - [ ] If a member has recent commits but stale learnings (no entries in the last 14 days), flag this as an inconsistency: active work without captured learnings suggests a retro is overdue.
 - [ ] If a member has zero owned-file commits AND zero learnings entries, mark them **cold** rather than **stale** — cold means the role hasn't been exercised yet, not that it has gone quiet.
 
-**Beads completeness check (if beads available):**
-- [ ] Confirm `bd ready`, `bd list --status=in_progress`, and `bd blocked` all returned results (even if the result is zero items). If a command failed or was skipped, note "beads data incomplete" in the board output.
+**Backlog completeness check (if backlog tool available):**
+- [ ] Confirm `tk ready`, `tk list --status=in_progress`, and `tk blocked` all returned results (even if the result is zero items). If a command failed or was skipped, note "backlog data incomplete" in the board output.
 
 If any check fails, complete the missing data before proceeding. Do not synthesize on partial information.
 

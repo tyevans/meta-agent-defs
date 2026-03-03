@@ -4,7 +4,7 @@ description: "Create a persistent learning team for a project with roles, owners
 argument-hint: "<project description>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(mkdir:*), Write, Edit, Task, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(mkdir:*), Write, Edit, Task, AskUserQuestion
 ---
 
 # Assemble: Persistent Learning Team Creation
@@ -196,13 +196,15 @@ Write `memory/team/retro-history.md`:
 
 ### 2e. Initialize Backlog (optional)
 
-**If beads (bd CLI) is available** and the project doesn't already have a `.beads/` directory, ask the user if they want backlog tracking:
+**If `.tacks/` or `.beads/` exists** in the project root, ask the user if they want backlog tracking:
 
 ```bash
-bd create --title="EPIC: [project name] team setup" --type=epic --priority=2
+# tacks
+tk create -t epic "EPIC: [project name] team setup"
+# bd equivalent: bd create --title="EPIC: [project name] team setup" --type=epic --priority=2
 ```
 
-**If beads is not available**, skip this step. The team can still function without beads by using manual task descriptions in `/sprint`.
+**If neither exists**, skip this step. The team can still function without a backlog tool by using manual task descriptions in `/sprint`.
 
 ---
 

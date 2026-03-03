@@ -4,7 +4,7 @@ description: "Run the full learning lifecycle: curate learnings for upcoming wor
 argument-hint: "[agent-name or 'all']"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(ls:*), Write, Edit, Skill
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(ls:*), Write, Edit, Skill
 ---
 
 # Tend: Learning Lifecycle Orchestrator
@@ -59,12 +59,12 @@ If neither exists, stop: "No team manifest or agent learnings found. Nothing to 
 Capture what work is coming so /curate has the signal it needs:
 
 ```bash
-bd ready 2>/dev/null
-bd list --status=in_progress 2>/dev/null
+tk ready 2>/dev/null
+tk list --status=in_progress 2>/dev/null
 ls memory/epics/*/epic.md 2>/dev/null
 ```
 
-If beads aren't available, note that curate will rely on git signals and conversation context only.
+If no backlog tool is available, note that curate will rely on git signals and conversation context only.
 
 ### 0d. Rules Inventory
 
@@ -307,7 +307,7 @@ Present a unified report of the full lifecycle run:
 - **Learnings optimized**: [total items curated across all agents]
 - **New rules created**: [count]
 - **Rules demoted**: [count]
-- **Knowledge gaps flagged**: [count] (create beads with /bug or bd create if actionable)
+- **Knowledge gaps flagged**: [count] (create tasks with /bug or tk create if actionable)
 
 ### Recommended Next Steps
 - [Any gaps that need investigation tasks]
