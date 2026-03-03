@@ -32,4 +32,3 @@ This project uses conventional commits.
 - Do not use scopes (e.g., `feat(agents):`) -- the repo is small enough that scopes add noise
 - Do not capitalize the first word after the colon
 - Do not end the subject line with a period
-- Do not add `Co-Authored-By` or any AI attribution trailers
