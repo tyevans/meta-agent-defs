@@ -23,9 +23,10 @@ USE_HARDLINKS=false
 RULES_ONLY=false
 USE_TACKS=false
 USE_BEADS=false
+INSTALL_TACKS=false
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--beads] [--tacks] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--beads] [--tacks] [--install-tacks] [--help]
 
 Options:
   project_dir      Install to project_dir/.claude/ instead of ~/.claude/
@@ -33,6 +34,7 @@ Options:
   --rules-only     Install only rules and templates (use with plugin install)
   --beads          Require beads (bd) for task management (opt-in; tacks is default)
   --tacks          No-op (tacks is already the default); kept for backward compatibility
+  --install-tacks  Install tacks (tk) via cargo if not already present
   --help, -h       Show this help message
 
 Install modes:
@@ -62,6 +64,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --tacks)
             USE_TACKS=true
+            shift
+            ;;
+        --install-tacks)
+            INSTALL_TACKS=true
             shift
             ;;
         --beads)
@@ -259,6 +265,24 @@ fi
 if ! command -v git &>/dev/null; then
     warn "REQUIRED: git is not installed. Cannot proceed."
     exit 1
+fi
+
+# --- Install tacks if requested ---
+if [ "$INSTALL_TACKS" = true ]; then
+    if command -v tk &>/dev/null; then
+        log "tacks (tk) is already installed: $(command -v tk)"
+    elif command -v cargo &>/dev/null; then
+        info "Installing tacks via cargo..."
+        cargo install tacks
+        if command -v tk &>/dev/null; then
+            log "tacks installed successfully"
+        else
+            warn "cargo install tacks completed but tk not found in PATH"
+        fi
+    else
+        warn "Cannot install tacks: cargo not found. Install Rust first: https://rustup.rs"
+        exit 1
+    fi
 fi
 
 # --- Task manager detection ---

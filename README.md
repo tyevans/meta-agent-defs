@@ -45,6 +45,25 @@ Assembles 2 panelists with genuinely opposed perspectives and a facilitator. You
 
 Each skill's output feeds the next through conversation context. No file passing, no explicit piping -- context is the pipe.
 
+## Prerequisites
+
+Tackline works without extras, but a task manager unlocks backlog-driven workflows (`/blossom`, `/sprint`, `/consolidate`).
+
+**Tacks** (recommended — lightweight, SQLite-based):
+
+```bash
+# From crates.io
+cargo install tacks
+
+# From source
+git clone https://github.com/srmccray/tacks
+cd tacks && cargo install --path .
+```
+
+Or grab a prebuilt binary from the [GitHub releases](https://github.com/srmccray/tacks/releases).
+
+> Rust toolchain not installed? Get it at [rustup.rs](https://rustup.rs).
+
 ## Install
 
 ```bash
@@ -58,6 +77,7 @@ Zero dependencies. The installer symlinks everything into `~/.claude/`. Rerun af
 ```bash
 ./install.sh /path/to/project    # Project-local install (agents + skills only)
 ./install.sh --hardlink           # Hardlinks instead of symlinks
+./install.sh --install-tacks      # Install tacks via cargo during setup
 ./install.sh --beads              # Use beads instead of tacks for task management
 ```
 
