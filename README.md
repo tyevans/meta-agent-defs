@@ -58,7 +58,7 @@ Zero dependencies. The installer symlinks everything into `~/.claude/`. Rerun af
 ```bash
 ./install.sh /path/to/project    # Project-local install (agents + skills only)
 ./install.sh --hardlink           # Hardlinks instead of symlinks
-./install.sh --tacks              # Prefer tacks over beads for task management
+./install.sh --beads              # Use beads instead of tacks for task management
 ```
 
 ### Uninstall
@@ -163,7 +163,7 @@ Orchestrated multi-step workflows with side effects.
 
 **Fork-context skills spawn subagents.** `/blossom`, `/consensus`, and `/premortem` each dispatch agents that read source files independently. On large codebases, expect meaningful API usage. Inline skills (primitives, `/meeting`, `/status`) are lightweight.
 
-**Everything works without extras.** No beads/tacks, no MCP servers required. You just get fewer features. Hooks degrade gracefully with `|| true`.
+**Everything works without extras.** No tacks/beads, no MCP servers required. You just get fewer features. Hooks degrade gracefully with `|| true`.
 
 ## Extending
 

@@ -785,22 +785,22 @@ The complete team workflow cycle:
 
 ---
 
-## Working Without Beads/Tacks
+## Working Without Tacks/Beads
 
-The team system **does not require beads or tacks** (the `bd`/`tk` CLI backlog trackers). All team skills support a fallback mode for projects without either tool.
+The team system **does not require tacks or beads** (the `tk`/`bd` CLI backlog trackers). All team skills support a fallback mode for projects without either tool.
 
 ### How Skills Adapt
 
-| Skill | With Beads/Tacks | Without Beads/Tacks |
+| Skill | With Tacks/Beads | Without Tacks/Beads |
 |-------|-----------------|---------------------|
 | `/assemble` | Optionally creates initial epic | Skips backlog initialization |
 | `/standup` | Shows backlog snapshot (ready, in-progress, blocked) | Shows only git activity + learning health |
-| `/sprint` | Pulls tasks from `bd ready` (or `tk ready`) | Accepts manual task descriptions from user |
+| `/sprint` | Pulls tasks from `tk ready` (or `bd ready`) | Accepts manual task descriptions from user |
 | `/retro` | Includes backlog stats in analysis | Relies on git + conversation context only |
 
 ### Manual Task Dispatch
 
-If you don't have beads or tacks, you provide task descriptions directly to `/sprint`:
+If you don't have tacks or beads, you provide task descriptions directly to `/sprint`:
 
 ```
 /sprint Add pagination to user listing endpoint
@@ -812,11 +812,11 @@ Sprint will:
 3. Dispatch as normal
 4. Persist learnings as normal
 
-The learning loop works identically — beads/tacks just provide backlog structure and task tracking.
+The learning loop works identically — tacks/beads just provide backlog structure and task tracking.
 
-### When to Use Beads/Tacks
+### When to Use Tacks/Beads
 
-**Use beads/tacks if:**
+**Use tacks/beads if:**
 - You want structured backlog management
 - You need dependency tracking between tasks
 - You want to track task status (ready, in-progress, blocked, closed)

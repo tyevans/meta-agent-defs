@@ -10,19 +10,19 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 
 **When to use**: You have a vague goal or unknown solution space and need to go from "explore the problem" to "shipped work" within a session or sprint. Use when you don't yet have enough information to plan.
 
-**Prerequisites**: An active backlog (`bd stats` or `tk stats` should return a valid state). No existing epic for the topic.
+**Prerequisites**: An active backlog (`tk stats` or `bd stats` should return a valid state). No existing epic for the topic.
 
 ### Steps
 
-1. `/blossom <topic>` — Runs subagent spikes to explore the solution space. Produces an epic with child tasks written to the backlog via `bd create` (or `tk create`). Each task includes a confidence level (CONFIRMED/LIKELY/POSSIBLE).
-2. `/sprint` — Reads the backlog (`bd ready` or `tk ready`), selects the highest-priority tasks from the blossom epic, dispatches subagents to implement them. Produces learnings and a session summary.
+1. `/blossom <topic>` — Runs subagent spikes to explore the solution space. Produces an epic with child tasks written to the backlog via `tk create` (or `bd create`). Each task includes a confidence level (CONFIRMED/LIKELY/POSSIBLE).
+2. `/sprint` — Reads the backlog (`tk ready` or `bd ready`), selects the highest-priority tasks from the blossom epic, dispatches subagents to implement them. Produces learnings and a session summary.
 3. `/retro` — Reads session learnings and git activity. Produces a retrospective written to `memory/agents/<name>/learnings.md`. Delegates promotion evaluation to `/promote` rather than doing inline assessment.
 
 ### State Flow
 
 | From | To | Via |
 |------|----|-----|
-| `/blossom` | `/sprint` | backlog (`bd`/`tk`) — blossom writes tasks; sprint reads ready tasks |
+| `/blossom` | `/sprint` | backlog (`tk`/`bd`) — blossom writes tasks; sprint reads ready tasks |
 | `/sprint` | `/retro` | In-session context — sprint surfaces learnings inline; retro reads them |
 | `/retro` | next session | `memory/agents/<name>/learnings.md` — persistent file written by retro |
 
@@ -93,7 +93,7 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 1. `/meeting <goal>` — Runs an interactive multi-agent dialogue around the goal. Each agent brings a perspective. Produces a discussion transcript and emerging consensus or key disagreements.
 2. `/decompose` — Reads meeting output from context (or takes the agreed goal as input). Breaks the goal into bounded sub-parts with clear interfaces.
 3. `/plan` — Reads decompose output from context. Produces a dependency-aware execution sequence: what to build in what order, with which skills or agents.
-4. `/sprint` — Reads the plan and creates or populates backlog tasks via `bd create` (or `tk create`). Dispatches agents to execute the plan.
+4. `/sprint` — Reads the plan and creates or populates backlog tasks via `tk create` (or `bd create`). Dispatches agents to execute the plan.
 
 ### State Flow
 
@@ -101,7 +101,7 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 |------|----|-----|
 | `/meeting` | `/decompose` | Context — decompose reads the meeting summary and agreed framing |
 | `/decompose` | `/plan` | Pipe-format output in context |
-| `/plan` | `/sprint` | Context — sprint reads the plan and translates to backlog tasks (`bd`/`tk`) |
+| `/plan` | `/sprint` | Context — sprint reads the plan and translates to backlog tasks (`tk`/`bd`) |
 
 ---
 
@@ -122,7 +122,7 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 | From | To | Via |
 |------|----|-----|
 | `/fractal` | `/blossom` | Context — you pass the specific area fractal flagged as highest uncertainty |
-| `/blossom` | `/sprint` | backlog (`bd`/`tk`) — blossom writes tasks; sprint reads ready tasks |
+| `/blossom` | `/sprint` | backlog (`tk`/`bd`) — blossom writes tasks; sprint reads ready tasks |
 
 **When to skip `/blossom`**: If `/fractal` produces sufficient task-level clarity, go directly to `/sprint` and skip `/blossom`. Blossom is only needed when fractal surfaces an area requiring dedicated spike subagents.
 
@@ -136,7 +136,7 @@ For primitive-only composition chains (gather -> distill -> rank, etc.), see [Pr
 
 ### Steps
 
-1. `/status` — Reads `memory/sessions/last.md`, backlog stats (`bd stats` or `tk stats`), git activity, and team state. Produces a unified dashboard: what happened last session, what's ready now, what's blocked.
+1. `/status` — Reads `memory/sessions/last.md`, backlog stats (`tk stats` or `bd stats`), git activity, and team state. Produces a unified dashboard: what happened last session, what's ready now, what's blocked.
 2. **Work** — Use any skills appropriate to the tasks at hand. The middle of the session is unconstrained.
 3. `/retro` — Reflects on the session: what was completed, what was learned, what to change. Writes to `memory/agents/<name>/learnings.md`. Delegates promotion evaluation to `/promote`.
 4. `/handoff` — Captures current state to `memory/sessions/last.md`. Includes backlog state, open threads, and a one-paragraph summary for the next session's `/status` to read.
