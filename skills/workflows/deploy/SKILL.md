@@ -444,7 +444,7 @@ If no rollback was needed:
 
 Next steps:
 - Tag the release if not already tagged: `git tag v<version> && git push origin v<version>`
-- Close any related beads: `bd close <id>`
+- Close any related tasks: `tk close <id>` (or `bd close <id>` for beads)
 - Announce to team if applicable
 ```
 

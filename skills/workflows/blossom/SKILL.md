@@ -95,7 +95,7 @@ tk create --parent <epic-id> "SPIKE: [specific area to investigate]"
 # bd equivalent: bd create --title="SPIKE: [area]" --type=task --priority=2 --parent=<epic-id> --description="..."
 ```
 
-The `--parent` flag establishes the epic-child hierarchy, enabling `bd children`, `bd epic status`, and `bd epic close-eligible`.
+The `--parent` flag establishes the epic-child hierarchy, enabling `tk children` / `bd children`, `tk epic` / `bd epic status`, and `bd epic close-eligible` (beads-only).
 
 **If neither `.beads/` nor `.tacks/` exists**, add each spike as a checkbox under the epic heading in `TODO.md`:
 ```
@@ -237,7 +237,7 @@ Each spike agent (whether background Task or team teammate) receives these instr
 
    **If any check fails:**
    - **Team mode:** Send ONE pushback message naming which checks failed and demanding a corrected report (Items section with confidence tags and file:line citations from actual code reading). One retry only -- if still inadequate, log failure and move on.
-   - **Background mode:** Resume the agent with `Task({resume: "<agent-id>", prompt: "Your report failed quality checks: [which checks failed]. Please re-investigate and resubmit with pipe-format structure, confidence tags (CONFIRMED/LIKELY/POSSIBLE), and file:line citations from actual code reading."})`. **One retry only — if the second attempt still fails quality, accept the result with a quality note.** If `.beads/` or `.tacks/` exists, flag via `bd update <spike-id> --notes="QUALITY ISSUE: [which checks failed]"`. If neither `.beads/` nor `.tacks/` exists, note the quality failure in `TODO.md` next to the spike item. Do not create firm tasks from low-quality reports.
+   - **Background mode:** Resume the agent with `Task({resume: "<agent-id>", prompt: "Your report failed quality checks: [which checks failed]. Please re-investigate and resubmit with pipe-format structure, confidence tags (CONFIRMED/LIKELY/POSSIBLE), and file:line citations from actual code reading."})`. **One retry only — if the second attempt still fails quality, accept the result with a quality note.** If `.tacks/` or `.beads/` exists, flag via `tk update <spike-id> --notes "QUALITY ISSUE: [which checks failed]"` (or `bd update <spike-id> --notes=...` for beads). If neither `.beads/` nor `.tacks/` exists, note the quality failure in `TODO.md` next to the spike item. Do not create firm tasks from low-quality reports.
 
 2. **Create firm task beads** as children of the epic:
 

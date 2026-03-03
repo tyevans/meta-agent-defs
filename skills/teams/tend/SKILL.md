@@ -107,7 +107,7 @@ Agent: <agent-name>
 Learnings file: memory/agents/<agent-name>/learnings.md
 
 Upcoming work snapshot:
-<paste bd ready / in_progress / epic output from Phase 0c>
+<paste tk ready / tk list --status=in_progress / tk epic output from Phase 0c>
 
 Rules inventory:
 <paste ls rules/*.md .claude/rules/*.md output from Phase 0d>

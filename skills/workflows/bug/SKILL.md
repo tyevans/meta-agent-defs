@@ -31,7 +31,7 @@ You are running the **bug** skill — filing a structured bug report in the bead
 Detect input [pipe-format or direct description]
   -> Extract details [artifact, symptom, repro, severity]
     -> Confirm with user [priority, scope]
-      -> File in beads [bd create --type=bug]
+      -> File in backlog [tk create -t bug / bd create --type=bug]
         -> Report [pipe format]
 ```
 

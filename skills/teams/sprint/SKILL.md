@@ -20,7 +20,7 @@ You are running a **Sprint** -- the core execution loop for a persistent learnin
 - When agents should accumulate knowledge from each task to improve on the next
 - After a planning session (like `/blossom`) produces tasks to execute
 - When you want structured reflection and learning persistence after each task
-- Works with beads backlog (pulls from `bd ready`) or without (accepts manual task descriptions)
+- Works with backlog (pulls from `tk ready` or `bd ready`) or without (accepts manual task descriptions)
 
 ## The Learning Loop
 
