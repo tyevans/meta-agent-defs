@@ -1,6 +1,6 @@
 ---
 name: consolidate
-description: "Review and tighten the beads backlog by deduplicating tasks, filling vertical slice gaps, detecting stale items, and cleaning up dependencies. Use after a blossom run, when the backlog feels unwieldy, before starting a new sprint, or when you suspect duplicate or stale tasks. Keywords: backlog, cleanup, dedup, triage, hygiene, review, organize."
+description: "Review and tighten the backlog by deduplicating tasks, filling vertical slice gaps, detecting stale items, and cleaning up dependencies. Use after a blossom run, when the backlog feels unwieldy, before starting a new sprint, or when you suspect duplicate or stale tasks. Keywords: backlog, cleanup, dedup, triage, hygiene, review, organize."
 argument-hint: "[area or scope]"
 disable-model-invocation: false
 user-invocable: true
@@ -12,7 +12,7 @@ context: fork
 
 # Consolidate: Backlog Review and Tightening
 
-You are running the **Consolidate** workflow — a structured pass over the current beads backlog to eliminate sprawl, fill gaps, and sharpen priorities. Target area (optional): **$ARGUMENTS**
+You are running the **Consolidate** workflow — a structured pass over the current backlog to eliminate sprawl, fill gaps, and sharpen priorities. Target area (optional): **$ARGUMENTS**
 
 **If neither `.tacks/` nor `.beads/` exists in the project root:** This workflow cannot run in full — there is no backlog to consolidate. If a `TODO.md` file exists, review it manually: scan for duplicates, reorder by priority, and remove items already completed (check git log). Then stop. Do not proceed through the phases below.
 
@@ -261,7 +261,7 @@ Emit the consolidation report in pipe format:
 3. Make it actionable (a single bd command or skill invocation)
 
 **Before:** "Some clusters might benefit from prioritization review"
-**After:** "Reprioritize beads abc1, def2, ghi3 in the auth cluster from P3→P2 — they block 4 downstream tasks"
+**After:** "Reprioritize tasks abc1, def2, ghi3 in the auth cluster from P3→P2 — they block 4 downstream tasks"
 
 - [Recommendation 1: specific action]
 - [Recommendation 2: specific action]

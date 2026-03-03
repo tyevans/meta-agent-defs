@@ -1,6 +1,6 @@
 ---
 name: bug
-description: "File a structured bug report in the beads backlog from a description, upstream pipe-format output (/critique, /review), or conversation context. Extracts affected artifact, repro steps, and priority. Keywords: bug, report, issue, defect, file, submit, track, broken."
+description: "File a structured bug report in the backlog from a description, upstream pipe-format output (/critique, /review), or conversation context. Extracts affected artifact, repro steps, and priority. Keywords: bug, report, issue, defect, file, submit, track, broken."
 argument-hint: "<description of the bug>"
 disable-model-invocation: false
 user-invocable: true
@@ -10,14 +10,14 @@ context: inline
 
 # Bug: File a Structured Bug Report
 
-You are running the **bug** skill — filing a structured bug report in the beads backlog. Input: **$ARGUMENTS**
+You are running the **bug** skill — filing a structured bug report in the backlog. Input: **$ARGUMENTS**
 
 ## When to Use
 
 - After discovering a defect during manual testing or code review
 - After /critique or /review surfaces a flaw worth tracking
 - When the user says "file a bug", "this is broken", or "track this issue"
-- To bridge findings from any pipe-format output into actionable beads issues
+- To bridge findings from any pipe-format output into actionable backlog issues
 
 ## Don't Use When
 

@@ -13,7 +13,4 @@
 
 - When searching for phrases in definition files, the actual text may embed the phrase differently than expected (e.g., "beads dependencies" appears as "dependencies between beads") — always grep for individual terms and read surrounding context (added: 2026-02-26, dispatch: sprint-tacks-alt)
 
-- When flipping tool ordering in docs, check for cases where one tool's name is used as a generic noun (e.g., "beads" meaning "backlog items") — those require tool-agnostic replacement, not just reordering (added: 2026-03-02, dispatch: tk-fbdc.6)
-- README install flags may need semantic reversal (not just label swap) when the default tool changes — e.g., --tacks becomes --beads when tacks is the new default (added: 2026-03-02, dispatch: tk-fbdc.7)
-
 ## Task-Relevant
