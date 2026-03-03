@@ -13,6 +13,7 @@ Quick reference for finding the right skill or agent. See also: [Cookbook](primi
 - **Assess risk** -> /premortem (failure analysis) or /critique (adversarial review)
 - **Bootstrap a new project** -> /bootstrap (full setup: infrastructure + agents)
 - **Build something** -> /tracer (iterative end-to-end) or /sketch (skeleton only)
+- **Implement a full plan autonomously** -> /drive (sustained sprint/retro cycles until done)
 - **Deploy something** -> /deploy (readiness gate, strategy selection, execution, monitoring, rollback)
 - **Optimize something** -> /optimize (profile -> bottleneck -> fix -> measure -> iterate)
 - **Test an implementation** -> /test-strategy (classify spec type, write tests, enforce red-green gates)
@@ -60,7 +61,7 @@ Composable primitives following [pipe format](../rules/pipe-format.md), plus the
 | /do | Primary entrypoint: match goal to skill/pipeline and execute it | Router |
 | /discover | Recommend skills or pipelines for a described goal | Router |
 
-### Workflows (27) — `skills/workflows/`
+### Workflows (28) — `skills/workflows/`
 
 Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
 
@@ -74,6 +75,7 @@ Orchestrated multi-step workflows with side effects (file writes, agent dispatch
 | /spec | Progressive specification document | fork |
 | /bootstrap | Full project setup: infrastructure + agents | fork |
 | /tracer | Iterative thin-slice implementation | fork |
+| /drive | Sustained autonomous implementation against a plan document via sprint/retro loops | inline |
 | /deploy | Structured deployment: readiness gate, strategy selection, execution, monitoring, rollback | fork |
 | /review | Structured code review (5 dimensions) | fork |
 | /bug | File structured bug reports to backlog | inline |
@@ -112,7 +114,7 @@ Persistent team orchestration and the learning lifecycle (curation, promotion, r
 
 ## Skills by Context Type
 
-**Inline (40):** gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, do, discover, fractal, meeting, bug, session-health, handoff, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, domain, assemble, standup, sprint, team-meeting, curate, promote, tend, retro, storm-prep, formalize, integrate
+**Inline (41):** gather, distill, expand, transform, rank, filter, assess, verify, sketch, merge, decompose, critique, plan, diff-ideas, do, discover, fractal, meeting, bug, session-health, handoff, status, advise, evolution, drift, diagnose-agent, challenge-gen, challenge-run, domain, assemble, standup, sprint, team-meeting, curate, promote, tend, retro, storm-prep, formalize, integrate, drive
 
 **Fork (12):** blossom, bootstrap, consensus, consolidate, deploy, optimize, premortem, review, spec, test-strategy, tracer, active-learn
 
@@ -135,6 +137,8 @@ Common composition sequences (each step's output feeds the next via context):
 /gather -> /distill -> /expand         # Research -> condense -> elaborate key findings
 /drift -> /rank -> /sprint            # Compare definitions -> prioritize fixes -> execute
 /tracer -> /optimize                  # Implement correctly -> then make it fast
+/blossom -> /drive                    # Discover plan -> autonomously implement it
+/spec -> /drive                       # Specify -> autonomously implement it
 /diagnose-agent -> /challenge-gen     # Profile agent -> generate targeted challenges
 /diagnose-agent -> /challenge-gen -> /challenge-run  # Profile -> challenges -> evaluate
 /active-learn                                       # Full loop: diagnose -> challenge -> evaluate -> learn (all inline)
@@ -180,6 +184,7 @@ This pattern is especially useful for:
 
 ## Further Reading
 
+- [Multi-Human How-To](multi-human-howto.md) — step-by-step guide for the full multi-human pipeline (storm-prep -> jam -> formalize -> sprint -> integrate)
 - [Workflow Pipelines](pipelines.md) — 6 canonical end-to-end lifecycle pipelines (discovery, team, deep analysis, planning, recursive exploration, session continuity)
 - [Design Notes](design-notes.md) — architecture and design decision notes
 - [Domain Mapping](domains.md) — domain-to-artifact mapping (referenced by /curate and /promote)
