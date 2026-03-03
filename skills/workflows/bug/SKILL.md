@@ -4,7 +4,7 @@ description: "File a structured bug report in the beads backlog from a descripti
 argument-hint: "<description of the bug>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*)
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*)
 context: inline
 ---
 
@@ -21,9 +21,9 @@ You are running the **bug** skill — filing a structured bug report in the bead
 
 ## Don't Use When
 
-- The issue is a feature request or enhancement, not a defect — use `bd create --type=task` directly
-- The problem is not yet reproducible — investigate and confirm the bug exists before creating a bead for it
-- A bead for this issue was already created upstream (e.g., by /review or another skill) — check `bd list --status=open` to avoid duplicates before filing
+- The issue is a feature request or enhancement, not a defect — use `tk create "[title]"` directly
+- The problem is not yet reproducible — investigate and confirm the bug exists before creating a task for it
+- A task for this issue was already created upstream (e.g., by /review or another skill) — check `tk list --status=open` to avoid duplicates before filing
 
 ## Overview
 
@@ -89,11 +89,12 @@ If multiple bugs were extracted from pipe-format input, present all of them and 
 
 ## Phase 3: File in Beads
 
-For each confirmed bug, create a beads issue:
+For each confirmed bug, create a task:
 
 ```bash
-bd create --title="<artifact>: <concise symptom>" --type=bug --priority=<N> \
-  --description="<full description with symptom, repro steps, and expected behavior>"
+# tacks
+tk create -t bug "<artifact>: <concise symptom>"
+# bd equivalent: bd create --title="..." --type=bug --priority=<N> --description="..."
 ```
 
 Title format: `<affected artifact>: <what's broken>` (e.g., "/gather: silently drops items past 20 results")
@@ -101,9 +102,9 @@ Title format: `<affected artifact>: <what's broken>` (e.g., "/gather: silently d
 If the bug relates to an existing epic, add it as a child:
 
 ```bash
-bd create --title="<artifact>: <symptom>" --type=bug --priority=<N> \
-  --parent=<epic-id> \
-  --description="<full description>"
+# tacks
+tk create -t bug --parent <epic-id> "<artifact>: <symptom>"
+# bd equivalent: bd create --title="..." --type=bug --priority=<N> --parent=<epic-id> --description="..."
 ```
 
 ---
@@ -137,5 +138,5 @@ Emit the result in pipe format:
 - **One bug per issue.** Do not bundle multiple symptoms into a single bead.
 - **Title starts with the artifact name.** This makes the backlog scannable.
 - **Preserve provenance.** If the bug came from /critique or /review output, include that in the description (e.g., "Discovered via /review on 2026-02-17").
-- **Don't file duplicates.** Before creating, check `bd list --status=open` for existing issues with similar titles. If a match exists, note it to the user instead of filing.
+- **Don't file duplicates.** Before creating, check `tk list --status=open` (or `bd list --status=open`) for existing issues with similar titles. If a match exists, note it to the user instead of filing.
 - **Severity defaults to P2** if the user doesn't specify and context is ambiguous.

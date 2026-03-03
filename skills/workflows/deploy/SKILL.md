@@ -4,7 +4,7 @@ description: "Deploy a project to production or a target environment. Covers rea
 argument-hint: "<service or target environment>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(docker:*), Bash(kubectl:*), Bash(npm:*), Bash(make:*), Bash(bd:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(docker:*), Bash(kubectl:*), Bash(npm:*), Bash(make:*), Bash(bd:*), Bash(tk:*)
 context: fork
 ---
 
@@ -78,8 +78,14 @@ If a test command exists, report the last test run result from git log or CI art
 
 ### 0d. In-Progress Work Check
 
-If `.beads/` or `.tacks/` exists:
+If `.tacks/` exists:
 
+```bash
+# tacks — filter for high-priority open tasks
+tk list --status=open --json | jq '[.[] | select(.priority <= 1)]'
+```
+
+If `.beads/` exists (beads-only command):
 ```bash
 bd query "status=open AND priority<=1"
 ```

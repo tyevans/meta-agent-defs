@@ -4,7 +4,7 @@ description: "Review and tighten the beads backlog by deduplicating tasks, filli
 argument-hint: "[area or scope]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
 context: fork
 ---
 
@@ -14,7 +14,7 @@ context: fork
 
 You are running the **Consolidate** workflow — a structured pass over the current beads backlog to eliminate sprawl, fill gaps, and sharpen priorities. Target area (optional): **$ARGUMENTS**
 
-**If neither `.beads/` nor `.tacks/` exists in the project root:** This workflow cannot run in full — there is no beads backlog to consolidate. If a `TODO.md` file exists, review it manually: scan for duplicates, reorder by priority, and remove items already completed (check git log). Then stop. Do not proceed through the phases below.
+**If neither `.tacks/` nor `.beads/` exists in the project root:** This workflow cannot run in full — there is no backlog to consolidate. If a `TODO.md` file exists, review it manually: scan for duplicates, reorder by priority, and remove items already completed (check git log). Then stop. Do not proceed through the phases below.
 
 ## When to Use
 
@@ -43,10 +43,10 @@ Survey [gather]
 ### 1a. Get the Full Picture
 
 ```bash
-bd stats
-bd list --status=open
-bd list --status=in_progress
-bd blocked
+tk stats
+tk list --status=open
+tk list --status=in_progress
+tk blocked
 ```
 
 ### 1b. Build a Mental Map
@@ -80,18 +80,18 @@ For each overlap found:
 
 1. **Exact duplicates**: Close the newer one with a note pointing to the older one
    ```bash
-   bd close <newer-id> --reason="Duplicate of <older-id>"
+   tk close <newer-id>
    ```
 
 2. **Subset tasks**: Close the subset, add its specifics as notes on the parent
    ```bash
-   bd update <parent-id> --notes="Absorbed <subset-id>: [specific details]"
-   bd close <subset-id> --reason="Absorbed into <parent-id>"
+   tk close <subset-id>
+   # Note absorbed details in the parent via tk update or comments
    ```
 
 3. **Convergent tasks**: Keep the better-scoped one, close the other
    ```bash
-   bd close <weaker-id> --reason="Superseded by <better-id>"
+   tk close <weaker-id>
    ```
 
 ### 2c. Report Dedup Results
@@ -131,13 +131,14 @@ For every task that touches a core/inner layer, verify companion tasks exist acr
 
 For each missing companion, create as a child of the epic (if one exists) or standalone:
 
-**If `.beads/` or `.tacks/` exists:**
+**If `.tacks/` or `.beads/` exists:**
 ```bash
-bd create --title="[layer]: [companion task description]" --type=task --priority=<same-as-parent> \
-  --parent=<epic-id>
+# tacks
+tk create --parent <epic-id> "[layer]: [companion task description]"
+# bd equivalent: bd create --title="..." --type=task --priority=<N> --parent=<epic-id>
 ```
 
-If no epic exists, omit `--parent` and wire ordering dependencies with `bd dep add` as needed.
+If no epic exists, omit `--parent` and wire ordering dependencies with `tk dep add` as needed.
 
 **If neither `.beads/` nor `.tacks/` exists:** Add missing companion tasks to `TODO.md` under the relevant section.
 
@@ -152,7 +153,7 @@ Ensure the natural flow follows the project's dependency direction (inner layers
 
 ```bash
 # Example: outer layer depends on inner layer
-bd dep add <outer-task> <inner-task>
+tk dep add <outer-task> <inner-task>
 ```
 
 ---
@@ -180,12 +181,7 @@ For each potentially stale task:
 ### 4c. Close Stale Tasks
 
 ```bash
-bd close <stale-id> --reason="Stale: [explanation]"
-```
-
-Or if the work was already done:
-```bash
-bd close <stale-id> --reason="Already completed in commit <hash>"
+tk close <stale-id>
 ```
 
 ---
@@ -198,31 +194,30 @@ If A depends on B, and B depends on C, then A does NOT need a direct dependency 
 
 ```bash
 # Check: does A directly depend on C when B already bridges them?
-bd show <A>  # Look at depends-on list
+tk show <A>  # Look at depends-on list
 # If A -> B -> C AND A -> C, remove A -> C
 ```
 
 ### 5b. Check for Cycles and Validate Structure
 
-Use `bd` built-in validation instead of manual checks:
-
 ```bash
-bd dep cycles                  # Detect dependency cycles
-bd swarm validate <epic-id>    # Full structural validation (cycles, orphans, disconnected subgraphs, ready fronts)
+tk children <epic-id>   # Verify tasks are properly parented
+tk blocked              # Check for unexpected blockers
+# Note: bd dep cycles and bd swarm validate are beads-only; use tk list --json | jq for custom queries
 ```
 
-If cycles are found, break them by identifying which dependency is the weakest (most optional) and removing it. If `bd swarm validate` reports orphaned or disconnected tasks, re-parent or wire them.
+If cycles are found, break them by identifying which dependency is the weakest (most optional) and removing it.
 
 ### 5c. Validate Epic Structure
 
 Every epic should have its tasks as children (via `--parent`), not just blocking deps:
 
 ```bash
-bd children <epic-id>  # Should list all child tasks
-bd epic status         # Should show completion progress
+tk children <epic-id>  # Should list all child tasks
+tk epic                # Should show completion progress
 ```
 
-If tasks were created without `--parent`, they will be missing from `bd children`. Flag these for re-parenting.
+If tasks were created without `--parent`, they will be missing from `tk children`. Flag these for re-parenting.
 
 ---
 
