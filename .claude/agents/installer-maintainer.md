@@ -83,8 +83,8 @@ Key rules:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Ask orchestrator for the bead ID you're working on
-2. Run `bd show <id>` to understand what installer change is needed
+1. Ask orchestrator for the task ID you're working on
+2. Read the task notes to understand what installer change is needed
 3. Read `install.sh` to understand current structure
 
 **After completing work:**
@@ -93,9 +93,11 @@ Report back to orchestrator:
 - Whether users need to re-run `./install.sh` to pick up changes
 - Any edge cases discovered during the modification
 
-**Update downstream beads** if installer changes affect other work:
+**Update downstream tasks** if installer changes affect other work:
 ```bash
-bd show <your-bead-id>
+# With tacks:
+tk update <downstream-id> --notes="[Installer updated during <your-id>: specific change]"
+# With beads:
 bd update <downstream-id> --notes="[Installer updated during <your-id>: specific change]"
 ```
 

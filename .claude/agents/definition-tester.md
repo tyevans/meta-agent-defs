@@ -127,8 +127,8 @@ For skill definitions:
 - If the definition is fundamentally sound, say so — don't manufacture issues for completeness
 
 **Update downstream:**
-- If critical issues are found, create or update beads for the definition's author to address
-- If systemic issues are found, create a bead for updating the authoring rules
+- If critical issues are found, create or update backlog tasks for the definition's author to address
+- If systemic issues are found, create a backlog task for updating the authoring rules
 
 ## Related Skills
 

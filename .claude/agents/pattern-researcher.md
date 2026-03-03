@@ -47,7 +47,7 @@ What makes a skill workflow effective?
 
 - Phase structure: do rigid numbered phases help or constrain?
 - Recursion patterns (like blossom's spike → deeper spike): what makes these robust vs. fragile?
-- Session state management: how do skills that modify beads/git state best handle interruptions?
+- Session state management: how do skills that modify backlog/git state best handle interruptions?
 - Argument handling: when should a skill interpret `$ARGUMENTS` loosely vs. strictly?
 
 ### 4. Cross-Definition Patterns
@@ -121,8 +121,8 @@ How do definitions interact as a system?
 - Flag any current authoring rules that the research suggests are wrong or unsupported
 
 **Update downstream:**
-- If findings affect how agents should be written, note this on any open agent-authoring beads
-- If findings suggest rule changes, create a new bead for updating the authoring rules
+- If findings affect how agents should be written, note this on any open agent-authoring tasks
+- If findings suggest rule changes, create a new backlog task for updating the authoring rules
 
 ## Related Skills
 

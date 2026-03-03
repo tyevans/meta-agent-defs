@@ -18,7 +18,7 @@ You are an expert at analyzing codebases and creating specialized Claude Code ag
 3. **Generate** high-quality agents in `.claude/agents/`
 4. **Generate** supporting hooks alongside agents
 5. **Create** an agent catalog for quick reference
-6. **Track** your work using beads (`bd`) for task management
+6. **Track** your work using tacks (`tk`) or beads (`bd`) for task management
 
 ## Phase 1: Project Discovery
 
@@ -48,20 +48,27 @@ Analyze key indicators:
 
 ## Phase 2: Task Tracking (Optional)
 
-Check if beads is available for task tracking:
+Check if tacks or beads is available for task tracking:
 
 ```bash
-bd stats 2>/dev/null || echo "Beads not available -- skip task tracking"
+tk stats 2>/dev/null || bd stats 2>/dev/null || echo "No backlog tool available -- skip task tracking"
 ```
 
-If beads exists, create an epic to track agent generation:
+If tacks exists, create an epic to track agent generation:
+
+```bash
+tk create "Generate project agents" -t epic
+# Create sub-tasks: tk create "Task X" --parent <epic-id>
+```
+
+If beads exists (and tacks does not):
 
 ```bash
 bd create --title="Generate project agents" --type=epic --priority=1
 # Create sub-tasks as children: --parent=<epic-id>
 ```
 
-If beads is not available, proceed without task tracking. The agent generation workflow does not depend on it.
+If neither is available, proceed without task tracking. The agent generation workflow does not depend on it.
 
 ## Phase 3: Agent Generation Strategy
 
@@ -143,7 +150,7 @@ When investigating code:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Ask the orchestrator for task context. If beads is available (`bd` command exists), run `bd show <id>` to read task notes.
+1. Ask the orchestrator for task context. If a backlog tool is available (`tk` or `bd` command exists), read the task notes.
 2. Check for gotchas, patterns, or decisions from prior agents
 
 **After completing work:**
@@ -174,7 +181,7 @@ mkdir -p .claude/agents
 
 2. Write the agent file with project-specific context
 3. Include relevant paths, commands, and patterns from your discovery
-4. If using beads, close the corresponding task
+4. If using a backlog tool, close the corresponding task
 
 ### Model Selection Guide
 
@@ -190,12 +197,12 @@ Default to **sonnet** unless the task clearly needs opus-level reasoning or is s
 
 **Read-only agents** (review, analysis, exploration):
 ```
-tools: Read, Glob, Grep, Bash(bd:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*)
+tools: Read, Glob, Grep, Bash(tk:*), Bash(bd:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*)
 ```
 
 **Implementation agents** (code changes):
 ```
-tools: Read, Write, Edit, Glob, Grep, Bash(bd:*), Bash(uv run pytest:*), Bash(uv run mypy:*), Bash(uv run ruff check:*)
+tools: Read, Write, Edit, Glob, Grep, Bash(tk:*), Bash(bd:*), Bash(uv run pytest:*), Bash(uv run mypy:*), Bash(uv run ruff check:*)
 ```
 
 **Full access agents** (when tool restrictions would hinder):
@@ -340,7 +347,7 @@ When exploring a project's codebase:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. If beads is available (`bd` command exists), ask the orchestrator for the bead ID and run `bd show <id>` to read task notes. Otherwise, ask the orchestrator for task context directly.
+1. If a backlog tool is available (`tk` or `bd` command exists), ask the orchestrator for the task ID and read its notes. Otherwise, ask the orchestrator for task context directly.
 2. Check for prior agent-generation runs -- look for existing `.claude/agents/` files and `.claude/AGENTS.md` to avoid overwriting intentional customizations
 
 **After completing work:**
@@ -350,29 +357,38 @@ Report back to the orchestrator:
 - Any project areas that were unclear and need human clarification
 - Hooks that were added and what they automate
 
-**If beads is available**, update downstream beads when your work changes what blocked tasks need to know:
+**If a backlog tool is available**, update downstream tasks when your work changes what blocked tasks need to know:
 ```bash
+# With tacks:
+tk show <your-task-id>
+tk update <downstream-id> --notes="[Discovered during <your-id>: specific fact]"
+# With beads:
 bd show <your-bead-id>  # Look at "BLOCKS" section
 bd update <downstream-id> --notes="[Discovered during <your-id>: specific fact]"
 ```
 
-## Beads Workflow Commands (When Available)
+## Backlog Workflow Commands (When Available)
 
-If the project uses beads for task tracking (`bd` command exists), use it to track agent generation progress:
+If the project uses tacks for task tracking (`tk` command exists):
+
+```bash
+tk ready              # Find available work
+tk create "..."       # Create task
+tk close <id>         # Complete task
+tk create "Task X" --parent <epic-id>  # Child of epic
+```
+
+If the project uses beads for task tracking (`bd` command exists, and tacks is not available):
 
 ```bash
 bd ready              # Find available work
 bd create --title="..." --type=task  # Create task
 bd update <id> --status=in_progress  # Start work
 bd close <id>         # Complete task
+bd create --title="Task X" --type=task --parent=<epic-id>  # Child of epic
 ```
 
-Create children with `--parent` for epic hierarchy:
-```bash
-bd create --title="Task X" --type=task --parent=<epic-id>
-```
-
-If beads is not available, skip these commands. Agent generation does not require task tracking.
+If neither is available, skip these commands. Agent generation does not require task tracking.
 
 ## Output
 
