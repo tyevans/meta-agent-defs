@@ -4,7 +4,7 @@ description: "Primary entrypoint for composable skills. Reads the canonical skil
 argument-hint: "<goal in natural language>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, Skill, Task, "Bash(bd:*)"]
+allowed-tools: [Read, Glob, Grep, Skill, Task, "Bash(bd:*)", "Bash(tk:*)"]
 context: inline
 ---
 

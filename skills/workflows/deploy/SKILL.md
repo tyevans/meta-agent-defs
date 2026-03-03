@@ -412,14 +412,16 @@ docker compose pull <previous-tag> && docker compose up -d
 After rollback:
 
 1. Confirm health checks pass on the stable version
-2. Create a beads task (or note) for the root cause investigation:
+2. Create a task (or note) for the root cause investigation:
 
 ```bash
-bd create --title="[service]: investigate deploy failure [date]" --type=task --priority=1 \
-  --description="Rollback triggered during deploy. Error signals: [what you found in Phase 3]. Investigate root cause before next deploy attempt."
+# tacks
+tk create "[service]: investigate deploy failure [date]"
+# bd equivalent: bd create --title="[service]: investigate deploy failure [date]" --type=task --priority=1 \
+#   --description="Rollback triggered during deploy. Error signals: [what you found in Phase 3]. Investigate root cause before next deploy attempt."
 ```
 
-If neither `.beads/` nor `.tacks/` exists, write to `TODO.md`:
+If neither `.tacks/` nor `.beads/` exists, write to `TODO.md`:
 
 ```markdown
 ## Post-rollback: investigate deploy failure [date]

@@ -4,7 +4,7 @@ description: "Run domain exploration to generate candidate domain events for mul
 argument-hint: "<domain scope and project goal>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Bash(bd:*), Bash(git:*), Task
+allowed-tools: Read, Grep, Glob, Write, Bash(bd:*), Bash(tk:*), Bash(git:*), Task
 context: inline
 ---
 

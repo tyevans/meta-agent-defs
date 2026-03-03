@@ -4,7 +4,7 @@ description: "Run a team standup to sync status, surface blockers, and check lea
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
 ---
 
 # Standup: Team Status Sync

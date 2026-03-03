@@ -4,7 +4,7 @@ description: "Guide implementation agents through a structured testing workflow:
 argument-hint: "[task description or bead reference]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(bd:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(bd:*), Bash(tk:*)
 context: fork
 ---
 
