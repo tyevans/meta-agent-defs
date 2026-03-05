@@ -67,6 +67,18 @@ fi
 # Validate workspace name (max 32 chars, alphanumeric + hyphens)
 WS_NAME=$(echo "$WS_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | head -c 32)
 
+# If --task was provided, use Coder Tasks (creates its own workspace)
+if [ -n "$TASK_PROMPT" ]; then
+  echo "Creating task via Coder Tasks..."
+  echo "  Template: $TEMPLATE"
+  TASK_ARGS=(
+    --template "$TEMPLATE"
+    --name "$WS_NAME"
+  )
+  coder task create "${TASK_ARGS[@]}" "$TASK_PROMPT"
+  exit 0
+fi
+
 echo "Creating workspace: $WS_NAME"
 echo "  Template:   $TEMPLATE"
 echo "  Agent type: $AGENT_TYPE"
@@ -80,19 +92,9 @@ PARAMS=(
   --parameter "ttl_hours=$TTL_HOURS"
 )
 
-if [ -n "$REPO_URL" ]; then
-  PARAMS+=(--parameter "repo_url=$REPO_URL")
-fi
+PARAMS+=(--parameter "repo_url=$REPO_URL")
 
 coder create "$WS_NAME" "${PARAMS[@]}" --yes
-
-# If --task was provided, create a Coder Task
-if [ -n "$TASK_PROMPT" ]; then
-  echo "Creating task..."
-  coder task create --workspace "$WS_NAME" --prompt "$TASK_PROMPT"
-  echo "Task created. Monitor with: coder task logs $WS_NAME"
-  exit 0
-fi
 
 # Wait for workspace to be ready
 if [ "$WAIT" = true ] || [ -n "$EXEC_CMD" ]; then
