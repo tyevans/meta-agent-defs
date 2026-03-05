@@ -22,21 +22,29 @@ PROJECT_DIR=""
 USE_HARDLINKS=false
 RULES_ONLY=false
 USE_TACKS=false
+USE_BEADS=false
+INSTALL_TACKS=false
 show_help() {
     cat << EOF
-Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--tacks] [--help]
+Usage: ./install.sh [project_dir] [--hardlink] [--rules-only] [--beads] [--tacks] [--install-tacks] [--help]
 
 Options:
   project_dir      Install to project_dir/.claude/ instead of ~/.claude/
   --hardlink       Use hardlinks instead of symlinks
   --rules-only     Install only rules and templates (use with plugin install)
-  --tacks          Prefer tacks (tk) over beads (bd) for task management
+  --beads          Require beads (bd) for task management (opt-in; tacks is default)
+  --tacks          No-op (tacks is already the default); kept for backward compatibility
+  --install-tacks  Install tacks (tk) via cargo if not already present
   --help, -h       Show this help message
 
 Install modes:
   Full install (default)  Symlinks agents, skills, rules, templates, MCP servers
   Plugin companion        Use --rules-only to install what plugins can't provide
   Project-local           Provide project_dir for agents + skills only
+
+Task management:
+  Default: auto-detects tacks (tk) first, then beads (bd)
+  --beads: require beads and prefer it over tacks
 EOF
     exit 0
 }
@@ -56,6 +64,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --tacks)
             USE_TACKS=true
+            shift
+            ;;
+        --install-tacks)
+            INSTALL_TACKS=true
+            shift
+            ;;
+        --beads)
+            USE_BEADS=true
             shift
             ;;
         -*)
@@ -207,8 +223,8 @@ elif [ "$RULES_ONLY" = true ]; then
 else
     echo "Scope:  global"
 fi
-if [ "$USE_TACKS" = true ]; then
-    echo "Backlog: tacks (--tacks)"
+if [ "$USE_BEADS" = true ]; then
+    echo "Backlog: beads (--beads)"
 fi
 echo ""
 
@@ -251,15 +267,33 @@ if ! command -v git &>/dev/null; then
     exit 1
 fi
 
-# --- Task manager detection ---
-if [ "$USE_TACKS" = true ]; then
-    if ! command -v tk &>/dev/null; then
-        warn "REQUIRED: tk (tacks) not found but --tacks was specified."
-        warn "Install tacks: cargo install tacks"
+# --- Install tacks if requested ---
+if [ "$INSTALL_TACKS" = true ]; then
+    if command -v tk &>/dev/null; then
+        log "tacks (tk) is already installed: $(command -v tk)"
+    elif command -v cargo &>/dev/null; then
+        info "Installing tacks via cargo..."
+        cargo install tacks
+        if command -v tk &>/dev/null; then
+            log "tacks installed successfully"
+        else
+            warn "cargo install tacks completed but tk not found in PATH"
+        fi
+    else
+        warn "Cannot install tacks: cargo not found. Install Rust first: https://rustup.rs"
         exit 1
     fi
-    BACKLOG_TOOL="tk"
-    log "Task manager: tacks (tk)"
+fi
+
+# --- Task manager detection ---
+if [ "$USE_BEADS" = true ]; then
+    if ! command -v bd &>/dev/null; then
+        warn "REQUIRED: bd (beads) not found but --beads was specified."
+        warn "Install beads: see beads documentation"
+        exit 1
+    fi
+    BACKLOG_TOOL="bd"
+    log "Task manager: beads (bd)"
 elif command -v tk &>/dev/null; then
     BACKLOG_TOOL="tk"
     log "Task manager: tacks (tk)"

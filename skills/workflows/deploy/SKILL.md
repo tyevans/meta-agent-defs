@@ -4,7 +4,7 @@ description: "Deploy a project to production or a target environment. Covers rea
 argument-hint: "<service or target environment>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(docker:*), Bash(kubectl:*), Bash(npm:*), Bash(make:*), Bash(bd:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(docker:*), Bash(kubectl:*), Bash(npm:*), Bash(make:*), Bash(bd:*), Bash(tk:*)
 context: fork
 ---
 
@@ -78,8 +78,14 @@ If a test command exists, report the last test run result from git log or CI art
 
 ### 0d. In-Progress Work Check
 
-If `.beads/` or `.tacks/` exists:
+If `.tacks/` exists:
 
+```bash
+# tacks — filter for high-priority open tasks
+tk list --status=open --json | jq '[.[] | select(.priority <= 1)]'
+```
+
+If `.beads/` exists (beads-only command):
 ```bash
 bd query "status=open AND priority<=1"
 ```
@@ -406,14 +412,16 @@ docker compose pull <previous-tag> && docker compose up -d
 After rollback:
 
 1. Confirm health checks pass on the stable version
-2. Create a beads task (or note) for the root cause investigation:
+2. Create a task (or note) for the root cause investigation:
 
 ```bash
-bd create --title="[service]: investigate deploy failure [date]" --type=task --priority=1 \
-  --description="Rollback triggered during deploy. Error signals: [what you found in Phase 3]. Investigate root cause before next deploy attempt."
+# tacks
+tk create "[service]: investigate deploy failure [date]"
+# bd equivalent: bd create --title="[service]: investigate deploy failure [date]" --type=task --priority=1 \
+#   --description="Rollback triggered during deploy. Error signals: [what you found in Phase 3]. Investigate root cause before next deploy attempt."
 ```
 
-If neither `.beads/` nor `.tacks/` exists, write to `TODO.md`:
+If neither `.tacks/` nor `.beads/` exists, write to `TODO.md`:
 
 ```markdown
 ## Post-rollback: investigate deploy failure [date]
@@ -436,7 +444,7 @@ If no rollback was needed:
 
 Next steps:
 - Tag the release if not already tagged: `git tag v<version> && git push origin v<version>`
-- Close any related beads: `bd close <id>`
+- Close any related tasks: `tk close <id>` (or `bd close <id>` for beads)
 - Announce to team if applicable
 ```
 

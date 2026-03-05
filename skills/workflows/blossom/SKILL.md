@@ -4,7 +4,7 @@ description: "Run spike-driven exploration to discover and plan work for an unkn
 argument-hint: "<goal or area to explore>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Task, SendMessage
 context: inline
 ---
 
@@ -67,13 +67,15 @@ If `$ARGUMENTS` is empty or too vague, ask the user one clarifying question. Oth
 
 ### 1b. Create the Epic
 
-**If `.beads/` or `.tacks/` exists in the project root:**
+**If `.tacks/` or `.beads/` exists in the project root:**
 
 ```bash
-bd create --title="EPIC: [goal description]" --type=epic --priority=2
+# tacks (epic auto-tagged when subtasks are created with --parent)
+tk create "EPIC: [goal description]"
+# bd equivalent: bd create --title="EPIC: [goal description]" --type=epic --priority=2
 ```
 
-Save the returned epic ID. All subsequent beads will be wired as dependencies of this epic.
+Save the returned epic ID. All subsequent tasks will be wired as children of this epic.
 
 **If neither `.beads/` nor `.tacks/` exists:** Skip `bd` commands throughout this workflow. Track the epic and all spike/task beads in `TODO.md` instead, using a flat markdown list. Create or append to `TODO.md` at the project root with the epic title as a heading and each task as a checkbox item.
 
@@ -85,15 +87,15 @@ Decompose the goal into 3-6 bounded spike areas (a **/decompose** — MECE sub-p
 
 ### 1d. Create Spike Beads
 
-**If `.beads/` or `.tacks/` exists**, for each spike area create as a child of the epic:
+**If `.tacks/` or `.beads/` exists**, for each spike area create as a child of the epic:
 
 ```bash
-bd create --title="SPIKE: [specific area to investigate]" --type=task --priority=2 \
-  --parent=<epic-id> \
-  --description="Discovery spike. Investigate [area] and report: (1) firm tasks found, (2) areas needing deeper spikes, (3) clean areas requiring no work."
+# tacks
+tk create --parent <epic-id> "SPIKE: [specific area to investigate]"
+# bd equivalent: bd create --title="SPIKE: [area]" --type=task --priority=2 --parent=<epic-id> --description="..."
 ```
 
-The `--parent` flag establishes the epic-child hierarchy, enabling `bd children`, `bd epic status`, and `bd epic close-eligible`.
+The `--parent` flag establishes the epic-child hierarchy, enabling `tk children` / `bd children`, `tk epic` / `bd epic status`, and `bd epic close-eligible` (beads-only).
 
 **If neither `.beads/` nor `.tacks/` exists**, add each spike as a checkbox under the epic heading in `TODO.md`:
 ```
@@ -235,36 +237,36 @@ Each spike agent (whether background Task or team teammate) receives these instr
 
    **If any check fails:**
    - **Team mode:** Send ONE pushback message naming which checks failed and demanding a corrected report (Items section with confidence tags and file:line citations from actual code reading). One retry only -- if still inadequate, log failure and move on.
-   - **Background mode:** Resume the agent with `Task({resume: "<agent-id>", prompt: "Your report failed quality checks: [which checks failed]. Please re-investigate and resubmit with pipe-format structure, confidence tags (CONFIRMED/LIKELY/POSSIBLE), and file:line citations from actual code reading."})`. **One retry only — if the second attempt still fails quality, accept the result with a quality note.** If `.beads/` or `.tacks/` exists, flag via `bd update <spike-id> --notes="QUALITY ISSUE: [which checks failed]"`. If neither `.beads/` nor `.tacks/` exists, note the quality failure in `TODO.md` next to the spike item. Do not create firm tasks from low-quality reports.
+   - **Background mode:** Resume the agent with `Task({resume: "<agent-id>", prompt: "Your report failed quality checks: [which checks failed]. Please re-investigate and resubmit with pipe-format structure, confidence tags (CONFIRMED/LIKELY/POSSIBLE), and file:line citations from actual code reading."})`. **One retry only — if the second attempt still fails quality, accept the result with a quality note.** If `.tacks/` or `.beads/` exists, flag via `tk update <spike-id> --notes "QUALITY ISSUE: [which checks failed]"` (or `bd update <spike-id> --notes=...` for beads). If neither `.beads/` nor `.tacks/` exists, note the quality failure in `TODO.md` next to the spike item. Do not create firm tasks from low-quality reports.
 
 2. **Create firm task beads** as children of the epic:
 
-   **If `.beads/` or `.tacks/` exists:**
+   **If `.tacks/` or `.beads/` exists:**
    ```bash
-   bd create --title="[title from spike report]" --type=task --priority=[P level as 0-4] \
-     --parent=<epic-id> \
-     --description="[confidence level]. [evidence and scope from spike report]"
+   # tacks
+   tk create --parent <epic-id> "[title from spike report]"
+   # bd equivalent: bd create --title="..." --type=task --priority=[0-4] --parent=<epic-id> --description="..."
    ```
-   **If neither `.beads/` nor `.tacks/` exists:** Add to `TODO.md` under the epic heading as `- [ ] [title from spike report]`.
+   **If neither exists:** Add to `TODO.md` under the epic heading as `- [ ] [title from spike report]`.
 
 3. **Create new spike beads** as children of the epic:
 
-   **If `.beads/` or `.tacks/` exists:**
+   **If `.tacks/` or `.beads/` exists:**
    ```bash
-   bd create --title="SPIKE: [deeper area]" --type=task --priority=2 \
-     --parent=<epic-id> \
-     --description="Deeper discovery spike spawned from SPIKE: [parent spike]. Reason: [why from report]. Look for: [specific questions]"
+   # tacks
+   tk create --parent <epic-id> "SPIKE: [deeper area]"
+   # bd equivalent: bd create --title="SPIKE: [deeper area]" --type=task --priority=2 --parent=<epic-id> --description="..."
    ```
-   **If neither `.beads/` nor `.tacks/` exists:** Add to `TODO.md` as `- [ ] SPIKE: [deeper area]`.
+   **If neither exists:** Add to `TODO.md` as `- [ ] SPIKE: [deeper area]`.
 
 4. **Close the completed spike** with findings summary:
 
-   **If `.beads/` or `.tacks/` exists:**
+   **If `.tacks/` or `.beads/` exists:**
    ```bash
-   bd close <spike-id>
-   bd update <spike-id> --notes="Completed. Found N firm tasks (X confirmed, Y likely), M deeper spikes needed. Key findings: [1-2 sentence summary]"
+   tk close <spike-id>
+   # add findings note: tk update <spike-id> (if update supports notes) or use tk show output
    ```
-   **If neither `.beads/` nor `.tacks/` exists:** Mark the spike as done in `TODO.md` by checking its checkbox (`- [x] SPIKE: ...`) and appending a findings note inline.
+   **If neither exists:** Mark the spike as done in `TODO.md` by checking its checkbox (`- [x] SPIKE: ...`) and appending a findings note inline.
 
 ### Recursion
 
@@ -280,13 +282,13 @@ After all spikes are complete and all firm tasks created, run consolidation to c
 
 ### Dispatch Mode A: Background Agents (no team active)
 
-**If `.beads/` or `.tacks/` exists**, instruct the user to run:
+**If `.tacks/` or `.beads/` exists**, instruct the user to run:
 
 ```
 /consolidate [epic title or area]
 ```
 
-**If neither `.beads/` nor `.tacks/` exists**, skip consolidation and proceed directly to Phase 3b. The TODO.md list serves as the backlog -- dedup and stale detection must be done manually by reviewing the file.
+**If neither exists**, skip consolidation and proceed directly to Phase 3b. The TODO.md list serves as the backlog -- dedup and stale detection must be done manually by reviewing the file.
 
 Then proceed to Phase 3b.
 
@@ -312,18 +314,18 @@ Task({
 >
 > **1. Survey:**
 > ```bash
-> bd stats
-> bd list --status=open
-> bd blocked
+> tk stats
+> tk list --status=open
+> tk blocked
 > ```
 >
-> **2. Dedup:** Within each cluster of tasks, find exact duplicates, subset tasks, and convergent tasks. Close duplicates with `bd close <id> --reason="Duplicate of <other-id>"`. Merge subsets into their parent with `bd update <parent> --notes="Absorbed <subset>: [details]"`.
+> **2. Dedup:** Within each cluster of tasks, find exact duplicates, subset tasks, and convergent tasks. Close duplicates with `tk close <id>`. Merge subsets into their parent with a note update.
 >
-> **3. Vertical slice audit:** Read the project structure to discover its architectural layers. For each task touching an inner layer, verify companion tasks exist across layer boundaries (persistence, wiring, exposure, tests). Create missing companions with `bd create`.
+> **3. Vertical slice audit:** Read the project structure to discover its architectural layers. For each task touching an inner layer, verify companion tasks exist across layer boundaries (persistence, wiring, exposure, tests). Create missing companions with `tk create --parent <epic-id> "[title]"`.
 >
-> **4. Stale detection:** Check for tasks created more than 2 weeks ago with no progress, tasks whose target code has been refactored, or tasks describing work already done (check git log). Close stale tasks with `bd close <id> --reason="Stale: [explanation]"`.
+> **4. Stale detection:** Check for tasks created more than 2 weeks ago with no progress, tasks whose target code has been refactored, or tasks describing work already done (check git log). Close stale tasks with `tk close <id>`.
 >
-> **5. Dependency cleanup:** Remove redundant transitive dependencies. Run `bd dep cycles` to check for cycles. Run `bd swarm validate <epic-id>` to validate the full epic structure (cycles, orphans, disconnected subgraphs). Run `bd children <epic-id>` to verify all tasks are proper children of the epic.
+> **5. Dependency cleanup:** Remove redundant transitive dependencies. Run `tk dep add <child> <parent>` for ordering. Run `tk children <epic-id>` to verify all tasks are proper children of the epic. (Note: `bd dep cycles` and `bd swarm validate` are beads-only commands — no tacks equivalents.)
 >
 > **6. Report:** Send your consolidation report via SendMessage to the orchestrator with these counts: tasks closed (dedup), tasks closed (stale), tasks created (gap fill), dependencies modified.
 >
@@ -335,15 +337,15 @@ When the consolidator's report arrives, review it and proceed to Phase 3b.
 
 After consolidation, tag each firm task with grounded agent assignment notes. The sharpening gate: name specific files the agent will touch (from spike findings), state concrete skills/knowledge needed (not just a role), and make it dispatchable.
 
-**If `.beads/` or `.tacks/` exists:**
+**If `.tacks/` or `.beads/` exists:**
 ```bash
-bd update <task-id> --notes="Recommended agent: <role> — touches <file-list>. Requires: <specific-skills>"
+tk update <task-id> --notes "Recommended agent: <role> — touches <file-list>. Requires: <specific-skills>"
 ```
 
 **If neither `.beads/` nor `.tacks/` exists:** Add agent hints as inline notes in `TODO.md` next to each task item.
 
-**Before:** `bd update abc1 --notes="Recommended agent: refactorer"`
-**After:** `bd update abc1 --notes="Recommended agent: refactorer — touches src/domain/auth/User.ts + src/domain/auth/Session.ts. Requires: DDD pattern knowledge, extract-interface refactoring"`
+**Before:** `tk update abc1 --notes "Recommended agent: refactorer"`
+**After:** `tk update abc1 --notes "Recommended agent: refactorer — touches src/domain/auth/User.ts + src/domain/auth/Session.ts. Requires: DDD pattern knowledge, extract-interface refactoring"`
 
 This gives /sprint enough context to make good dispatch decisions without reading every spike report.
 
@@ -357,37 +359,35 @@ After consolidation completes and agent hints are assigned, shut down all teamma
 
 ### Cross-Task Dependencies
 
-**If `.beads/` or `.tacks/` exists**, wire dependencies where order matters:
+**If `.tacks/` or `.beads/` exists**, wire dependencies where order matters:
 ```bash
-bd dep add <downstream> <upstream>
+tk dep add <downstream> <upstream>
 ```
 Inner layers before outer layers, interfaces before implementations, shared files sequenced. Think bottom-up through the dependency graph.
 
-**If neither `.beads/` nor `.tacks/` exists**, note ordering constraints in `TODO.md` as inline comments next to each task item (e.g., `<!-- depends on: [task name] -->`).
+**If neither exists**, note ordering constraints in `TODO.md` as inline comments next to each task item (e.g., `<!-- depends on: [task name] -->`).
 
 ### Priority Review
 
 Adjust priorities now that the full picture is visible. Upgrade tasks that block many others, downgrade inflated P1s, and bump quick wins (small scope + high value).
 
-**If `.beads/` or `.tacks/` exists:** Use `bd update <task-id> --priority=<N>` to adjust. **If neither `.beads/` nor `.tacks/` exists:** Reorder items in `TODO.md` to reflect execution order.
+**If `.tacks/` or `.beads/` exists:** Use `tk update <task-id> --priority <N>` to adjust. **If neither exists:** Reorder items in `TODO.md` to reflect execution order.
 
 ---
 
 ## Phase 5: Verify
 
-**If `.beads/` or `.tacks/` exists**, run `bd swarm validate <epic-id>` to check the epic structure. This validates:
-- Dependency cycles (and reports them)
-- Orphaned tasks (children with no dependencies wired)
-- Disconnected subgraphs
-- Ready fronts (waves of parallelizable work)
+**If `.tacks/` or `.beads/` exists**, verify the epic structure:
 
 ```bash
-bd swarm validate <epic-id>
+tk children <epic-id>      # confirm all tasks are children of the epic
+tk blocked                 # check for unexpected blockers
+# bd swarm validate is beads-only; no tacks equivalent
 ```
 
-If validation reports issues, fix them before proceeding.
+If validation reveals orphaned or disconnected tasks, re-parent or wire them.
 
-**If neither `.beads/` nor `.tacks/` exists**, manually review `TODO.md` to verify: no duplicate items, all noted ordering constraints are consistent (no circular dependencies), and execution order is clear.
+**If neither exists**, manually review `TODO.md` to verify: no duplicate items, all noted ordering constraints are consistent (no circular dependencies), and execution order is clear.
 
 Then manually verify: priority consistency (P0/P1 tasks must not depend on P3/P4 -- upgrade blockers), every task has testable acceptance criteria, and trace the critical path (longest dependency chain = minimum time to completion).
 
@@ -450,7 +450,7 @@ Present the final blossom report in **pipe format** so downstream primitives (/r
 3. **Hybrid dispatch.** Use teams for large explorations (6+ spikes), background agents for small ones (5 or fewer). Fall back to background agents if team creation fails.
 4. **Reuse over respawn.** When a spike teammate finishes, send it a new spike via SendMessage instead of spawning a fresh teammate. This avoids spawn overhead and reuses warm context.
 5. **Consolidate before reporting.** Run consolidation (via teammate or /consolidate) to dedup, fill slice gaps, and resolve orphans before wiring final dependencies.
-6. **Use `--parent` for epic hierarchy.** Always create children with `bd create --parent=<epic-id>`. This establishes the hierarchy that enables `bd children`, `bd epic status`, and `bd epic close-eligible`. Use `bd dep add` only for cross-task ordering (task A blocks task B).
+6. **Use `--parent` for epic hierarchy.** Always create children with `tk create --parent <epic-id>` (or `bd create --parent=<epic-id>`). This establishes the hierarchy that enables `tk children`, `tk epic` (or `bd epic status`). Use `tk dep add` only for cross-task ordering (task A blocks task B).
 7. **Quality gate.** The orchestrator reviews every spike report before creating beads. Spike agents never create beads directly.
 8. **Structured reports.** Spike agents must follow the exact report format for consistent processing.
 9. **Depth limit.** Stop at 20 total spikes (including reused teammates) and reassess with the user if the goal is too broad.

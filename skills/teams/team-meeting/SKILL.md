@@ -4,7 +4,7 @@ description: "Run a goal-oriented planning session with the persistent team to d
 argument-hint: "<goal to plan>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
 ---
 
 # Team Meeting: Goal-Oriented Planning with Your Team
@@ -76,11 +76,11 @@ Read `memory/team/decisions.md` for prior decisions that constrain this goal.
 
 ### 1d. Load Backlog (conditional)
 
-If `.beads/` or `.tacks/` exists, run:
+If `.tacks/` or `.beads/` exists, run:
 
 ```bash
-bd ready
-bd list --status=in_progress
+tk ready
+tk list --status=in_progress
 ```
 
 Check for existing work that overlaps with the goal. Flag duplicates or related beads.
@@ -299,24 +299,26 @@ TeamDelete()
 
 ### 5b. Create Beads (conditional)
 
-If `.beads/` or `.tacks/` exists, offer to create beads from the approved plan. First create an epic for the goal, then create tasks as children:
+If `.tacks/` or `.beads/` exists, offer to create tasks from the approved plan. First create an epic for the goal, then create tasks as children:
 
 ```bash
-bd create --title="EPIC: [goal]" --type=epic --priority=2
+# tacks (epic auto-tagged when subtasks are created with --parent)
+tk create "EPIC: [goal]"
+# bd equivalent: bd create --title="EPIC: [goal]" --type=epic --priority=2
 ```
 
 For each task in the plan:
 
 ```bash
-bd create --title="[task title]" --type=task --priority=[0-4] \
-  --parent=<epic-id> \
-  --description="Assigned: [member]. [acceptance criteria]. Depends on: [dep titles or none]. From team-meeting on [goal]."
+# tacks
+tk create --parent <epic-id> "[task title]"
+# bd equivalent: bd create --title="[task title]" --type=task --priority=[0-4] --parent=<epic-id> --description="..."
 ```
 
 Wire cross-task ordering dependencies (task A must finish before task B):
 
 ```bash
-bd dep add <downstream-id> <upstream-id>
+tk dep add <downstream-id> <upstream-id>
 ```
 
 ### 5c. Report

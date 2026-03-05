@@ -4,7 +4,7 @@ description: "Identify performance bottlenecks, measure baselines, implement tar
 argument-hint: "<component or area to optimize>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(npm:*), Bash(npx:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(npm:*), Bash(npx:*), Write, Edit
 context: fork
 ---
 
@@ -295,14 +295,16 @@ Produce a final report covering all iterations:
 
 If follow-up work was identified:
 
-**If `.beads/` or `.tacks/` exists in the project root**, create beads tasks:
+**If `.tacks/` or `.beads/` exists in the project root**, create tasks:
 
 ```bash
-bd create --title="[follow-up task]" --type=task --priority=[0-4] \
-  --description="Follow-up from optimize: [component]. [Details and context.]"
+# tacks
+tk create "[follow-up task]"
+# bd equivalent: bd create --title="[follow-up task]" --type=task --priority=[0-4] \
+#   --description="Follow-up from optimize: [component]. [Details and context.]"
 ```
 
-**If neither `.beads/` nor `.tacks/` exists**, write follow-up tasks to `TODO.md` in the project root.
+**If neither `.tacks/` nor `.beads/` exists**, write follow-up tasks to `TODO.md` in the project root.
 
 ---
 

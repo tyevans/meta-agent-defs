@@ -4,7 +4,7 @@ description: "Validate cross-boundary contracts and propose integration after pa
 argument-hint: "<path to contracts directory>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Task
 context: inline
 ---
 
@@ -90,10 +90,12 @@ For each enumerated bounded context, verify that an implementation exists. Accep
 
 - A directory matching the context name at the repo root or in `src/`
 - A git branch named after the context (check with `git branch --list "*<context-name>*"`)
-- A beads task marked `status=done` referencing the context name
+- A tacks or beads task marked `status=done` referencing the context name
 
 ```bash
-bd query "status=done" 2>/dev/null | grep -i "<context-name>"
+# tacks
+tk list --status=done --json 2>/dev/null | jq '.[] | select(.title | test("<context-name>"; "i"))'
+# bd equivalent (beads-only command): bd query "status=done" 2>/dev/null | grep -i "<context-name>"
 ```
 
 Flag any context that has a contract but no detectable implementation. Do not stop — proceed with partial validation and mark missing implementations as BLOCKED findings in Phase 1.
@@ -311,16 +313,18 @@ Before merging each context, verify:
 - [ ] Cross-boundary event flows re-verified after amendments
 - [ ] Contract schema files updated to reflect final agreed-upon state
 - [ ] Each context's implementation re-validated against amended schemas (re-run Phase 1)
-- [ ] Beads tasks for unresolved ADVISORY findings created (see Phase 4d)
+- [ ] Tasks for unresolved ADVISORY findings created (see Phase 4d)
 ```
 
-### 4d. Create Beads for Unresolved Findings
+### 4d. Create Tasks for Unresolved Findings
 
-If `.beads/` exists, create tasks for ADVISORY findings that are deferred rather than blocked:
+If `.tacks/` or `.beads/` exists, create tasks for ADVISORY findings that are deferred rather than blocked:
 
 ```bash
-bd create --title="integrate: advisory — <finding summary>" --type=task --priority=3 \
-  --description="Post-integration follow-up: <detail>. Source: /integrate Phase 3 conflict report."
+# tacks
+tk create "integrate: advisory — <finding summary>"
+# bd equivalent: bd create --title="integrate: advisory — <finding summary>" --type=task --priority=3 \
+#   --description="Post-integration follow-up: <detail>. Source: /integrate Phase 3 conflict report."
 ```
 
 ---

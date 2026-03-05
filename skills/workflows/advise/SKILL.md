@@ -4,7 +4,7 @@ description: "Proactive session recommendations by composing git state, session 
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, TaskList, "Bash(bd:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)"]
+allowed-tools: [Read, Glob, Grep, TaskList, "Bash(bd:*)", "Bash(tk:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)"]
 context: inline
 ---
 
@@ -66,12 +66,12 @@ Extract:
 - **Unfinished work**: Items that were in-progress when the session ended
 - **Working tree state at close**: Were there uncommitted changes left behind?
 
-### Layer 3: Backlog (if `bd` is available)
+### Layer 3: Backlog (if `.tacks/` or `.beads/` is available)
 
 ```bash
-bd ready 2>/dev/null
-bd list --status=in_progress 2>/dev/null
-bd blocked 2>/dev/null
+tk ready 2>/dev/null
+tk list --status=in_progress 2>/dev/null
+tk blocked 2>/dev/null
 ```
 
 Extract:
@@ -177,7 +177,7 @@ Reject recommendations starting with "Consider", "You might want to", or "Think 
 [Only if layers 2-5 are missing. Frame as value proposition, not error.]
 
 - **Session history**: Run a session with SessionEnd hook to get continuity advice next time
-- **Backlog**: Install beads (`bd init`) to get priority-aware recommendations
+- **Backlog**: Install tacks (`tk init`) or beads (`bd init`) to get priority-aware recommendations
 - **Team**: Run `/assemble` to get team-aware recommendations (stale learnings, agent health, team-specific actions)
 - **Live agents**: No active agent tasks detected — live-agents layer enriches advice when a sprint or parallel dispatch is running
 ```

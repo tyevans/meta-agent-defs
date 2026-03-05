@@ -144,8 +144,8 @@ Evaluate the authoring rules themselves. Are they producing better definitions? 
 - If findings contradict current authoring rules, flag this prominently
 
 **Update downstream:**
-- Create beads for definitions that need revision
-- Create beads for authoring rule changes if warranted
+- Create backlog tasks for definitions that need revision
+- Create backlog tasks for authoring rule changes if warranted
 - Update memory files with any durable insights about what makes definitions effective
 
 ## Related Skills

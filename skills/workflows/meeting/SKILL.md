@@ -4,7 +4,7 @@ description: "Form an agent team and have an interactive group discussion to fle
 argument-hint: "<topic or question>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Bash(bd:*), Bash(git:*), Bash(rm:*), Bash(ls:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Write, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(rm:*), Bash(ls:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
 ---
 
 # Meeting: Interactive Multi-Agent Dialogue
@@ -231,16 +231,18 @@ TeamDelete()
 rm -f memory/scratch/meeting-panelists.md
 ```
 
-### 3c. Optional: Create Beads
+### 3c. Optional: Create Tasks
 
-If sharpened action items emerged, offer to create beads:
+If sharpened action items emerged, offer to create tasks:
 
 ```bash
-bd create --title="[action item]" --type=task --priority=[0-4] \
-  --description="From meeting on [topic]. Context: [relevant discussion point]"
+# tacks
+tk create "[action item]"
+# bd equivalent: bd create --title="[action item]" --type=task --priority=[0-4] \
+#   --description="From meeting on [topic]. Context: [relevant discussion point]"
 ```
 
-Use the sharpened form as the title. The 3-test pattern ensures beads are immediately dispatchable.
+Use the sharpened form as the title. The 3-test pattern ensures tasks are immediately dispatchable.
 
 ---
 

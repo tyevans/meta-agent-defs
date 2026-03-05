@@ -4,7 +4,7 @@ description: "Surface design trade-offs by having three independent agents propo
 argument-hint: "<design problem or architectural decision>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Task, AskUserQuestion
 context: fork
 ---
 
@@ -364,9 +364,12 @@ Do not proceed past this point until the user resolves critical tensions.
 Capture the decision in the backlog so future sessions have context:
 
 ```bash
-bd create --title="DECISION: [brief description of what was decided]" --type=task --priority=2 \
-  --description="Consensus workflow on [problem]. Decision: [chosen approach]. Rationale: [1-2 sentences]. Key trade-offs accepted: [list]. Next: [/spec or implementation or further exploration]."
+# tacks
+tk create "DECISION: [brief description of what was decided]"
+# bd equivalent: bd create --title="DECISION: ..." --type=task --priority=2 --description="..."
 ```
+
+Include in the description: consensus workflow on [problem], decision: [chosen approach], rationale: [1-2 sentences], key trade-offs accepted, next: [/spec or implementation or further exploration].
 
 ### 5b. Note Follow-Up Work
 

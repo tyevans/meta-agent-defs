@@ -4,7 +4,7 @@ description: "Convert shared jam session artifacts into machine-readable event c
 argument-hint: "<path to shared jam artifact>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(git:*), Task
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(tk:*), Bash(git:*), Task
 context: inline
 ---
 

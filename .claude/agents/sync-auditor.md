@@ -134,8 +134,8 @@ The `.claude/agents/` directory contains internal agents not shipped via the ins
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Ask orchestrator for the bead ID you're working on
-2. Run `bd show <id>` to check if the audit was triggered by a specific file change
+1. Ask orchestrator for the task ID you're working on
+2. Read the task notes to check if the audit was triggered by a specific file change
 
 **After completing work:**
 Report back to orchestrator:
@@ -143,9 +143,11 @@ Report back to orchestrator:
 - Specific files and lines that need updating
 - Whether the drift is minor (description wording) or major (missing/extra files)
 
-**Update downstream beads** if fixes are needed:
+**Update downstream tasks** if fixes are needed:
 ```bash
-bd show <your-bead-id>
+# With tacks:
+tk update <downstream-id> --notes="[Sync audit found: specific drift requiring fix]"
+# With beads:
 bd update <downstream-id> --notes="[Sync audit found: specific drift requiring fix]"
 ```
 
