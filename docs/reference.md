@@ -1,6 +1,6 @@
 # Reference
 
-Detailed reference material for the Tackline toolkit. For a quick overview, see the [README](../README.md). For skill and agent details, see the [INDEX](INDEX.md).
+Detailed reference material for the Tackline toolkit. For a quick overview, see the [README](../README.md). For installation, see the [Setup Guide](setup.md). For practical workflows, see the [Usage Guide](usage.md). For skill and agent details, see the [INDEX](INDEX.md).
 
 ## Hooks and Safety
 

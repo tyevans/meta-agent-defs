@@ -15,6 +15,10 @@ Skills with 3 or more phases SHOULD write intermediate state to `memory/scratch/
 - Key findings or output items produced so far
 - Any decisions made that affect later phases
 
+### Instance-Scoped Checkpoints
+
+When `$CLAUDE_INSTANCE_ID` is set (injected by shell aliases for parallel terminal sessions), skills that checkpoint SHOULD append the instance ID to the filename: `memory/scratch/<skill-name>-checkpoint-<CLAUDE_INSTANCE_ID>.md`. This prevents parallel sessions from clobbering each other's state. When `$CLAUDE_INSTANCE_ID` is not set, fall back to the unscoped filename.
+
 ## PreCompact Hook
 
 The PreCompact hook auto-persists the most recent pipe-format output block to `memory/sessions/pre-compact.md`. This covers single-phase primitives and the final output of multi-phase skills without requiring explicit checkpoint writes.

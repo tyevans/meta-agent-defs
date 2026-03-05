@@ -55,10 +55,18 @@ cd tackline
 
 Zero dependencies. The installer symlinks everything into `~/.claude/`. Rerun after pulling updates -- it's idempotent, existing files are backed up.
 
+**[Full setup guide](docs/setup.md)** — shell aliases, parallel session support, task management options, MCP servers, first session walkthrough, and troubleshooting.
+
+### Quick start
+
 ```bash
-./install.sh /path/to/project    # Project-local install (agents + skills only)
-./install.sh --hardlink           # Hardlinks instead of symlinks
-./install.sh --tacks              # Prefer tacks over beads for task management
+# New project
+cd your-project && claude
+# then: /bootstrap
+
+# Existing project
+cd your-project && claude
+# then: /blossom <area to explore>
 ```
 
 ### Uninstall
@@ -66,14 +74,6 @@ Zero dependencies. The installer symlinks everything into `~/.claude/`. Rerun af
 ```bash
 xargs rm -f < ~/.claude/.tackline.manifest
 ```
-
-## Getting Started
-
-**New project:** Run the `project-bootstrapper` agent to set up CLAUDE.md, hooks, and rules. Then run `agent-generator` to create project-specific agents. Start exploring with `/blossom`.
-
-**Existing project:** Type `/blossom <what you want to explore>` to map the territory. Use `/consolidate` when the backlog grows noisy. Use `/session-health` for a context quality gut-check.
-
-**New machine:** Clone, install, go. Your entire Claude Code workflow travels with you.
 
 ## Skills (46)
 
@@ -173,6 +173,9 @@ Orchestrated multi-step workflows with side effects.
 
 ## Learn More
 
+- **[Setup guide](docs/setup.md)** -- installation, shell aliases, parallel sessions, first session walkthrough
+- **[Settings guide](docs/settings.md)** -- configuring permissions, hooks, environment variables, and plugins
+- **[Usage guide](docs/usage.md)** -- practical workflows organized by what you're trying to do
 - [Full skill & agent catalog](docs/INDEX.md) -- 46 skills, 3 agents, decision tree, chain patterns
 - [Technical reference](docs/reference.md) -- hooks, MCP servers, project structure, design philosophy
 - [Composable primitive patterns](docs/primitives-cookbook.md) -- annotated walkthroughs

@@ -67,14 +67,24 @@ bd list --status=in_progress
 
 Read key files referenced in the plan to see how much is already implemented. Build a mental map of **done**, **in-progress**, and **remaining**.
 
-### 0d. Write Drive State
+### 0d. Resolve Instance ID
 
-Write initial state to `memory/scratch/drive-state.md`:
+Check for `$CLAUDE_INSTANCE_ID` in the environment. This disambiguates parallel drives running in the same project directory.
+
+- **If set**: use it to namespace all scratch files for this drive session. The state file becomes `memory/scratch/drive-state-<CLAUDE_INSTANCE_ID>.md`.
+- **If not set**: fall back to `memory/scratch/drive-state.md` (singleton, as before). This is fine for single-session use but will conflict if multiple drives run concurrently.
+
+Store the resolved state file path as `DRIVE_STATE_FILE` for use in all subsequent phases.
+
+### 0e. Write Drive State
+
+Write initial state to `DRIVE_STATE_FILE`:
 
 ```markdown
 # Drive State
 
 **Plan**: <path to plan document>
+**Instance**: <CLAUDE_INSTANCE_ID or "default">
 **Started**: <date>
 **Sprint count**: 0
 
@@ -169,7 +179,7 @@ Let retro capture what worked, what didn't, and persist durable learnings.
 
 ### 4a. Update Drive State
 
-Read and update `memory/scratch/drive-state.md`:
+Read and update `DRIVE_STATE_FILE`:
 - Move completed areas from "Remaining" to "Completed"
 - Update sprint count
 - Note any blockers or discoveries
@@ -237,10 +247,11 @@ Drive supports resuming from a prior run.
 
 **On resume:**
 1. Detect the `resume:` prefix in `$ARGUMENTS`
-2. Read `memory/scratch/drive-state.md`
-3. Report what sprints have completed and what remains
-4. Skip completed areas and continue from the next remaining area
-5. Return to Phase 1
+2. Resolve `DRIVE_STATE_FILE` using `$CLAUDE_INSTANCE_ID` (same logic as Phase 0d)
+3. Read `DRIVE_STATE_FILE`
+4. Report what sprints have completed and what remains
+5. Skip completed areas and continue from the next remaining area
+6. Return to Phase 1
 
 ---
 
@@ -253,7 +264,7 @@ Drive supports resuming from a prior run.
 5. **SOLID and DRY are guardrails, not goals.** Extract abstractions when duplication is real (3+ instances), not when it's hypothetical. Prefer simple code over clever code.
 6. **Documentation is part of done.** A feature without docs is a feature nobody can use. Update docs in the same sprint that builds the feature.
 7. **Vertical slices over horizontal layers.** Build one complete thing rather than half of everything. Users can try a complete thin slice; they can't try a half-built layer.
-8. **Compaction resilience.** This skill loops indefinitely. `memory/scratch/drive-state.md` is the recovery file. Update it religiously at Phase 4. If context compacts, reread it and resume.
+8. **Compaction resilience.** This skill loops indefinitely. `DRIVE_STATE_FILE` is the recovery file. Update it religiously at Phase 4. If context compacts, reread it and resume.
 9. **Respect the stop signal.** When the user says stop, stop cleanly. Update state, commit work, run retro. Don't try to squeeze in "just one more thing."
 
 See also: /sprint (execution engine), /retro (post-sprint learning), /do (sub-task routing), /test-strategy (TDD workflow), /tracer (thin-slice implementation pattern), /handoff (session transition when drive spans sessions).
