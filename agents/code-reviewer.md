@@ -197,6 +197,14 @@ bd show <your-bead-id>  # Look at "BLOCKS" section
 bd update <downstream-id> --notes="[Review finding from <your-id>: specific issue]"
 ```
 
+## Sandbox Execution
+
+When running inside a Coder workspace:
+- The repo is at `/workspace/repo` — use this as the working directory
+- Use `coder ssh` to review code in sibling workspaces if dispatched cross-workspace
+- Network restrictions may apply — all review is local (no external API calls needed)
+- Workspace may auto-stop — complete review and report findings promptly
+
 ## Related Skills
 
 - `/review` — Structured 5-dimension code review workflow

@@ -385,6 +385,19 @@ When complete, provide:
 
 Remember: The goal is agents that understand THIS project's patterns, not generic agents. Include specific file paths, commands, and conventions discovered during exploration.
 
+## Coder Sandbox Awareness
+
+When generating agents for projects that use Coder workspaces:
+
+1. **Detect Coder context**: Check for `CODER_AGENT_TOKEN` env var or `.coder/` config directory. If present, the project runs inside a Coder workspace.
+2. **Add sandbox instructions**: Generated agents should include a "Sandbox Environment" section describing:
+   - Working directory is `/workspace/repo` (not `~`)
+   - Network access may be restricted by Agent Boundaries
+   - Workspace has a TTL — long-running tasks should checkpoint progress
+   - Use `coder` CLI for workspace self-management if available
+3. **MCP server awareness**: If the project uses Coder MCP, generated agents can manage sibling workspaces. Add appropriate MCP tool references.
+4. **Resource consciousness**: Agents in sandboxes should be aware of resource limits. Include metadata checks (`coder_agent` metadata for CPU/memory) in agents that run intensive operations.
+
 ## Related Skills
 
 - `/gather` — Collect codebase patterns before generating agents
