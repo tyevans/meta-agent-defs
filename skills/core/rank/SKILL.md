@@ -1,6 +1,6 @@
 ---
 name: rank
-description: "Score and order items by user-specified criteria. Reads items from prior primitive output in context. Keywords: sort, score, prioritize, order, compare, evaluate, weight."
+description: "Use when you have items and need to know which matter most. Scores and reorders by criteria you specify. Keeps all items (use filter to drop). Keywords: sort, score, prioritize, order, compare, evaluate, weight."
 argument-hint: "<criteria: by complexity, by risk, by effort>"
 disable-model-invocation: false
 user-invocable: true
@@ -21,7 +21,7 @@ You are running the **rank** primitive — scoring and ordering items by user-sp
 
 ### 1. Find Items
 
-Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input and read the `**Pipeline**` field to construct provenance. If no prior primitive output exists, treat $ARGUMENTS as both criteria and item source — extract items directly.
+Detect upstream pipe-format output in context. If none found, treat $ARGUMENTS as both criteria and item source — extract items directly.
 
 ### 2. Parse Criteria
 
@@ -37,17 +37,9 @@ Assign numeric scores (1-5 scale) for each criterion per item. Calculate overall
 
 ### 4. Emit Ranked Output
 
-Output in pipe format:
-
-- **Header**: `## [Ranked ...]`
-- **Metadata**: `**Source**: /rank`, `**Input**: [one-line criteria]`, `**Pipeline**: [upstream chain -> /rank (N items)]` or `(none — working from direct input)`
-- **Items**: Numbered list (re-ordered by score), each with title, detail, and source from original
-- **Criteria**: Table showing item scores per criterion (inserted between Items and Summary per pipe format rules)
-- **Summary**: One paragraph explaining the ranking rationale and top/bottom items
+Output in pipe format with a `### Criteria` section (table: rows=items, columns=criteria+rank) between Items and Summary.
 
 ## Guidelines
 
 - Highest-ranked items appear first in the numbered list
-- Criteria table format: rows=items, columns=criteria+rank, values=numeric scores
-- If composing with a prior primitive, preserve original source attribution and confidence levels
 - If items lack detail for scoring, note assumptions in the summary

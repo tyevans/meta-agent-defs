@@ -1,6 +1,6 @@
 ---
 name: sketch
-description: "Produce a minimal structural skeleton with TODO placeholders for any artifact type (code, documents, configs, schemas). No implementation — just the bones. Use after gather/rank to prototype the winning approach. Keywords: scaffold, skeleton, prototype, outline, structure, boilerplate, stub."
+description: "Use when you've decided on an approach and need to see the structure before implementing. Produces a skeleton with TODO placeholders — no implementation. Keywords: scaffold, skeleton, prototype, outline, structure, boilerplate, stub."
 argument-hint: "<what to sketch>"
 disable-model-invocation: false
 user-invocable: true
@@ -34,12 +34,12 @@ Detect the artifact type from $ARGUMENTS or prior primitive context. Default to 
 
 ## Process
 
-1. **Check context** for prior primitive output (gather, rank, distill). If found, sketch based on those findings and read the `**Pipeline**` field to construct provenance.
+1. **Check context** for upstream pipe-format output. If found, sketch based on those findings.
 
 **Gate**: Artifact type is determined (code / document / config / schema / workflow) and stated explicitly before generating the skeleton. If the type is ambiguous and no source files exist to default to, ask the user to clarify rather than guessing.
 
 2. **Search codebase/project** (if needed) using Grep/Glob to understand existing structure/conventions.
-3. **Emit skeleton** in pipe format with content blocks containing TODO placeholders. Include `**Pipeline**` in metadata — append this step to the upstream chain, or `(none — working from direct input)` if no upstream.
+3. **Emit skeleton** in pipe format with content blocks containing TODO placeholders.
 
 **Gate**: Every section or component in the skeleton has at least one TODO placeholder. A section with no TODO is either already implemented (should not appear in a sketch) or was silently skipped — flag it and add a placeholder.
 
@@ -54,5 +54,4 @@ Output format: numbered list where each item is a file, section, or component wi
 - For documents: include section headings, key questions per section, cross-references
 - Follow existing project conventions (read similar artifacts if uncertain)
 - Keep it minimal — the user will fill in the blanks
-- If composing with prior primitives, the items from that primitive guide what to sketch
 - Summary should describe the skeleton's structure and design rationale (one paragraph)

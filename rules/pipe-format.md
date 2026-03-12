@@ -2,80 +2,70 @@
 paths:
   - "skills/**/SKILL.md"
 strength: should
-freshness: 2026-02-21
+freshness: 2026-03-11
 ---
 
-# Pipe Format: Composable Skill Output Contract
+# Pipe Format
 
-All composable primitives (gather, distill, expand, transform, rank, diff-ideas, sketch, verify, filter, assess, decompose, critique, plan, merge) follow this output format so any primitive's output can feed another primitive's input.
+Consistent output structure so any skill's output can feed another skill's input. Context IS the pipe — no file passing needed.
 
-## Output Structure
-
-Every primitive emits a markdown block with these sections:
+## Structure
 
 ```
-## <verb-noun phrase describing output>
+## <verb-noun phrase>
 
 **Source**: /<skill-name>
-**Input**: <what was asked, one line>
-**Pipeline**: /gather (12 items) -> /distill (5 items)
+**Input**: <one-line description of what was processed>
+**Pipeline**: <provenance chain> or (none — working from direct input)
 
 ### Items (N)
 
 1. **<title>** — <detail>
-   - source: <file:line, URL, or "conversation context">
-   - confidence: CONFIRMED | LIKELY | POSSIBLE
-
 2. **<title>** — <detail>
-   ...
 
 ### Summary
 
-<One paragraph synthesis of the items above.>
+<One paragraph synthesis.>
 ```
 
 ## Rules
 
-1. **Items section is always a numbered list.** Even single-item outputs use `1.`
-2. **Confidence is optional.** Only include when the skill deals with uncertain claims (gather, verify).
-3. **Source is optional per item.** Include when the item traces to a specific location.
-4. **Summary is always present.** One paragraph, no bullet points.
-5. **No YAML, no JSON.** Markdown only — LLMs parse it natively.
-6. **Skill-specific sections go between Items and Summary.** Example: /rank adds a `### Criteria` section; /diff-ideas adds a `### Comparison` table.
-7. **Pipeline line is always present.** When upstream pipe-format output is detected in context, construct the chain from prior `**Pipeline**` and `**Source**` fields showing each step and its item count (e.g., `/gather (12 items) -> /distill (5 items)`). When no upstream output is detected, use `(none — working from direct input)`.
-8. **Items heading includes count.** Use `### Items (N)` where N is the number of items. This lets downstream primitives cross-check reported vs actual item counts.
-9. **Validate upstream intake.** Before processing upstream output, state: "Reading N items from /skill-name output above." This makes detection failures visible without tooling.
+1. **Items are always a numbered list.** Even single-item outputs.
+2. **Source line is always present.** This is how downstream skills detect upstream output.
+3. **Summary is always present.** One paragraph.
+4. **Markdown only.** No YAML or JSON — LLMs parse markdown natively.
+5. **Skill-specific sections go between Items and Summary.** /rank adds `### Criteria`, /diff-ideas adds `### Comparison`, etc.
 
-## Input Contract
+## Input Detection
 
-Primitives accept input from two sources:
-- **$ARGUMENTS** — direct user input (always available)
-- **Conversation context** — output from a prior primitive (the skill reads upward in context)
+Skills accept input from `$ARGUMENTS` (user input) or conversation context (prior skill output). When a skill detects the `## ... / **Source**: /...` pattern above it in context, it uses that as input and reads the `**Pipeline**` field to construct provenance. Otherwise it uses `$ARGUMENTS`.
 
-When a primitive detects structured output from a prior primitive (the `## ... / **Source**: /...` pattern), it uses that as input. Otherwise it treats $ARGUMENTS as the sole input.
+When multiple pipe-format blocks exist, the most recent one wins.
 
-**Disambiguation:** When multiple pipe-format blocks exist in context, the most recent one is used. To override, pass an explicit reference in $ARGUMENTS (e.g., `/distill from:gather-auth`). This prevents silent wrong-input consumption in sessions with multiple gather runs.
+## Pipeline Provenance
 
-## Composability
+The `**Pipeline**` field tracks the chain of skills that produced the current output. Each skill appends itself:
 
-Primitives compose by running sequentially in the same conversation:
-```
-User: /gather auth patterns in this codebase
-  -> structured output in pipe format
-User: /distill
-  -> reads gather output from context, emits distilled pipe format
-User: /rank by security risk
-  -> reads distill output from context, emits ranked pipe format
-```
+- **No upstream**: `(none — working from direct input)`
+- **With upstream**: `<upstream chain> -> /<skill> (N items)`
+- **Merged branches**: Use `+` to show merged inputs (e.g., `/gather (8) + /gather (6) -> /merge (10)`)
 
-No file passing, no explicit piping syntax. Context IS the pipe.
+## Confidence Levels
 
-## Known Limitations
+When findings involve claims about code, docs, or external systems, tag each item:
 
-1. **Compression boundary.** Pipe chains must complete within a single uncompressed context window. Context compression is not pipe-format-aware — it may summarize structured output into prose, silently breaking detection and losing items. For chains that may span compression events, write intermediate results to a file and pass the file path as $ARGUMENTS to the next primitive. See docs/INDEX.md "File-Based Intermediate Results" for the concrete pattern. **Mitigation:** `rules/compaction-resilience.md` defines a checkpoint convention and a PreCompact hook that auto-persists pipe-format blocks before compression, enabling recovery without manual file passing.
-2. **Silent failure modes.** The format has no schema validation or checksums. If detection fails, the downstream primitive falls back to $ARGUMENTS without error. The item count in `### Items (N)` and the upstream intake statement (Rule 9) are the primary observability mechanisms — but they are self-reported, not enforced.
-3. **Metadata drift.** The Pipeline provenance line and per-item source/confidence metadata are more drift-prone than the core numbered list structure. Missing metadata degrades provenance tracking but does not break composition. The numbered list is the only hard structural requirement.
+- **CONFIRMED** — verified by reading code or docs; evidence cited
+- **LIKELY** — strong evidence from multiple signals but incomplete verification
+- **POSSIBLE** — suspicious pattern or weak evidence; needs deeper investigation
 
-## See also
+## Composition Rules
 
-- `rules/compaction-resilience.md` — checkpoint convention and PreCompact hook for surviving context compression in multi-phase skills
+When a skill consumes upstream pipe-format output:
+
+1. **Preserve source attribution** — carry forward `source:` metadata from input items
+2. **Preserve confidence levels** — do not downgrade; upgrade only when new evidence supports it
+3. **Maintain item identity** — unless the skill explicitly reorders (rank), filters (filter), or merges (merge), input count equals output count
+
+## Limitation
+
+Long chains risk context compression destroying structured output. For chains spanning 3+ operations, write intermediate results to `memory/scratch/` per `rules/compaction-resilience.md`.

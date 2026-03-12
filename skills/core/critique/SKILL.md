@@ -1,6 +1,6 @@
 ---
 name: critique
-description: "Adversarial review of any pipe-format output or claims. Finds what's wrong, what's missing, and what could fail. Premortem/devil's advocate pattern. Keywords: critique, review, adversarial, premortem, devil's advocate, what's wrong, what's missing, risks, flaws, gaps, problems."
+description: "Use when you want to stress-test a proposal, plan, or findings before acting on them. Finds flaws, gaps, and risks as devil's advocate. Keywords: critique, review, adversarial, premortem, devil's advocate, what's wrong, what's missing, risks, flaws, gaps, problems."
 argument-hint: "[focus area: security | scalability | clarity | 'critique' to review all]"
 disable-model-invocation: false
 user-invocable: true
@@ -21,7 +21,7 @@ You are running the **critique** primitive — adversarial review of outputs, cl
 
 ## Process
 
-1. **Find Input**: Search conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, critique those items and read the `**Pipeline**` field to construct provenance. Otherwise critique $ARGUMENTS directly.
+1. **Find Input**: Detect upstream pipe-format output in context. If found, critique those items. Otherwise critique $ARGUMENTS directly.
 
 2. **Apply Focus**: If $ARGUMENTS specifies a focus area (e.g., "security", "scalability"), prioritize criticisms in that dimension. If empty, critique everything.
 
@@ -30,12 +30,7 @@ You are running the **critique** primitive — adversarial review of outputs, cl
    - **GAP**: Is something important missing or unaddressed?
    - **RISK**: Could something fail under certain conditions?
 
-4. **Emit Structured Output** in pipe format:
-   - **Header**: `## [Critique of ...]`
-   - **Metadata**: `**Source**: /critique`, `**Input**: [one-line summary]`, `**Pipeline**: [upstream chain -> /critique (N items)]` or `(none — working from direct input)`
-   - **Items**: Numbered list, each with verdict (FLAW/GAP/RISK), detail, and optional source
-   - **Severity**: Table mapping each criticism to impact (HIGH/MEDIUM/LOW)
-   - **Summary**: One paragraph synthesis
+4. **Emit Structured Output** in pipe format. Each item tagged with verdict (FLAW/GAP/RISK). Include a `### Severity` section (table: criticism to impact HIGH/MEDIUM/LOW) between Items and Summary.
 
 ## Guidelines
 
@@ -43,7 +38,6 @@ You are running the **critique** primitive — adversarial review of outputs, cl
 - GAP means something necessary is absent — explain why it matters
 - RISK means something could fail — describe the failure scenario
 - If input is sound, say so — "no critical issues found" is a valid critique
-- Preserve source attribution from input if composing with a prior primitive
 - One criticism per numbered item — don't bundle multiple issues
 
 ## Panel Mode (opt-in)
@@ -52,11 +46,11 @@ Panel mode dispatches 2–3 background agents with distinct adversarial lenses f
 
 **Default (inline):** Run the Process steps above in a single pass.
 
-**In panel mode:** Replace step 3 with the following fan-out/fan-in sequence.
+**In panel mode:** Replace step 3 with a fan-out/fan-in sequence per the fan-out-protocol rule (loaded alongside this skill). Critique-specific details:
 
-### Panel Dispatch
+### Panel Lenses
 
-Launch 2–3 agents concurrently, each with a distinct lens. Standard lenses (pick 2–3 based on subject matter):
+Pick 2–3 based on subject matter:
 
 | Lens | Focus |
 |---|---|
@@ -64,9 +58,7 @@ Launch 2–3 agents concurrently, each with a distinct lens. Standard lenses (pi
 | Failure Modes | What sequences of events cause this to break or harm? |
 | Scope Gaps | What requirements, edge cases, or stakeholders are unaddressed? |
 
-**Task call per agent (run_in_background: true):**
-
-#### Adversarial Panel Agent Prompt Template
+### Agent Prompt Template
 
 ```
 You are an adversarial reviewer applying the [LENS] lens.
@@ -86,9 +78,7 @@ Limit: 5–8 findings maximum. Be specific, not exhaustive.
 
 ### Panel Merge
 
-After all agents complete, merge their outputs into the standard pipe-format output:
-
-1. **Deduplicate**: findings that are substantively identical across lenses → keep the most specific wording
-2. **Resolve conflicts**: if agents disagree on severity, apply this total order: `Feasibility > Failure Modes > Scope Gaps` — the lens ranked higher wins
-3. **Label provenance**: annotate each merged finding with its source lens in parentheses
-4. **Emit** the unified output using the standard step 4 format, with `**Pipeline**` noting `(panel: N agents)`
+1. **Deduplicate**: substantively identical findings across lenses → keep the most specific wording
+2. **Resolve conflicts**: if agents disagree on severity, apply total order: `Feasibility > Failure Modes > Scope Gaps`
+3. **Label provenance**: annotate each finding with its source lens in parentheses
+4. **Emit** in pipe format with `**Pipeline**` noting `(panel: N agents)`

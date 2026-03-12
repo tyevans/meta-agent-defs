@@ -1,6 +1,6 @@
 ---
 name: distill
-description: "Reduce verbose input to essential points. Configurable target: bullets, paragraph, or count. Reads prior primitive output from context. Keywords: summarize, condense, reduce, extract, essentials, TLDR."
+description: "Use when prior output is too verbose and needs condensing. Reduces to N bullets, 1 paragraph, or by topic. Keywords: summarize, condense, reduce, extract, essentials, TLDR."
 argument-hint: "[to N bullets | to 1 paragraph | topic]"
 disable-model-invocation: false
 user-invocable: true
@@ -20,17 +20,17 @@ You are running the **distill** primitive — reducing verbose input to essentia
 
 ## Process
 
-1. **Detect Input Source**: Check conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, use that as input and read its `**Pipeline**` field to construct provenance. Otherwise treat conversation context as raw input.
+1. **Detect Input Source**: Check for upstream pipe-format output in context. If none found, treat conversation context as raw input.
 
 2. **Parse Target**: Extract reduction target from $ARGUMENTS ("to N bullets", "to 1 paragraph", or a topic to filter by). Default to "5 bullets" if unspecified.
 
-3. **Distill**: Reduce to essential points while preserving source attribution and confidence levels (if present in input). Prioritize CONFIRMED over LIKELY over POSSIBLE.
+3. **Distill**: Reduce to essential points. Prioritize CONFIRMED over LIKELY over POSSIBLE.
 
 **Gate** (topic-filter mode): If $ARGUMENTS specifies a topic, state how many items matched the topic filter before compressing. If zero items matched, stop and report "no items matched topic '[topic]'" rather than emitting an empty output.
 
 **Gate** (compress mode): Output item count is at most the requested N. If the upstream input was already at or below N items, pass all through rather than artificially compressing.
 
-4. **Emit Output**: Structured in pipe format with header, metadata (including `**Pipeline**` — append this step to the upstream pipeline chain, or `(none — working from direct input)` if no upstream), numbered items (even for single items), and one-paragraph summary.
+4. **Emit Output**: Output in pipe format.
 
 ## Modes
 
@@ -45,7 +45,6 @@ In topic mode, distill silently performs a filter pass. If you are composing a p
 
 ## Guidelines
 
-- Preserve source attribution and confidence from input when distilling primitive output
 - When distilling raw conversation context, omit confidence levels (not applicable)
 - "N bullets" means N numbered items; "1 paragraph" means Summary section only (no Items)
 - Filter by topic when $ARGUMENTS specifies one (e.g., "auth" extracts only auth-related points)

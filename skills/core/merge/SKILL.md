@@ -1,6 +1,6 @@
 ---
 name: merge
-description: "Combine multiple pipe-format blocks from context into one unified output. Handles dedup, source attribution, and confidence upgrade. Keywords: merge, combine, unify, join, consolidate, union."
+description: "Use when multiple agents or skills produced separate findings that need combining into one list. Deduplicates and upgrades confidence when sources agree. Keywords: merge, combine, unify, join, consolidate, union."
 argument-hint: "[optional: topic filter]"
 disable-model-invocation: false
 user-invocable: true
@@ -22,7 +22,7 @@ You are running the **merge** primitive — combining multiple pipe-format block
 
 ### 0. Detect Input Sources (default: conversation context)
 
-Scan conversation context for ALL pipe-format blocks matching the `**Source**: /...` marker. Collect every one, not just the most recent. Note the source skill and `**Pipeline**` field for each block.
+Scan conversation context for ALL pipe-format blocks (not just the most recent). Note the source skill for each block.
 
 **In team context** (`.claude/team.yaml` exists or TaskList returns results): additionally collect pipe-format blocks from two supplementary sources before proceeding:
 
@@ -65,13 +65,9 @@ Between Items and Summary, add a **Merge Details** section showing:
 - Number of confidence upgrades applied
 - Topic filter used (if any)
 
-### 7. Construct Pipeline Provenance
+### 7. Emit Unified Output
 
-Build the `**Pipeline**` field by combining the pipeline chains from all input blocks. Use `+` to show merged branches (e.g., `/gather (8 items) + /gather (6 items) -> /merge (10 items)`).
-
-### 8. Emit Unified Output
-
-Output in pipe format with header, metadata (including `**Pipeline**`), deduplicated items as numbered list, Merge Details section, and final summary.
+Output in pipe format with `### Merge Details` section between Items and Summary. Build `**Pipeline**` by combining upstream chains with `+` notation (see pipe-format rule).
 
 ## Modes
 

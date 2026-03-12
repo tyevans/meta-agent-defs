@@ -1,6 +1,6 @@
 ---
 name: assess
-description: "Evaluate items against a rubric with categorical verdicts. Like rank but outputs categories (critical/warning/suggestion) instead of scores. Keywords: evaluate, judge, categorize, triage, verdict, rubric, severity, classify."
+description: "Use when items need categorical triage (critical/warning/ok), not numeric scoring. Groups items by verdict against a rubric. Unlike rank (scores) or filter (binary). Keywords: evaluate, judge, categorize, triage, verdict, rubric, severity, classify."
 argument-hint: "<rubric: by severity | by goal-fit | by readiness>"
 disable-model-invocation: false
 user-invocable: true
@@ -21,7 +21,7 @@ You are running the **assess** primitive — evaluating items against a rubric w
 
 ### 1. Find Items
 
-Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input and read the `**Pipeline**` field to construct provenance. If no prior primitive output exists, treat $ARGUMENTS as both rubric and item source — extract items directly.
+Detect upstream pipe-format output in context. If none found, treat $ARGUMENTS as both rubric and item source — extract items directly.
 
 ### 2. Parse Rubric
 
@@ -37,17 +37,10 @@ Assess each item against the rubric. Assign a categorical verdict with reasoning
 
 ### 4. Emit Categorized Output
 
-Output in pipe format:
-
-- **Header**: `## [Assessed ...]`
-- **Metadata**: `**Source**: /assess`, `**Input**: [one-line rubric]`, `**Pipeline**: [upstream chain -> /assess (N items)]` or `(none — working from direct input)`
-- **Items**: Numbered list grouped by category (highest severity first), each with verdict in bold (e.g., **CRITICAL** — detail)
-- **Rubric**: Table showing categories and their definitions (inserted between Items and Summary per pipe format rules)
-- **Summary**: One paragraph explaining the evaluation rationale and distribution across categories
+Output in pipe format. Items grouped by category (highest severity first), each prefixed with verdict in bold (e.g., **CRITICAL** — detail). Include a `### Rubric` section (categories and definitions) between Items and Summary.
 
 ## Guidelines
 
 - Group items by category — all CRITICAL items together, then WARNING, etc.
 - Each item's detail line starts with the verdict in bold (e.g., **CRITICAL** — detail)
-- Preserve original source attribution and confidence levels if composing with a prior primitive
 - If items lack detail for evaluation, note assumptions in the summary
