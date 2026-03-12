@@ -3,10 +3,9 @@ name: session-health
 description: "Run a session health diagnostic to assess context load, scope drift, and quality degradation. Use when responses feel degraded, before starting major new work in a long session, or when the user asks if you're still tracking well."
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*)
 ---
 
-!`bd stats 2>/dev/null`
 !`git log --oneline -5`
 
 # Session Health Check
@@ -67,10 +66,10 @@ Rate each signal: Good / Watch / Degrading. If two or more signals are Degrading
 ### 4. Check Session State
 
 ```bash
-bd list --status=in_progress   # What's claimed but not done?
-bd ready                       # What's available?
 git status                     # Any uncommitted work?
 ```
+
+Check your task tracker for in-progress and available work.
 
 ### 5. Check Team Health (conditional)
 
@@ -102,8 +101,8 @@ Based on the above, recommend ONE of:
 |--------|------|-----|
 | **Continue** | Light-moderate load, on-topic, quality fine | Keep working |
 | **Partial summarize** | Heavy load but good progress, quality still sharp | Selectively compress completed work threads while preserving in-progress work at full context. For each completed thread (a task or subtask where the output is final): write a 3-5 bullet summary capturing goal, approach, outcome, and key decisions, then release the detailed exchange from working context. Leave all in-progress threads uncompressed. This is a model-side operation — do not ask the user to summarize. |
-| **Checkpoint & Continue** | Moderate load, mid-batch work, or want a save point | Commit current work, write intermediate results to `memory/scratch/<slug>.md` if mid-batch, `bd sync`, then continue |
-| **Fresh session** | Overloaded, scope has drifted, or 2+ quality signals degrading | Run /handoff to capture context, commit all work, `bd sync`, push, then start a new session |
+| **Checkpoint & Continue** | Moderate load, mid-batch work, or want a save point | Commit current work, write intermediate results to `memory/scratch/<slug>.md` if mid-batch, sync task state, then continue |
+| **Fresh session** | Overloaded, scope has drifted, or 2+ quality signals degrading | Run /handoff to capture context, commit all work, sync task state, push, then start a new session |
 | **Break into subagents** | Remaining work is parallelizable | Dispatch independent tasks to subagents to avoid further context fill |
 
 ## Output Format
@@ -176,7 +175,7 @@ After producing the health report, emit a pipe-format summary so /advise or /ret
 - **Quality signals override file counts.** Two or more degrading quality signals means Fresh, regardless of load level
 - Committing and syncing before any session change is mandatory
 - When in doubt, checkpoint (commit + sync) before deciding — it's cheap insurance
-- A fresh session with good beads context (via `bd prime`) is often more productive than a degraded long session
+- A fresh session with good task context is often more productive than a degraded long session
 - Before starting a fresh session, run /handoff to capture in-progress tasks, decisions, and open questions in a structured handoff document
 
 ## See Also

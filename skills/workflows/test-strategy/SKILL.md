@@ -1,10 +1,10 @@
 ---
 name: test-strategy
-description: "Guide implementation agents through a structured testing workflow: classify knowledge source (codified/articulated/tacit), write tests from specs, enforce red-green gates, and fall back gracefully. Use when dispatching implementation tasks or before writing code. Keywords: test, TDD, BDD, testing, test-first, test-after, red-green, spec, acceptance criteria."
-argument-hint: "[task description or bead reference]"
+description: "Use before writing code or when dispatching implementation tasks. Classifies what's known (codified/articulated/tacit) and picks the right testing approach — TDD when specs exist, exploratory when they don't. Keywords: test, TDD, BDD, testing, test-first, test-after, red-green, spec, acceptance criteria."
+argument-hint: "[task description or task reference]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(bd:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*)
 context: fork
 ---
 

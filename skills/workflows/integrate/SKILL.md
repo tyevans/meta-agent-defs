@@ -1,10 +1,10 @@
 ---
 name: integrate
-description: "Validate cross-boundary contracts and propose integration after parallel execution. Checks contract compliance, runs cross-boundary integration tests, detects conflicts, and produces a merge proposal. Use after parallel bounded-context implementation to verify contracts hold and plan integration. Keywords: integrate, contracts, merge, cross-boundary, validation, multi-human, event storming."
+description: "Use after parallel bounded-context implementation to verify contracts still hold. Checks compliance, runs cross-boundary tests, detects conflicts, and proposes merge order. Keywords: integrate, contracts, merge, cross-boundary, validation, multi-human, event storming."
 argument-hint: "<path to contracts directory>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Task
+allowed-tools: Read, Grep, Glob, Bash(git:*), Task
 context: inline
 ---
 
@@ -90,11 +90,7 @@ For each enumerated bounded context, verify that an implementation exists. Accep
 
 - A directory matching the context name at the repo root or in `src/`
 - A git branch named after the context (check with `git branch --list "*<context-name>*"`)
-- A beads task marked `status=done` referencing the context name
-
-```bash
-bd query "status=done" 2>/dev/null | grep -i "<context-name>"
-```
+- A completed task in your project's task tracker referencing the context name
 
 Flag any context that has a contract but no detectable implementation. Do not stop — proceed with partial validation and mark missing implementations as BLOCKED findings in Phase 1.
 
@@ -311,17 +307,16 @@ Before merging each context, verify:
 - [ ] Cross-boundary event flows re-verified after amendments
 - [ ] Contract schema files updated to reflect final agreed-upon state
 - [ ] Each context's implementation re-validated against amended schemas (re-run Phase 1)
-- [ ] Beads tasks for unresolved ADVISORY findings created (see Phase 4d)
+- [ ] Tasks for unresolved ADVISORY findings created (see Phase 4d)
 ```
 
-### 4d. Create Beads for Unresolved Findings
+### 4d. Track Unresolved Findings
 
-If `.beads/` exists, create tasks for ADVISORY findings that are deferred rather than blocked:
+For ADVISORY findings that are deferred rather than blocked, create follow-up tasks using your preferred task tracking approach:
 
-```bash
-bd create --title="integrate: advisory — <finding summary>" --type=task --priority=3 \
-  --description="Post-integration follow-up: <detail>. Source: /integrate Phase 3 conflict report."
-```
+- Title: `integrate: advisory — <finding summary>`
+- Description: `Post-integration follow-up: <detail>. Source: /integrate Phase 3 conflict report.`
+- Priority: low
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: active-learn
-description: "Run the full adversarial training loop for a team agent or in solo mode (no team required): diagnose weaknesses, generate challenges, execute rounds, and update learnings. The capstone of the active learning system. Keywords: active-learn, training, adversarial, improve, agent, loop, capability, tuning, solo."
+description: "Use when an agent's performance is uneven and you want systematic improvement. Runs diagnose -> challenge-gen -> challenge-run -> update learnings in a loop. Works with or without a team. Keywords: active-learn, training, adversarial, improve, agent, loop, capability, tuning, solo."
 argument-hint: "<agent-name> [rounds=3]"
 disable-model-invocation: false
 user-invocable: true
@@ -131,7 +131,7 @@ Look for:
 
 **Skip if learnings entries lack `dispatch:` fields.**
 
-If entries contain `(dispatch: bead-xyz)` annotations:
+If entries contain `(dispatch: task-xyz)` annotations:
 1. Group learnings by dispatch source
 2. Identify task types producing the most learnings (active growth areas)
 3. Identify task types whose entries were later pruned (false confidence areas)

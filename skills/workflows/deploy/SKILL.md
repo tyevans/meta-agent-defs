@@ -1,10 +1,10 @@
 ---
 name: deploy
-description: "Deploy a project to production or a target environment. Covers readiness gating, strategy selection (direct, canary, blue-green, rolling), execution, post-deployment health checks, and rollback criteria. Use when you are ready to ship and want a structured, safe deployment workflow. Keywords: deploy, ship, release, rollout, canary, blue-green, rollback, production."
+description: "Use when code is ready to ship and you want a structured deployment with readiness checks and rollback criteria. Supports direct, canary, blue-green, and rolling strategies. Keywords: deploy, ship, release, rollout, canary, blue-green, rollback, production."
 argument-hint: "<service or target environment>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(docker:*), Bash(kubectl:*), Bash(npm:*), Bash(make:*), Bash(bd:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(docker:*), Bash(kubectl:*), Bash(npm:*), Bash(make:*)
 context: fork
 ---
 
@@ -30,7 +30,7 @@ You are running the **Deploy** workflow -- a structured deployment process with 
 Deploy works in 5 phases. The readiness gate (Phase 0) must pass before any deployment begins.
 
 ```
-Readiness gate (tests, git, beads)
+Readiness gate (tests, git, open work)
   -> Strategy selection (direct / canary / blue-green / rolling)
     -> Execution (CI/CD tooling or guided manual steps)
       -> Monitoring (health checks, logs, endpoints)
@@ -78,13 +78,7 @@ If a test command exists, report the last test run result from git log or CI art
 
 ### 0d. In-Progress Work Check
 
-If `.beads/` or `.tacks/` exists:
-
-```bash
-bd query "status=open AND priority<=1"
-```
-
-If P0 or P1 work items are open and their file set overlaps with the files changed since last deploy (from `git diff --name-only HEAD~1`), warn the user: "Open high-priority work touches files in this deploy. Confirm you want to continue."
+Check your project's task tracker for open high-priority (P0/P1) work items. If any are open and their scope overlaps with the files changed since last deploy (from `git diff --name-only HEAD~1`), warn the user: "Open high-priority work touches files in this deploy. Confirm you want to continue."
 
 ### 0e. Gate Summary
 
@@ -406,20 +400,10 @@ docker compose pull <previous-tag> && docker compose up -d
 After rollback:
 
 1. Confirm health checks pass on the stable version
-2. Create a beads task (or note) for the root cause investigation:
-
-```bash
-bd create --title="[service]: investigate deploy failure [date]" --type=task --priority=1 \
-  --description="Rollback triggered during deploy. Error signals: [what you found in Phase 3]. Investigate root cause before next deploy attempt."
-```
-
-If neither `.beads/` nor `.tacks/` exists, write to `TODO.md`:
-
-```markdown
-## Post-rollback: investigate deploy failure [date]
-- [ ] Root cause: [what triggered rollback]
-- [ ] Fix and verify before next deploy
-```
+2. Create a task for the root cause investigation using your preferred task tracking approach:
+   - **Title**: "[service]: investigate deploy failure [date]"
+   - **Priority**: P1
+   - **Description**: "Rollback triggered during deploy. Error signals: [what you found in Phase 3]. Investigate root cause before next deploy attempt."
 
 ### 4d. Close Out (Successful Deploy)
 
@@ -436,7 +420,7 @@ If no rollback was needed:
 
 Next steps:
 - Tag the release if not already tagged: `git tag v<version> && git push origin v<version>`
-- Close any related beads: `bd close <id>`
+- Close any related tasks in your task tracker
 - Announce to team if applicable
 ```
 
@@ -473,7 +457,7 @@ After the close-out block, emit a pipe-format summary so downstream skills (/sta
 
 5. **Rollback status** — [not triggered | triggered — reason]
    - stable version: [tag or commit if rolled back | n/a]
-   - follow-up task: [bead ID or "none"]
+   - follow-up task: [task ID or "none"]
 
 ### Summary
 

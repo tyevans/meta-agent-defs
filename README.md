@@ -58,7 +58,6 @@ Zero dependencies. The installer symlinks everything into `~/.claude/`. Rerun af
 ```bash
 ./install.sh /path/to/project    # Project-local install (agents + skills only)
 ./install.sh --hardlink           # Hardlinks instead of symlinks
-./install.sh --tacks              # Prefer tacks over beads for task management
 ```
 
 ### Uninstall
@@ -75,87 +74,25 @@ xargs rm -f < ~/.claude/.tackline.manifest
 
 **New machine:** Clone, install, go. Your entire Claude Code workflow travels with you.
 
-## Skills (46)
+## Skills (48)
 
-### Composable Primitives
+**14 composable primitives** -- stateless skills that chain through conversation context (`/gather`, `/distill`, `/rank`, `/filter`, `/assess`, `/verify`, `/critique`, `/diff-ideas`, `/decompose`, `/plan`, `/expand`, `/transform`, `/sketch`, `/merge`).
 
-Stateless skills that chain through conversation context. Output of any feeds the next.
+**25 workflows** -- orchestrated multi-step workflows with side effects (`/blossom`, `/fractal`, `/meeting`, `/consensus`, `/tracer`, `/review`, `/sprint`, `/spec`, `/premortem`, `/bootstrap`, `/drive`, `/deploy`, `/optimize`, `/test-strategy`, `/evolution`, `/drift`, `/consolidate`, `/bug`, `/domain`, `/active-learn`, `/diagnose-agent`, `/challenge-gen`, `/challenge-run`, `/storm-prep`, `/formalize`).
 
-| Skill | Purpose |
-|-------|---------|
-| `/gather` | Collect findings with sources and confidence levels |
-| `/distill` | Reduce to essentials |
-| `/rank` | Score and order by criteria |
-| `/filter` | Binary keep/drop |
-| `/assess` | Categorize by rubric (critical/warning/ok) |
-| `/verify` | Check claims against evidence |
-| `/critique` | Adversarial review -- what's wrong, missing, risky |
-| `/diff-ideas` | Side-by-side tradeoff analysis |
-| `/decompose` | Break into bounded sub-parts |
-| `/plan` | Dependency-aware execution sequence |
-| `/expand` | Elaborate sparse items into detailed descriptions |
-| `/transform` | Apply a rewrite instruction to every item (map) |
-| `/sketch` | Code skeleton with TODOs |
-| `/merge` | Combine multiple outputs into one |
-
-### Workflows
-
-Orchestrated multi-step workflows with side effects.
-
-| Skill | Purpose |
-|-------|---------|
-| `/blossom` | Spike-driven exploration -- produces epic + prioritized tasks |
-| `/fractal` | Goal-directed recursive exploration with dead-end pruning |
-| `/meeting` | Live multi-agent discussion with opposed perspectives |
-| `/consensus` | Three independent proposals, synthesized |
-| `/tracer` | Iterative implementation -- thinnest working path first |
-| `/review` | Structured code review across 5 dimensions |
-| `/sprint` | Dispatch work to agents with a learning loop |
-| `/spec` | Progressive specification document |
-| `/premortem` | Failure analysis before building |
-| `/bootstrap` | Full project setup: infrastructure + agents |
-| `/active-learn` | Adversarial training loop for agent improvement |
-| `/curate` | Score learnings/rules by relevance x freshness x scope, archive stale entries, detect gaps |
-| `/promote` | Graduate durable cross-agent learnings to project rules |
-| `/tend` | Full learning lifecycle: curate agents, curate rules, promote, demotion, summary |
-| `/test-strategy` | Classify spec type, write tests, enforce red-green gates |
-| `/evolution` | File change history, churn, and stability analysis |
-| `/drift` | Cross-definition convergence/divergence detection |
-| `/consolidate` | Backlog dedup, stale detection, cleanup |
-| `/bug` | File structured bug reports to backlog |
-| `/domain` | Capture or query project-specific terminology |
-| `/diagnose-agent` | Agent struggle profile from learnings + git signals |
-| `/challenge-gen` | Generate targeted training challenges |
-| `/challenge-run` | Execute challenges and evaluate performance |
-
-### Session & Team
-
-| Skill | Purpose |
-|-------|---------|
-| `/status` | Unified dashboard: backlog, activity, team, last session |
-| `/advise` | Proactive recommendations from git state, history, and signals |
-| `/assemble` | Create a persistent learning team |
-| `/standup` | Sync status, surface blockers |
-| `/retro` | Session retrospective with persistent learnings |
-| `/handoff` | Session transition capture |
-| `/session-health` | Context load and drift diagnostic |
-| `/team-meeting` | Goal-oriented planning with persistent team |
-| `/discover` | Recommend skills or pipelines for a described goal |
+**9 session & team skills** -- `/status`, `/advise`, `/assemble`, `/standup`, `/retro`, `/handoff`, `/session-health`, `/team-meeting`, `/discover`.
 
 [Full catalog with decision tree and chain patterns](docs/INDEX.md)
 
 ## Common Chains
 
 ```
-/gather -> /distill -> /rank           Research -> condense -> prioritize
-/decompose -> /rank -> /plan           Break down -> prioritize -> sequence
-/gather -> /critique -> /rank          Research -> stress-test -> prioritize
-/assemble -> /standup -> /sprint       Form team -> sync -> dispatch
-/blossom -> pick tasks -> /tracer      Explore -> build
-/meeting -> /fractal -> /spec          Discuss -> deep-dive -> specify
-/curate -> /promote                    Optimize learnings -> graduate to rules
-/tend                                  Full lifecycle: curate -> promote -> demotion
+/gather -> /distill -> /rank       Research -> condense -> prioritize
+/decompose -> /plan -> /spec       Break down -> sequence -> specify
+/blossom -> /drive                 Explore -> autonomously implement
 ```
+
+[All chain patterns](docs/INDEX.md#primitive-chain-patterns)
 
 ## How It Actually Works
 
@@ -163,7 +100,7 @@ Orchestrated multi-step workflows with side effects.
 
 **Fork-context skills spawn subagents.** `/blossom`, `/consensus`, and `/premortem` each dispatch agents that read source files independently. On large codebases, expect meaningful API usage. Inline skills (primitives, `/meeting`, `/status`) are lightweight.
 
-**Everything works without extras.** No beads/tacks, no MCP servers required. You just get fewer features. Hooks degrade gracefully with `|| true`.
+**Everything works without extras.** No MCP servers required. You just get fewer features. Hooks degrade gracefully with `|| true`.
 
 ## Extending
 

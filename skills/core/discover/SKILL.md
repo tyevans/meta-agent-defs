@@ -1,6 +1,6 @@
 ---
 name: discover
-description: "Recommend the right skills or pipeline given a described goal. Use when you are not sure which skill to reach for, or want to know what combination of skills fits a workflow. Keywords: recommend, find skill, which skill, what skill, help, navigate, discover, pipeline."
+description: "Use when you want to browse available skills or find the right pipeline for a workflow. Lists skills matching your goal with composition suggestions. Keywords: recommend, find skill, which skill, what skill, help, navigate, discover, pipeline."
 argument-hint: "<described goal or workflow>"
 disable-model-invocation: false
 user-invocable: true
@@ -62,32 +62,7 @@ For each selected skill, note:
 
 ### Canonical Pipeline Detection
 
-Check whether the goal maps to a known pipeline pattern. Known patterns (from `docs/INDEX.md`):
-
-| Goal Type | Canonical Pipeline |
-|-----------|-------------------|
-| Research a topic | `/gather` -> `/distill` -> `/rank` |
-| Compare two approaches | `/gather` -> `/diff-ideas` |
-| Plan before building | `/decompose` -> `/plan` -> `/spec` |
-| Assess risk before a change | `/gather` -> `/critique` -> `/rank` |
-| Explore unknown territory | `/blossom` or `/fractal` |
-| Review code before merging | `/review` |
-| Run a session | `/status` -> work -> `/retro` -> `/handoff` |
-| Manage a team | `/assemble` -> `/standup` -> `/sprint` |
-| Train an agent | `/diagnose-agent` -> `/challenge-gen` -> `/challenge-run` |
-| Prototype something | `/gather` -> `/distill` -> `/sketch` |
-| Build a feature iteratively | `/tracer` |
-| Define a testing approach | `/test-strategy` |
-| Identify failure modes before building | `/premortem` |
-| File a structured bug report | `/review` -> `/bug` |
-| Bootstrap a new project | `/bootstrap` |
-| Plan goals with a persistent team | `/team-meeting` -> `/sprint` |
-| Run full agent improvement cycle | `/diagnose-agent` -> `/challenge-gen` -> `/challenge-run` -> `/active-learn` |
-| Facilitate a requirements discussion | `/meeting` |
-| Rewrite findings for a different audience | `/gather` -> `/transform` |
-| Elaborate compressed findings | `/distill` -> `/expand` |
-
-If the goal maps to a pattern above, include the full pipeline in the output.
+Read `docs/INDEX.md` § Primitive Chain Patterns to check whether the goal maps to a known pipeline. If it does, include the full pipeline in the output.
 
 ---
 

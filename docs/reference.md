@@ -8,14 +8,12 @@ Hooks are configured in `~/.claude/settings.json` (managed by the user, not by t
 
 | Hook | When | What |
 |------|------|------|
-| SessionStart | Every new session | Pre-session diagnostics (dirty tree, unpushed commits) + loads backlog context (auto-detects beads or tacks) |
-| PreCompact | Before context compaction | Flushes backlog state so nothing is lost (auto-detects beads or tacks) |
-| PreToolUse (Bash) | Before `git push` | Warns if backlog changes are uncommitted |
+| SessionStart | Every new session | Pre-session diagnostics (dirty tree, unpushed commits) |
+| PreCompact | Before context compaction | Flushes session state so nothing is lost |
 | PreToolUse (Bash) | Before destructive commands | Warns on `git reset --hard`, `git checkout .`, `git clean -f`, `rm -rf` |
 | PostToolUse (Task) | After any subagent completes | Review gate reminder: verify deliverable before moving on |
-| SessionEnd | Session closes | Auto-syncs backlog state (auto-detects beads or tacks) |
 
-All hooks fail gracefully with `|| true` for optional tools, so projects without beads or tacks installed still work fine.
+All hooks fail gracefully with `|| true` for optional tools.
 
 ## MCP Servers
 
@@ -36,7 +34,7 @@ MCP servers are defined in `mcp-servers.json`. Add or remove entries there and r
 tackline/
   agents/
     agent-generator.md        # Generates project-specific agents from codebase analysis
-    project-bootstrapper.md   # Full project setup for Claude Code + Beads
+    project-bootstrapper.md   # Full project setup for Claude Code
     code-reviewer.md          # Read-only code review across 4 quality dimensions
   skills/                     # 46 skills (symlinked to ~/.claude/skills/)
     active-learn/SKILL.md     # /active-learn -- adversarial training loop (fork)
@@ -122,6 +120,6 @@ Three principles shaped these workflows:
 
 **1. Hooks are for guarantees, instructions are for guidance.** Hooks fire 100% of the time -- use them for things that must never be forgotten (syncing state, review gates). CLAUDE.md instructions are for things that should usually happen but require judgment. Skills are for on-demand workflows you invoke when you need them.
 
-**2. Verify, don't speculate.** Every spike agent in `/blossom` is instructed to read the actual implementation, trace call chains, check callers and tests, and state a confidence level. CONFIRMED means the agent read the code and verified the issue. LIKELY means strong evidence but incomplete trace. POSSIBLE means it needs a deeper spike. This distinction matters -- it's the difference between a backlog of real work and a backlog of guesses.
+**2. Verify, don't speculate.** Every spike agent in `/blossom` is instructed to read the actual implementation, trace call chains, check callers and tests, and state a confidence level. CONFIRMED means the agent read the code and verified the issue. LIKELY means strong evidence but incomplete trace. POSSIBLE means it needs a deeper spike. This distinction matters -- it's the difference between a list of real work and a list of guesses.
 
 **3. Parallelize with worktree isolation by default.** Independent tasks are dispatched concurrently, each agent in its own git worktree. This eliminates merge conflicts and context bloat. Serial dispatch is the fallback for tasks with true sequential dependencies — where each task needs the previous one's output. Agent teams are reserved for when agents must communicate mid-execution.

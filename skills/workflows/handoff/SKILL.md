@@ -4,10 +4,9 @@ description: "Capture the orchestrator's mental model for a structured session t
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*)
 ---
 
-!`bd list --status=in_progress 2>/dev/null`
 !`git log --oneline -10`
 
 # Handoff: Structured Session Transition
@@ -26,7 +25,7 @@ You are running a **session handoff** -- capturing the orchestrator's mental mod
 Handoff works in 4 phases:
 
 ```
-Gather state (backlog + git + context)
+Gather state (tasks + git + context)
   -> Document decisions and discoveries
     -> Identify loose ends and risks
       -> Write handoff note
@@ -36,16 +35,9 @@ Gather state (backlog + git + context)
 
 ## Phase 1: Gather State
 
-### 1a. Backlog Snapshot
+### 1a. Task State Snapshot
 
-```bash
-bd stats
-bd list --status=in_progress
-bd ready
-bd blocked
-```
-
-Note which tasks are in-progress, what is blocked, and what is ready to pick up.
+Check your task tracker for current state: in-progress tasks, blocked items, and what is ready to pick up.
 
 ### 1b. Working Tree State
 
@@ -152,13 +144,13 @@ Produce a structured handoff document:
 - [pattern/discovery with evidence]
 
 ### In-Progress Work
-- **[task/bead ID]**: [status, where to pick up, what remains]
+- **[task ID]**: [status, where to pick up, what remains]
 
 ### Uncommitted Changes
 - [file or area]: [what changed and why it is not yet committed]
 
 ### Blocked Work
-- **[task/bead ID]**: blocked on [reason]
+- **[task ID]**: blocked on [reason]
 
 ### Resumable Agents
 <!-- only include this section when one or more agents were mid-task at session end -->
@@ -181,12 +173,7 @@ Produce a structured handoff document:
 
 If `$ARGUMENTS` specifies a focus area, use it as the filename context. Write the handoff note to the project's memory:
 
-```bash
-bd create --title="HANDOFF: [summary of session]" --type=task --priority=1 \
-  --description="[full handoff note content]"
-```
-
-If the project has a `memory/` directory, optionally write the handoff note there as `memory/handoff-[date].md` for persistent reference.
+Create a handoff task in your task tracker with the full handoff note content, or write the handoff note to `memory/handoff-[date].md` for persistent reference if the project has a `memory/` directory.
 
 ### 4b. Pipe-Format Summary
 
@@ -202,7 +189,7 @@ After writing the handoff note, emit a pipe-format summary so the next session's
 ### Items (5)
 
 1. **Unfinished work** — [N tasks in-progress at handoff time]
-   - tasks: [bead IDs and one-line status for each in-progress task]
+   - tasks: [task IDs and one-line status for each in-progress task]
    - pickup points: [specific file:line or step for each task]
 
 2. **Key decisions** — [N decisions made this session]

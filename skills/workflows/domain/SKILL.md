@@ -1,6 +1,6 @@
 ---
 name: domain
-description: "Capture or query project-specific terminology, run terminology audits. Use when a term is ambiguous, project-specific, or needs a canonical definition. Use audit mode to find stale or orphaned glossary entries. Keywords: terminology, glossary, definition, disambiguation, domain, terms, vocabulary, audit, stale."
+description: "Use when a term is ambiguous or project-specific and needs a canonical definition. Also runs terminology audits to find stale or orphaned glossary entries. Keywords: terminology, glossary, definition, disambiguation, domain, terms, vocabulary, audit, stale."
 argument-hint: "<term> = <definition> | query: <term> | audit"
 disable-model-invocation: false
 user-invocable: true

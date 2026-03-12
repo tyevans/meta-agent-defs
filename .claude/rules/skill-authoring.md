@@ -23,7 +23,7 @@ name: lowercase-with-hyphens
 description: "When and why to use this skill. Include keywords for auto-discovery."
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*)
 ---
 ```
 
@@ -116,4 +116,4 @@ Resume available — to drill into finding N:
 - Do not set `disable-model-invocation: true` — it blocks the Skill tool and prevents programmatic invocation. All skills default to `false`
 - Do not duplicate logic that exists in another skill -- factor shared patterns into agents instead
 - Do not duplicate logic that exists in an agent -- if an agent already handles the workflow, don't recreate it as a skill
-- Do not embed session-close boilerplate (bd sync, tk sync, git status, git commit) -- the beads/tacks SessionStart hook already injects the session close protocol into every session
+- Do not embed session-close boilerplate (git status, git commit) -- the SessionStart hook already injects the session close protocol into every session

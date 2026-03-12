@@ -48,7 +48,7 @@ members:
 
 ## Notes
 
-- Templates do NOT assume beads or tacks is available — teams work with or without them
+- Templates do NOT assume any specific task management tool — teams work with any tracking approach
 - Ownership globs are used by agents to determine their areas of responsibility
 - Tools list defines what each agent can do (restrict for security/focus)
 - Budget prevents runaway costs (agents stop when budget is exceeded)

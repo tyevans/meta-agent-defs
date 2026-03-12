@@ -1,6 +1,6 @@
 ---
 name: diagnose-agent
-description: "Profile a team agent's strengths and weaknesses from learnings evolution and commit history. Outputs a struggle profile in pipe format for downstream consumption by /challenge-gen or /active-learn. Use when you want to understand where an agent excels or struggles before generating training challenges. Keywords: diagnose, profile, agent, weakness, strength, capability, assessment."
+description: "Use when an agent's performance is uneven and you want to understand where it excels or struggles. Produces a struggle profile for /challenge-gen or /active-learn. Keywords: diagnose, profile, agent, weakness, strength, capability, assessment."
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true

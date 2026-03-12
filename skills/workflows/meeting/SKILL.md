@@ -1,10 +1,10 @@
 ---
 name: meeting
-description: "Form an agent team and have an interactive group discussion to flesh out requirements, explore ideas, or get diverse perspectives on a topic. Use when you want to brainstorm with multiple viewpoints, clarify requirements through dialogue, or pressure-test an idea before committing. Keywords: discuss, brainstorm, requirements, team, dialogue, perspectives, workshop."
+description: "Use when you need multiple perspectives on a topic — brainstorming, requirements clarification, or pressure-testing an idea before committing. Runs an interactive agent panel discussion. Keywords: discuss, brainstorm, requirements, team, dialogue, perspectives, workshop."
 argument-hint: "<topic or question>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Bash(bd:*), Bash(git:*), Bash(rm:*), Bash(ls:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Write, Bash(git:*), Bash(rm:*), Bash(ls:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
 ---
 
 # Meeting: Interactive Multi-Agent Dialogue
@@ -203,7 +203,7 @@ Example:
 - ❌ "Investigate the auth refactor further"
 - ✅ "Spike JWT vs session cookies in src/auth/provider.ts, produce decision doc with latency + security tradeoffs"
 
-Drop items that can't be sharpened, or convert to investigation beads with explicit research questions.
+Drop items that can't be sharpened, or convert to investigation tasks with explicit research questions.
 
 ### Key Insight
 [The single most valuable thing that emerged from the discussion]
@@ -231,16 +231,9 @@ TeamDelete()
 rm -f memory/scratch/meeting-panelists.md
 ```
 
-### 3c. Optional: Create Beads
+### 3c. Optional: Create Tasks
 
-If sharpened action items emerged, offer to create beads:
-
-```bash
-bd create --title="[action item]" --type=task --priority=[0-4] \
-  --description="From meeting on [topic]. Context: [relevant discussion point]"
-```
-
-Use the sharpened form as the title. The 3-test pattern ensures beads are immediately dispatchable.
+If sharpened action items emerged, offer to create tasks in your task tracker with the sharpened form as the title, priority, and meeting context. The 3-test pattern ensures tasks are immediately dispatchable.
 
 ---
 

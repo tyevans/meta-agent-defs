@@ -28,7 +28,7 @@ Multi-human workflows solve this by inserting a shared contract phase **before**
 
 1. **Prep** (`/storm-prep`): Each human's Claude agents independently explore their assigned domain using Event Storming methodology. They generate candidate domain events as structured YAML — no coordination yet. Each agent works with full autonomy inside its context.
 
-2. **Jam** *(human activity, no skill)*: Humans meet and review each other's candidate events. They negotiate boundary ownership, rename conflicting terms, and agree on a shared event catalog. The output is a single artifact both sides will use.
+2. **Jam** *(human activity, no skill)*: Humans meet and review each other's candidate events. Each side's prep output carries **boundary assumptions** — implicit expectations about what data crosses context lines: field names, types, which context owns which events. The Jam surfaces these assumptions and negotiates them while they're cheap to change. Humans rename conflicting terms, agree on payload shapes, and assign event ownership. The output is a **shared event catalog** — a single YAML file listing every cross-boundary event with its owning context, payload fields, and types. This catalog becomes the source of truth that `/formalize` converts into machine-readable contracts.
 
 3. **Formalize** (`/formalize`): Each human feeds the jam session's shared artifact into Claude. Agents generate machine-readable contracts — event schemas, mock payloads, validation configuration — from the negotiated catalog.
 
@@ -84,4 +84,4 @@ It fits this workflow for two reasons:
 
 ---
 
-For single-human workflows, see [Workflow Pipelines](pipelines.md). For team setup, see [Team System Guide](team-system-guide.md).
+For the step-by-step guide with concrete commands, see [Multi-Human How-To](multi-human-howto.md). For single-human workflows, see [Workflow Pipelines](pipelines.md). For team setup, see [Team System Guide](team-system-guide.md).

@@ -1,6 +1,6 @@
 ---
 name: drift
-description: "Detect skill/agent convergence and divergence patterns across definition files. Find shared patterns to factor out, detect missed cross-pollination, compare section structure. Use after major skill edits, as part of /retro, or when definitions feel inconsistent. Keywords: drift, convergence, divergence, cross-pollination, consistency, compare."
+description: "Use after major skill edits or when definitions feel inconsistent. Detects shared patterns to factor out, missed cross-pollination, and structural divergence. Keywords: drift, convergence, divergence, cross-pollination, consistency, compare."
 argument-hint: "<category or glob pattern>"
 disable-model-invocation: false
 user-invocable: true

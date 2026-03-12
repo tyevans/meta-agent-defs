@@ -1,10 +1,10 @@
 ---
 name: assemble
-description: "Create a persistent learning team for a project with roles, ownership, and file-based learnings that improve agent behavior across sessions. Use when starting a new project, forming a team for long-horizon work, or upgrading from ad-hoc agent dispatch to structured team coordination. Keywords: team, project, setup, roles, persistent, agents, staff, learning."
+description: "Use when starting a project, forming a team for long-horizon work, or upgrading from ad-hoc agent dispatch. Creates persistent roles with ownership and learnings that improve across sessions. Keywords: team, project, setup, roles, persistent, agents, staff, learning."
 argument-hint: "<project description>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(mkdir:*), Write, Edit, Task, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(mkdir:*), Write, Edit, Task, AskUserQuestion
 ---
 
 # Assemble: Persistent Learning Team Creation
@@ -28,7 +28,7 @@ Route (args vs interactive) → Explore project → Propose roles + ownership �
   → Write team.yaml manifest
     → Create learnings.md per member (seeded with role context)
       → Create shared team memory (decisions.md)
-        → Initialize backlog → Report
+        → Report
 ```
 
 ## Phase 0: Route
@@ -193,16 +193,6 @@ Write `memory/team/retro-history.md`:
 
 (No retrospectives yet. Run /retro to add entries.)
 ```
-
-### 2e. Initialize Backlog (optional)
-
-**If beads (bd CLI) is available** and the project doesn't already have a `.beads/` directory, ask the user if they want backlog tracking:
-
-```bash
-bd create --title="EPIC: [project name] team setup" --type=epic --priority=2
-```
-
-**If beads is not available**, skip this step. The team can still function without beads by using manual task descriptions in `/sprint`.
 
 ---
 

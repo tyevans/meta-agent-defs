@@ -1,6 +1,6 @@
 ---
 name: challenge-gen
-description: "Generate targeted challenges for agent improvement from a /diagnose-agent struggle profile. Produces domain edge-case and commit-replay challenges calibrated to the agent's weak areas. Use after /diagnose-agent to create training material. Keywords: challenge, training, improvement, active-learning, edge-case, replay, agent, weakness."
+description: "Use after /diagnose-agent when you have a struggle profile and need training challenges. Generates edge-case and commit-replay challenges calibrated to weak areas. Keywords: challenge, training, improvement, active-learning, edge-case, replay, agent, weakness."
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true

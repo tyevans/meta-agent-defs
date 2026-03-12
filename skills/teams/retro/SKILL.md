@@ -1,10 +1,10 @@
 ---
 name: retro
-description: "Run an automated session retrospective to evaluate velocity, quality, process, and blockers, then persist durable learnings to MEMORY.md. Use at the end of a work session, after completing an epic, or when you want to reflect on what worked and what did not."
+description: "Use at the end of a work session, after completing an epic, or when you want to capture what worked and what didn't. Evaluates velocity, quality, process, and blockers, then persists learnings."
 argument-hint: "[focus area or session topic]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(wc:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(wc:*), Write, Edit
 ---
 
 # Retro: Automated Session Retrospective
@@ -28,7 +28,7 @@ Gather session data (git + backlog + conversation context)
     -> Extract keep/stop/try learnings
       -> Team learning health (if team exists)
         -> Update MEMORY.md with durable insights
-          -> Capture action items as beads
+          -> Capture action items as tasks
             -> Present structured report
 ```
 
@@ -48,16 +48,7 @@ Note which commits were made this session, how many files were touched, and the 
 
 ### 1b. Backlog Activity (conditional)
 
-**If `.beads/` or `.tacks/` exists in the project root**, check backlog activity:
-
-```bash
-bd stats
-bd list --status=closed
-```
-
-Note how many tasks were completed, what types they were, and whether any were closed as duplicates or stale (vs. genuinely completed).
-
-**If neither `.beads/` nor `.tacks/` exists**, skip this step and rely on git activity and conversation context alone.
+If the project uses a task tracker, check backlog activity: how many tasks were completed, what types they were, and whether any were closed as duplicates or stale (vs. genuinely completed). If no task tracker is configured, skip this step and rely on git activity and conversation context alone.
 
 ### 1c. Conversation Context
 
@@ -125,7 +116,7 @@ Be specific and actionable. "Communication was good" is not useful. "Sending spi
 
 ### Sharpening Gate
 
-Every "could improve" or "try next time" item MUST pass through this gate before being included in the report or becoming a bead:
+Every "could improve" or "try next time" item MUST pass through this gate before being included in the report or becoming a task:
 
 1. **Name the specific code/file/workflow** where the problem occurred
 2. **State what concretely should change** (a function to add, a check to insert, a pattern to adopt)
@@ -136,7 +127,7 @@ If an observation fails the gate, sharpen it:
 - "gl-renderer.ts has 2 manual blend enable/disable blocks that will be missed on new draw calls" → passes #1
 - "Add GLRenderer.drawWithAlpha(alpha, drawFn) that wraps blend state, replace the 2 existing manual blocks in gl-renderer.ts" → passes all 3
 
-Drop observations you cannot sharpen — they are not actionable yet. If the root cause is unclear, create an investigation bead instead ("Investigate why X keeps happening in Y").
+Drop observations you cannot sharpen — they are not actionable yet. If the root cause is unclear, create an investigation task instead ("Investigate why X keeps happening in Y").
 
 ---
 
@@ -215,14 +206,14 @@ Determine which learnings are **durable** (useful across sessions) vs. **ephemer
 Durable examples:
 - "Agent teams work well for parallel audits but add overhead for < 5 tasks"
 - "Always read existing skill files before writing new ones to match format"
-- "Use --parent for epic hierarchy: bd create --parent=<epic-id>, not bd dep add"
+- "Use parent relationships for epic hierarchy, not cross-task dependencies"
 
 Ephemeral examples (do NOT persist):
 - "Completed 8 tasks today"
 - "Session started at 2pm"
 - "User seemed happy with the output"
 
-When adding new learnings, include the `dispatch:` field for provenance tracking (optional but recommended). Use `dispatch: retro-session` for learnings discovered during retro, or `dispatch: bead-xyz` if the learning traces to a specific task.
+When adding new learnings, include the `dispatch:` field for provenance tracking (optional but recommended). Use `dispatch: retro-session` for learnings discovered during retro, or `dispatch: task-xyz` if the learning traces to a specific task.
 
 ### 4c. Apply Updates
 
@@ -238,7 +229,7 @@ Example format for new learnings entries:
 - /blossom → /sprint pipeline: spike-driven discovery feeds execution naturally (added: 2026-02-13, dispatch: retro-session)
 ```
 
-The `dispatch:` field is optional. Use `dispatch: retro-session` for learnings discovered during retro, or `dispatch: bead-xyz` if the learning traces to a specific bead. Existing entries without this field are backward-compatible.
+The `dispatch:` field is optional. Use `dispatch: retro-session` for learnings discovered during retro, or `dispatch: task-xyz` if the learning traces to a specific task. Existing entries without this field are backward-compatible.
 
 If detailed notes are needed for a topic, create a separate file in the memory directory (e.g., `team-patterns.md`, `skill-authoring.md`) and link to it from MEMORY.md.
 
@@ -250,16 +241,9 @@ Read MEMORY.md after edits to confirm it is well-structured and under the line l
 
 ## Phase 6: Capture Action Items (conditional)
 
-**If `.beads/` or `.tacks/` exists**, create a bead for each sharpened action item from Phase 3 (items that passed the sharpening gate):
+If the project uses a task tracker, create a task for each sharpened action item from Phase 3 (items that passed the sharpening gate). Include the retro date, relevant finding context, and the specific change to make. Every item here already passed the sharpening gate, so it should be implementable in one session without design decisions. Typically 1-3 tasks per retro; zero is fine if no concrete follow-ups emerged.
 
-```bash
-bd create --title="<concrete action from sharpening gate>" --type=task --priority=<2-4> \
-  --description="From retro on [date]. Context: [relevant finding from Phase 2]. What to change: [specific code/file/workflow change]."
-```
-
-Every item here already passed the sharpening gate, so it should be implementable in one session without design decisions. Typically 1-3 beads per retro; zero is fine if no concrete follow-ups emerged.
-
-**If neither `.beads/` nor `.tacks/` exists**, list action items in the report only.
+If no task tracker is configured, list action items in the report only.
 
 ---
 
@@ -288,8 +272,8 @@ Present a structured retrospective report:
 - [specific item with evidence and suggested change]
 
 ### Action Items
-- [ ] [bead ID]: [title] (P[priority])
-- [ ] [bead ID]: [title] (P[priority])
+- [ ] [task ID]: [title] (P[priority])
+- [ ] [task ID]: [title] (P[priority])
 
 ### Memory Updates
 - [list each change made to MEMORY.md: added, updated, or removed]

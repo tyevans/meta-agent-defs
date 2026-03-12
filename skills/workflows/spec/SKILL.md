@@ -1,10 +1,10 @@
 ---
 name: spec
-description: "Create a structured specification document through progressive elaboration before implementation. Use when you need a complete design before coding, for features with multiple valid approaches, or when architectural alignment matters. Keywords: spec, frd, sdd, requirements, design, specification, document."
+description: "Use when you need a complete design before coding — multiple valid approaches, architectural alignment needed, or complex features. Builds a spec through progressive elaboration. Keywords: spec, frd, sdd, requirements, design, specification, document."
 argument-hint: "<goal or feature to specify>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(git:*), Task
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(git:*), Task
 context: fork
 ---
 
@@ -300,15 +300,15 @@ Repeat until PASS. **Maximum 3 iterations.** If still FAIL after 3 iterations, s
 
 Read the final spec, change status from `DRAFT` to `READY FOR REVIEW`.
 
-### 5b. Create Beads (conditional)
+### 5b. Create Tracking Task (conditional)
 
-If `.beads/` or `.tacks/` exists, create a bead to track the spec:
+If a task tracker is configured, create a task to track the spec:
 
-```bash
-bd create --title="SPEC: [Feature Name]" --type=task --priority=2 --description="Spec at .specs/<name>.md is READY FOR REVIEW. Key decisions: [1-2 sentence summary of proposed approach]. Next: /blossom to generate implementation backlog."
-```
+- **Title**: "SPEC: [Feature Name]"
+- **Priority**: P2
+- **Description**: "Spec at .specs/<name>.md is READY FOR REVIEW. Key decisions: [1-2 sentence summary of proposed approach]. Next: /blossom to generate implementation backlog."
 
-This ensures the spec is tracked in the backlog and linkable as a dependency for implementation tasks created by `/blossom`.
+This ensures the spec is tracked and linkable as a dependency for implementation tasks created by `/blossom`.
 
 ### 5c. Emit Pipe-Format Summary
 
@@ -345,7 +345,7 @@ Items should cover: each major design decision from Proposed Approach, each publ
 
 ### 5d. Present to User
 
-Show: spec location (absolute path), quality summary (sections populated, issues fixed, guardian iterations), bead ID (if created), and next steps (review, revise, or `/blossom` to generate implementation backlog).
+Show: spec location (absolute path), quality summary (sections populated, issues fixed, guardian iterations), task ID (if created), and next steps (review, revise, or `/blossom` to generate implementation backlog).
 
 ### Example Output
 
@@ -385,7 +385,7 @@ The spec proposes a WebSocket-based notification system that pushes events to da
 ---
 
 **Location:** `/path/to/project/.specs/realtime-notifications.md`
-**Bead:** tack-xxxx (SPEC: Real-time Notifications)
+**Task:** xxxx (SPEC: Real-time Notifications)
 
 ### Quality Summary
 - Sections populated: 9/9 ✓

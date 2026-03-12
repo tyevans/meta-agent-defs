@@ -1,10 +1,10 @@
 ---
 name: bootstrap
-description: "Bootstrap a new project end-to-end: set up Claude Code infrastructure (CLAUDE.md, hooks, beads, rules, skills) then generate tailored project agents. Use when starting a new project from scratch or adding full Claude Code support to an existing codebase. Keywords: bootstrap, scaffold, setup, new project, init, kickstart."
+description: "Use when starting a new project or adding Claude Code support to an existing one. Sets up CLAUDE.md, hooks, rules, and generates tailored agents. Keywords: bootstrap, scaffold, setup, new project, init, kickstart."
 argument-hint: "<project path or description>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(ls:*), Bash(test:*), Bash(mkdir:*), Task
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(ls:*), Bash(test:*), Bash(mkdir:*), Task
 context: inline
 ---
 
@@ -110,9 +110,9 @@ Task({
   mode: "bypassPermissions",
   prompt: "Bootstrap the project at $PROJECT_PATH.
 
-Your job: Set up everything this project needs for effective Claude Code + Beads workflow.
+Your job: Set up everything this project needs for effective Claude Code workflow.
 
-Follow your full phase sequence (discovery, beads init, CLAUDE.md, hooks, permissions, rules, memory, skills, gitignore, initial beads).
+Follow your full phase sequence (discovery, CLAUDE.md, hooks, permissions, rules, memory, skills, gitignore).
 
 Important:
 - Read the existing codebase thoroughly before generating any files
@@ -238,17 +238,7 @@ cat "$PROJECT_PATH/.claude/settings.json" | grep -c "hooks"
 
 If `settings.json` is invalid JSON, report it and stop -- broken settings will silently disable all hooks.
 
-### 3c. Beads Doctor (conditional)
-
-If `.beads/` or `.tacks/` exists in `$PROJECT_PATH`:
-
-```bash
-cd "$PROJECT_PATH" && bd doctor
-```
-
-Report any issues found. Non-fatal issues (warnings) can be noted but do not block completion.
-
-### 3d. Verification Summary
+### 3c. Verification Summary
 
 Collect all check results into a pass/fail table for the Phase 4 report:
 
@@ -262,7 +252,6 @@ Collect all check results into a pass/fail table for the Phase 4 report:
 | All agents have required frontmatter | pass/fail |
 | Hook scripts executable | pass/fail |
 | `settings.json` is valid JSON | pass/fail |
-| `bd doctor` clean (if beads present) | pass/fail/skipped |
 
 ---
 
@@ -326,8 +315,7 @@ After the pipe-format block, present a human-readable next steps section:
 1. **Review CLAUDE.md** -- adjust project description, commands, and key patterns to your preferences
 2. **Review generated agents** -- read `.claude/AGENTS.md` for the full catalog
 3. **Resolve manual steps** -- install any missing tools flagged above
-4. **Explore the backlog** -- run `bd ready` to see initial backlog items (if beads was set up)
-5. **Orient the session** -- run `/status` to start working
+4. **Orient the session** -- run `/status` to start working
 ```
 
 ---

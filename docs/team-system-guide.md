@@ -14,7 +14,7 @@ A comprehensive guide to the persistent learning team system for Claude Code —
 6. [Pruning & Maintenance](#pruning--maintenance)
 7. [Cross-Agent Knowledge Sharing](#cross-agent-knowledge-sharing)
 8. [Workflow Integration](#workflow-integration)
-9. [Working Without Beads/Tacks](#working-without-beadstacks)
+9. [Working Without a Task Tracker](#working-without-a-task-tracker)
 10. [Troubleshooting & Tips](#troubleshooting--tips)
 
 ---
@@ -226,7 +226,7 @@ Owns: src/api/**, src/models/**, tests/api/**
 <contents of memory/agents/backend/learnings.md>
 
 ## Task
-[Task description with bead reference or manual context]
+[Task description or manual context]
 
 ## Reflection Protocol
 After completing your task, end your response with a structured reflection:
@@ -581,7 +581,7 @@ The team system integrates with four primary skills: `/assemble`, `/standup`, `/
 2. Proposes roles and ownership patterns
 3. Creates `.claude/team.yaml`
 4. Creates `memory/agents/<name>/learnings.md` for each member
-5. Optionally initializes a backlog (beads or tacks)
+5. Optionally initializes a backlog with your preferred task tracker
 
 **Output:** A fully configured team ready for dispatch.
 
@@ -600,7 +600,7 @@ The team system integrates with four primary skills: `/assemble`, `/standup`, `/
 **What it does:**
 1. Reads team manifest and learnings files
 2. Checks git activity by ownership patterns
-3. Checks backlog (if beads or tacks available)
+3. Checks backlog (if a task tracker is available)
 4. Reports per-member status and learning health
 
 **Output:** A status board showing team activity, learning health, blockers, and suggested actions.
@@ -621,11 +621,6 @@ Sample output:
 | backend | 3 in owned files | 12 entries (2 new) | 🟢 healthy |
 | frontend | 1 in owned files | 8 entries (1 new) | 🟢 healthy |
 | tester | 0 in owned files | 5 entries (0 new) | 🟡 stale |
-
-### Backlog Snapshot
-- **Ready**: 3 tasks available
-- **In Progress**: 1 task active
-- **Blocked**: 0 tasks blocked
 
 ### Blockers
 No blockers
@@ -658,12 +653,7 @@ No blockers
 
 **Output:** Completed tasks + updated learnings files.
 
-**Example with beads/tacks:**
-```
-/sprint
-```
-
-**Example without beads/tacks:**
+**Example:**
 ```
 /sprint Add user authentication
 ```
@@ -673,18 +663,15 @@ Sample sprint plan:
 ```markdown
 ## Sprint Plan
 
-| Bead | Title | Assigned To | Reason |
+| Task | Title | Assigned To | Reason |
 |------|-------|-------------|--------|
-| 42 | Add user authentication endpoint | backend | Ownership: src/api/** |
-| 43 | Create login form component | frontend | Ownership: src/components/** |
-| 44 | Add auth integration tests | tester | Ownership: tests/** |
+| 1 | Add user authentication endpoint | backend | Ownership: src/api/** |
+| 2 | Create login form component | frontend | Ownership: src/components/** |
+| 3 | Add auth integration tests | tester | Ownership: tests/** |
 
-### Dispatch Order
-1. Bead 42: backend — Foundation layer (auth endpoint must exist before UI/tests)
-2. Bead 43: frontend — UI layer (depends on endpoint contract)
-3. Bead 44: tester — Validation layer (depends on both endpoint and UI)
-
-**Strategy**: Serial dispatch (sequential dependencies — auth endpoint must exist before UI, both must exist before tests)
+### Dispatch Strategy
+- Task 1 (backend) and Task 2 (frontend): dispatch in parallel via `isolation: "worktree"` + `run_in_background: true` — endpoint contract is defined upfront, so frontend can work from the contract while backend implements
+- Task 3 (tester): serial after Tasks 1+2 complete — tests depend on both endpoint and UI existing
 ```
 
 After user approval, `/sprint` dispatches each task, parses reflections, updates learnings, and reports:
@@ -734,7 +721,7 @@ Sample output:
 ## Session Retrospective
 
 ### Summary
-Completed 8 tasks across 3 team members with 12 new learnings persisted. Serial dispatch strategy worked well — no rework needed.
+Completed 8 tasks across 3 team members with 12 new learnings persisted. Parallel worktree dispatch for independent tasks worked well — no merge conflicts or rework needed.
 
 ### What Went Well
 - All 8 tasks completed on first attempt with high confidence ratings
@@ -750,7 +737,7 @@ Completed 8 tasks across 3 team members with 12 new learnings persisted. Serial 
 - [ ] Assign tester a spike task to explore edge cases and generate fresh learnings
 
 ### Memory Updates
-- Added: "Serial dispatch with clear dependency order prevents rework"
+- Added: "Parallel worktree dispatch for independent tasks; serial only for true dependencies"
 - Updated: "Cross-agent notes are action triggers — 14-day validation window keeps them relevant"
 
 ### Team Learning Health
@@ -785,22 +772,22 @@ The complete team workflow cycle:
 
 ---
 
-## Working Without Beads/Tacks
+## Working Without a Task Tracker
 
-The team system **does not require beads or tacks** (the `bd`/`tk` CLI backlog trackers). All team skills support a fallback mode for projects without either tool.
+The team system **does not require a specific task tracker**. All team skills support a fallback mode for projects without one.
 
 ### How Skills Adapt
 
-| Skill | With Beads/Tacks | Without Beads/Tacks |
+| Skill | With Task Tracker | Without Task Tracker |
 |-------|-----------------|---------------------|
 | `/assemble` | Optionally creates initial epic | Skips backlog initialization |
 | `/standup` | Shows backlog snapshot (ready, in-progress, blocked) | Shows only git activity + learning health |
-| `/sprint` | Pulls tasks from `bd ready` (or `tk ready`) | Accepts manual task descriptions from user |
+| `/sprint` | Pulls tasks from the backlog | Accepts manual task descriptions from user |
 | `/retro` | Includes backlog stats in analysis | Relies on git + conversation context only |
 
 ### Manual Task Dispatch
 
-If you don't have beads or tacks, you provide task descriptions directly to `/sprint`:
+If you don't have a task tracker configured, you provide task descriptions directly to `/sprint`:
 
 ```
 /sprint Add pagination to user listing endpoint
@@ -812,11 +799,11 @@ Sprint will:
 3. Dispatch as normal
 4. Persist learnings as normal
 
-The learning loop works identically — beads/tacks just provide backlog structure and task tracking.
+The learning loop works identically — a task tracker just provides backlog structure and status tracking.
 
-### When to Use Beads/Tacks
+### When to Use a Task Tracker
 
-**Use beads/tacks if:**
+**Use a task tracker if:**
 - You want structured backlog management
 - You need dependency tracking between tasks
 - You want to track task status (ready, in-progress, blocked, closed)
@@ -989,7 +976,7 @@ The persistent learning team system transforms agent dispatch from stateless exe
 4. **Cross-agent notes** route knowledge between team members
 5. **Pruning** keeps learnings focused and high-signal
 6. **Seven skills** integrate the system: `/assemble`, `/standup`, `/sprint`, `/retro`, `/curate`, `/promote`, `/tend`
-7. **Beads/tacks are optional** — teams work with or without backlog tracking
+7. **Task trackers are optional** — teams work with or without backlog tracking
 
 **Next steps:**
 

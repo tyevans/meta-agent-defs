@@ -1,10 +1,10 @@
 ---
 name: drive
-description: "Sustained autonomous implementation against a plan document. Loops sprint/retro cycles, delegates via /do, applies /test-strategy where TDD fits, commits regularly, and updates documentation as gaps are filled. Keeps going until the user stops or the plan is complete. Keywords: drive, autopilot, autonomous, grind, build, implement, sustained, continuous."
+description: "Use when you have a plan document and want autonomous implementation until it's done. Loops sprint/retro cycles, commits regularly, keeps going until complete or stopped. Keywords: drive, autopilot, autonomous, grind, build, implement, sustained, continuous."
 argument-hint: "<path to plan document or epic>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(mkdir:*), Skill, Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(git:*), Bash(mkdir:*), Skill, Task
 ---
 
 # Drive: Sustained Autonomous Implementation
@@ -60,12 +60,9 @@ Determine what already exists vs. what remains:
 
 ```bash
 git log --oneline -20
-bd stats
-bd ready
-bd list --status=in_progress
 ```
 
-Read key files referenced in the plan to see how much is already implemented. Build a mental map of **done**, **in-progress**, and **remaining**.
+Check your project's task tracker for current status (open tasks, in-progress work, blockers). Read key files referenced in the plan to see how much is already implemented. Build a mental map of **done**, **in-progress**, and **remaining**.
 
 ### 0d. Write Drive State
 
@@ -107,17 +104,7 @@ From the remaining areas, select a batch of 3-8 tasks for the next sprint. Prior
 
 ### 1b. Create Backlog Items
 
-For each task in the batch, create a bead (if beads/tacks available):
-
-```bash
-bd create --title="<task>" --description="<what and why>" --type=task --priority=2
-```
-
-Set up dependencies where ordering matters:
-
-```bash
-bd dep add <later-task> <earlier-task>
-```
+For each task in the batch, track it using your preferred task tracking approach. Record the title, description, and priority. Set up dependencies where ordering matters.
 
 ### 1c. Apply Quality Lenses
 

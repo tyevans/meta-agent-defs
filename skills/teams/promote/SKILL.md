@@ -1,6 +1,6 @@
 ---
 name: promote
-description: "Analyze learnings across all agents to identify durable patterns ready to graduate to project rules. Applies graduation criteria: survival across 3+ retro cycles, 21+ day stability, cross-agent applicability, universality, actionability, and no overlap with existing rules. Outputs promotion candidates with draft rule content. Optionally writes new rule files. Use after /curate, /retro, or directly via /tend. Keywords: promote, rules, graduate, learnings, patterns, cross-agent, durable, rules, governance."
+description: "Use after /curate or /retro when learnings have accumulated and you want to graduate durable patterns to project rules. Applies graduation criteria (3+ retro cycles, 21+ day stability, cross-agent applicability). Keywords: promote, rules, graduate, learnings, patterns, cross-agent, durable, governance."
 disable-model-invocation: false
 user-invocable: true
 allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(ls:*), Write, Edit
@@ -346,4 +346,4 @@ Read each written rule file and confirm:
 
 8. **Git history is the ground truth for survival.** Self-reported `added:` dates in learnings files can be wrong. Always verify survival against git log of the learnings file. Note when git history is unavailable and state the limitation.
 
-See also: /curate (upstream — produces scored learnings set that /promote consumes), /tend (orchestrates curate + promote in sequence), /retro (Phase 4f surfaces promotion candidates for /promote to evaluate), /consolidate (backlog review — analogous lifecycle for beads, not learnings).
+See also: /curate (upstream — produces scored learnings set that /promote consumes), /tend (orchestrates curate + promote in sequence), /retro (Phase 4f surfaces promotion candidates for /promote to evaluate), /consolidate (backlog review — analogous lifecycle for tasks, not learnings).

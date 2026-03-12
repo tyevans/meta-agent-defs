@@ -1,10 +1,10 @@
 ---
 name: sprint
-description: "Plan and dispatch work to team members with the learning loop: assign tasks by ownership, spawn agents with injected learnings, parse reflections, and persist new learnings. Works with or without beads backlog tracking. Use when you have a team assembled and work to dispatch. Keywords: dispatch, execute, work, plan, assign, run, do, build."
+description: "Use when you have an assembled team and work ready to dispatch. Assigns tasks by ownership, injects accumulated learnings, and persists reflections from each agent. Keywords: dispatch, execute, work, plan, assign, run, do, build."
 argument-hint: "[task filter or focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(claude:*), Bash(mkdir:*), Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(git:*), Bash(claude:*), Bash(mkdir:*), Task
 ---
 
 # Sprint: Plan, Dispatch, Learn
@@ -20,7 +20,6 @@ You are running a **Sprint** -- the core execution loop for a persistent learnin
 - When agents should accumulate knowledge from each task to improve on the next
 - After a planning session (like `/blossom`) produces tasks to execute
 - When you want structured reflection and learning persistence after each task
-- Works with beads backlog (pulls from `bd ready`) or without (accepts manual task descriptions)
 
 ## The Learning Loop
 
@@ -82,19 +81,9 @@ ls memory/epics/*/epic.md 2>/dev/null
 
 If any epic state files exist, read them. These contain spike findings, priority order, task IDs, critical path, and parallel opportunities from a prior blossom run. When matching tasks to members in Phase 2, use the spike findings (confidence levels, file scopes, agent hints) and priority order from the epic state to inform assignments. If `$ARGUMENTS` names a specific epic, load only that epic's state file.
 
-### 1d. Load Backlog (conditional)
+### 1d. Load Task State (conditional)
 
-**If `.beads/` or `.tacks/` exists in the project root**, check the backlog:
-
-```bash
-bd ready
-bd list --status=in_progress
-bd blocked
-```
-
-If a focus area was provided via `$ARGUMENTS`, filter to relevant beads.
-
-**If neither `.beads/` nor `.tacks/` exists**, skip this step. The sprint will accept manual task descriptions from the user instead of pulling from the backlog.
+Check your project's task tracker for ready, in-progress, and blocked work. If a focus area was provided via `$ARGUMENTS`, filter to relevant tasks. If no task tracker is configured, the sprint will accept manual task descriptions from the user.
 
 ### 1e. Prerequisite Gate (STOP if incomplete)
 
@@ -102,7 +91,7 @@ Do not proceed to Phase 2 until all context is loaded:
 - [ ] team.yaml was read (not just referenced — Read tool returned its contents)
 - [ ] Every member's learnings.md was read
 - [ ] Epic state files checked (loaded if present)
-- [ ] Backlog state is known (bd ready output is in context, or user provided tasks)
+- [ ] Task state is known (from your task tracker or user-provided tasks)
 
 If any prerequisite is missing, go back and complete it now. Planning without loaded context produces wrong assignments.
 
@@ -112,12 +101,12 @@ If any prerequisite is missing, go back and complete it now. Planning without lo
 
 ### 2a. Match Tasks to Members
 
-**If beads are available**, for each ready bead, determine the best-fit member by:
-1. **Ownership match**: Does the bead's likely file scope overlap with a member's `owns` patterns?
-2. **Role match**: Does the bead's topic align with a member's role description?
+For each ready task, determine the best-fit member by:
+1. **Ownership match**: Does the task's likely file scope overlap with a member's `owns` patterns?
+2. **Role match**: Does the task's topic align with a member's role description?
 3. **Learning advantage**: Has a member accumulated relevant learnings for this type of task?
 
-**If beads are not available**, ask the user to describe the tasks they want dispatched, then match tasks to members based on role and ownership fit.
+If no tasks are available from a tracker, ask the user to describe the tasks they want dispatched, then match tasks to members based on role and ownership fit.
 
 ### 2b. Detect Shared-File Conflicts
 
@@ -125,7 +114,7 @@ Before presenting the plan, scan for tasks that will likely touch the same files
 
 **Detection heuristic**: For each task, estimate its file scope using:
 1. **Ownership patterns**: Which member is assigned? Their `owns` globs define the likely file territory.
-2. **Bead description keywords**: Does the description mention specific files, classes, or systems by name?
+2. **Task description keywords**: Does the description mention specific files, classes, or systems by name?
 3. **Cross-cutting signals**: Keywords like "autoload", "game_config", "project.godot", "test_launcher", or "signal" suggest files that many tasks may touch.
 
 **Cross-reference**: Build a map of `file/pattern -> [task-ids]`. Any entry with 2+ tasks is a conflict candidate.
@@ -161,14 +150,14 @@ After presenting the conflicts, run `sleep 20`. If the user responds during that
 ```markdown
 ## Sprint Plan
 
-| Bead | Title | Assigned To | Reason |
-|------|-------|-------------|--------|
-| [id] | [title] | [member] | [ownership match / role match / learning advantage] |
-| ... | ... | ... | ... |
+| Task | Assigned To | Reason |
+|------|-------------|--------|
+| [title] | [member] | [ownership match / role match / learning advantage] |
+| ... | ... | ... |
 
 ### Dispatch Order
-1. [bead-id]: [member] — [brief reason for ordering]
-2. [bead-id]: [member] — [brief reason]
+1. [task]: [member] — [brief reason for ordering]
+2. [task]: [member] — [brief reason]
 ...
 
 **Strategy**: Parallel worktree dispatch (serial only if tasks have sequential dependencies)
@@ -225,15 +214,9 @@ Task({
 
 **Note**: If dispatching multi-step primitive chains (3+ steps like gather->distill->rank), set `max_turns: 40` to avoid turn limits.
 
-### 3c. Mark Bead In-Progress (conditional)
+### 3c. Mark Task In-Progress (conditional)
 
-**If beads are available**:
-
-```bash
-bd update <bead-id> --status=in_progress
-```
-
-**If beads are not available**, skip this step.
+If your project uses a task tracker, update the task status to in-progress.
 
 ---
 
@@ -266,27 +249,27 @@ When appending entries, include the `dispatch:` field to track task provenance:
 
 ```markdown
 ## Gotchas
-- TrustService requires bootstrap before first call (added: 2026-02-13, dispatch: bead-abc123)
+- TrustService requires bootstrap before first call (added: 2026-02-13, dispatch: task-abc123)
 ```
 
-The `dispatch:` field is optional but recommended. Use the bead ID if beads are available (e.g., `dispatch: bead-abc123`), or a brief identifier if not (e.g., `dispatch: sprint-manual`). Existing entries without dispatch provenance are backward-compatible and do not need updating.
+The `dispatch:` field is optional but recommended. Use a task identifier if available (e.g., `dispatch: task-abc123`), or a brief label (e.g., `dispatch: sprint-manual`). Existing entries without dispatch provenance are backward-compatible and do not need updating.
 
-### 4c. Update Bead (conditional)
+### 4c. Update Task Status (conditional)
 
-**If beads are available**, based on `task_result.status`:
-- **completed**: `bd close <bead-id>`
+If your project uses a task tracker, update task status based on `task_result.status`:
+- **completed**: Close the task
 - **partial**: Keep in-progress, note what remains. Record the agent ID for potential resume.
-- **blocked**: `bd update <bead-id> --notes="Blocked: <blocked_by>"`. Record the agent ID for potential resume.
-- **failed**: `bd update <bead-id> --notes="Failed: <summary>"`
+- **blocked**: Mark blocked with the blocker description. Record the agent ID for potential resume.
+- **failed**: Note the failure summary
 
-**If beads are not available**, skip bead updates and simply note the task status in the sprint report.
+If no task tracker is configured, note the task status in the sprint report.
 
 ### 4d. Report Progress
 
 After each task, show a brief progress update:
 
 ```markdown
-### [member]: [bead-title]
+### [member]: [task-title]
 **Status**: [status] | **Confidence**: [confidence]
 **Summary**: [1-2 sentences]
 **Learnings persisted**: [count] new entries
@@ -314,20 +297,18 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
 
 ### Items (N)
 
-1. **[bead-title or task description]** — [1-line outcome summary]
+1. **[task description]** — [1-line outcome summary]
    - member: [agent name]
    - status: completed | partial | blocked | failed
    - confidence: [agent's self-assessed confidence]
    - learnings: [count] new entries persisted
-   - bead: [bead-id if available]
    - resumable: [agent-id if partial or blocked, omit otherwise]
 
-2. **[bead-title or task description]** — [1-line outcome summary]
+2. **[task description]** — [1-line outcome summary]
    - member: [agent name]
    - status: completed | partial | blocked | failed
    - confidence: [agent's self-assessed confidence]
    - learnings: [count] new entries persisted
-   - bead: [bead-id if available]
    - resumable: [agent-id if partial or blocked, omit otherwise]
 
 [... one item per dispatched task]
@@ -336,9 +317,8 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
 
 [Only include this section if any tasks returned partial or blocked. List each resumable agent so a follow-up sprint can continue them with full prior context.]
 
-1. **[bead-title or task description]** — [why it stopped / what remains]
+1. **[task description]** — [why it stopped / what remains]
    - agent-id: [agent-id]
-   - bead: [bead-id if available]
    - context: [1-sentence description of what the agent had completed before stopping]
 
 [To resume: Task({resume: "<agent-id>", prompt: "additional context or follow-up instructions"})]

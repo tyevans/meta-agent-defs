@@ -1,7 +1,7 @@
 ---
 name: sync-auditor
 description: Audits cross-artifact consistency across the repo -- verifies README.md, CLAUDE.md, AGENTS.md, and install.sh all reflect the actual files present. Use after adding, renaming, or removing agent/skill/settings files, or when you suspect documentation has drifted from reality.
-tools: Read, Glob, Grep, Bash(ls:*), Bash(bd:*), Bash(tk:*), Bash(git diff:*), Bash(git log:*)
+tools: Read, Glob, Grep, Bash(ls:*), Bash(git diff:*), Bash(git log:*)
 model: haiku
 output-contract: |
   Sync audit report with per-sync-point PASS/FAIL verdicts (README.md, CLAUDE.md, AGENTS.md, install.sh, Skills, Internal Agents), summary counts, and specific fixes needed list. Orchestrator reads FAIL items to create fix tasks.
@@ -134,8 +134,8 @@ The `.claude/agents/` directory contains internal agents not shipped via the ins
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Ask orchestrator for the bead ID you're working on
-2. Run `bd show <id>` to check if the audit was triggered by a specific file change
+1. Ask orchestrator for the task you're working on
+2. Check the task details to see if the audit was triggered by a specific file change
 
 **After completing work:**
 Report back to orchestrator:
@@ -143,11 +143,7 @@ Report back to orchestrator:
 - Specific files and lines that need updating
 - Whether the drift is minor (description wording) or major (missing/extra files)
 
-**Update downstream beads** if fixes are needed:
-```bash
-bd show <your-bead-id>
-bd update <downstream-id> --notes="[Sync audit found: specific drift requiring fix]"
-```
+**Update downstream tasks** if fixes are needed — note the specific drift requiring a fix on each affected task.
 
 ## Related Skills
 

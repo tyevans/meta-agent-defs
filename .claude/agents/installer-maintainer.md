@@ -1,7 +1,7 @@
 ---
 name: installer-maintainer
 description: Updates install.sh to handle new artifact types or fix edge cases in the symlink installation process. Use when a new artifact directory is added (e.g., skills/, rules/), when the installer needs to handle new file patterns, or when installation bugs are reported.
-tools: Read, Write, Edit, Glob, Grep, Bash(bd:*), Bash(tk:*), Bash(ls:*), Bash(./install.sh:*)
+tools: Read, Write, Edit, Glob, Grep, Bash(ls:*), Bash(./install.sh:*)
 model: sonnet
 output-contract: |
   Sprint reflection: task_result (status, summary, files changed), reflection (what worked, what didn't, confidence), suggested_learnings (durable insights for learnings.md), follow_up (blockers, next steps, whether install.sh re-run needed). Parsed by /sprint Phase 4a.
@@ -61,7 +61,7 @@ Key rules:
 ## Workflow
 
 1. Read the current `install.sh` at repo root
-2. Understand the change needed (from bead notes or orchestrator brief)
+2. Understand the change needed (from task notes or orchestrator brief)
 3. Make the minimal edit following existing patterns
 4. Verify with a dry-run mental trace: what happens if the target exists? What if it's a symlink? What if the directory is empty?
 5. Update the summary output if new artifact types are added
@@ -83,8 +83,8 @@ Key rules:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Ask orchestrator for the bead ID you're working on
-2. Run `bd show <id>` to understand what installer change is needed
+1. Ask orchestrator for the task you're working on
+2. Review the task details to understand what installer change is needed
 3. Read `install.sh` to understand current structure
 
 **After completing work:**
@@ -93,11 +93,7 @@ Report back to orchestrator:
 - Whether users need to re-run `./install.sh` to pick up changes
 - Any edge cases discovered during the modification
 
-**Update downstream beads** if installer changes affect other work:
-```bash
-bd show <your-bead-id>
-bd update <downstream-id> --notes="[Installer updated during <your-id>: specific change]"
-```
+**Update downstream tasks** if installer changes affect other work — note the specific change and which tasks are affected.
 
 ## Related Skills
 

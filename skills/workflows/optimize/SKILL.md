@@ -1,10 +1,10 @@
 ---
 name: optimize
-description: "Identify performance bottlenecks, measure baselines, implement targeted fixes, and iterate until a measurable target is reached. Use when a feature or system is functionally correct but too slow, memory-heavy, or resource-intensive. Keywords: optimize, performance, profiling, bottleneck, latency, throughput, memory, benchmark."
+description: "Use when something works correctly but is too slow, too memory-heavy, or too resource-intensive. Measures baselines, implements fixes, iterates until a target is reached. Keywords: optimize, performance, profiling, bottleneck, latency, throughput, memory, benchmark."
 argument-hint: "<component or area to optimize>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(npm:*), Bash(npx:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(npm:*), Bash(npx:*), Write, Edit
 context: fork
 ---
 
@@ -295,14 +295,7 @@ Produce a final report covering all iterations:
 
 If follow-up work was identified:
 
-**If `.beads/` or `.tacks/` exists in the project root**, create beads tasks:
-
-```bash
-bd create --title="[follow-up task]" --type=task --priority=[0-4] \
-  --description="Follow-up from optimize: [component]. [Details and context.]"
-```
-
-**If neither `.beads/` nor `.tacks/` exists**, write follow-up tasks to `TODO.md` in the project root.
+Create follow-up tasks using your preferred task tracking approach. Each task should include the title, priority, and context from the optimization work. If no tracker is configured, write follow-up tasks to `TODO.md` in the project root.
 
 ---
 

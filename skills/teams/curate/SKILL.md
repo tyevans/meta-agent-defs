@@ -1,10 +1,10 @@
 ---
 name: curate
-description: "Optimize an agent's learnings or audit project rules: score each entry by relevance, archive stale or redundant entries, detect gaps where upcoming work needs knowledge not yet captured. For learnings: pull in relevant entries from archive or cross-agent sources. For rules: assess passive context budget and flag redundancy. Use before sprints, after /retro, when learnings feel bloated, or when rules need a health check. Keywords: curate, learnings, rules, optimize, relevance, prune, archive, gap, score, triage, audit."
+description: "Use when learnings feel bloated, before sprints, after /retro, or when rules need a health check. Scores entries by relevance, archives stale ones, and detects knowledge gaps. Works on agent learnings or project rules. Keywords: curate, learnings, rules, optimize, relevance, prune, archive, gap, score, triage, audit."
 argument-hint: "<agent-name> | rules"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(ls:*), Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(ls:*), Write, Edit
 ---
 
 # Curate: Optimize Agent Learnings or Audit Project Rules
@@ -107,11 +107,9 @@ Also read `CLAUDE.md` and note any overlap between CLAUDE.md content and rule fi
 
 ### 1b. Upcoming Work
 
-Gather the upcoming task signal from whichever sources are available:
+Gather the upcoming task signal from whichever sources are available. Check your project's task tracker for ready and in-progress work, and check for epic state files:
 
 ```bash
-bd ready 2>/dev/null
-bd list --status=in_progress 2>/dev/null
 ls memory/epics/*/epic.md 2>/dev/null
 ```
 
@@ -120,7 +118,7 @@ Read any epic state files found. Extract:
 - **Domain areas**: what types of work (e.g., test authoring, skill writing, agent generation, hook scripting)
 - **Keywords**: specific terms, tools, or patterns mentioned repeatedly
 
-If beads are not available and no epics exist, use git signals:
+If no task tracker is available and no epics exist, use git signals:
 
 ```bash
 git log --oneline -10
@@ -195,13 +193,13 @@ For each entry in the primary artifact, evaluate three independent dimensions. T
 **Learnings heuristics:**
 - **high**: Entry mentions a specific file, tool, command, or pattern in upcoming task descriptions or epic state
 - **medium**: Entry covers a category of upcoming work but doesn't match specific files
-- **low**: Entry is about a past domain area with no upcoming beads and no recent commits
+- **low**: Entry is about a past domain area with no upcoming work and no recent commits
 - **passive**: Entry states something already enforced by a rule. Cite the specific rule file
 
 **Rules heuristics:**
 - **high**: Rule covers a domain area in upcoming tasks, or addresses a recently observed failure mode
 - **medium**: Rule provides useful guardrails across many session types but isn't tied to upcoming work
-- **low**: Rule covers a domain with no upcoming beads, no in-progress work, and no recent git activity (last 30 days)
+- **low**: Rule covers a domain with no upcoming work, no in-progress tasks, and no recent git activity (last 30 days)
 - **passive**: Rule's constraints are duplicated by another rule or CLAUDE.md, or internalized by 3+ agents' learnings. Cite the source
 
 ### Freshness (both modes)
@@ -525,7 +523,7 @@ Create `memory/agents/<name>/learnings.md` (and the directory if it does not exi
 
 Classify SEED entries into Core vs Task-Relevant using the same heuristic as normal mode:
 - **Core**: patterns that will apply across most dispatches given the agent's role
-- **Task-Relevant**: entries tied to specific upcoming tasks or file areas in current beads
+- **Task-Relevant**: entries tied to specific upcoming tasks or file areas in current work
 
 Keep the total under 60 lines. If SEED candidates would exceed the cap, prioritize by relevance (HIGH before MEDIUM) and note what was deferred.
 

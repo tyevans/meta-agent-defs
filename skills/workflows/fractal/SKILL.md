@@ -1,10 +1,10 @@
 ---
 name: fractal
-description: "Run goal-directed recursive exploration that prunes paths not serving the goal. Use when you need to deeply understand something, explore a codebase area with focus, or decompose a vague objective into concrete findings. Keywords: explore, research, investigate, understand, deep-dive, discover."
+description: "Use when you need deep understanding of a focused area — not broad exploration. Recursively investigates, pruning paths that don't serve the goal. Keywords: explore, research, investigate, understand, deep-dive, discover."
 argument-hint: "<goal>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(git:*), Bash(mkdir:*), Task, Write
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(mkdir:*), Task, Write
 ---
 
 # Fractal: Goal-Directed Recursive Exploration
@@ -228,14 +228,9 @@ Example:
 [One paragraph synthesis of all findings relative to the goal.]
 ```
 
-### 3b. Optional: Create Beads
+### 3b. Optional: Create Tasks
 
-If the findings suggest concrete follow-up work, ask the user if they want beads created. If yes:
-
-```bash
-bd create --title="[action from findings]" --type=task --priority=[0-4] \
-  --description="From fractal exploration of [goal]. Evidence: [summary]"
-```
+If the findings suggest concrete follow-up work, ask the user if they want tasks created in their task tracker with the action, priority, and evidence from the exploration.
 
 ### 3c. Cleanup
 
@@ -255,7 +250,7 @@ git status
 5. **Handlers are disposable.** They investigate and report. The orchestrator makes all strategic decisions.
 6. **Stop when valuable.** "Done" is when the goal dimensions are addressed, not when exploration is exhausted.
 7. **Show your reasoning.** The /assess-style evaluation table makes pruning decisions visible and auditable.
-8. **No beads during exploration.** Fractal produces understanding. Beads are an optional output, not the workflow.
+8. **No tasks during exploration.** Fractal produces understanding. Tasks are an optional output, not the workflow.
 9. **Density over length.** Handler reports under 500 words. Pipe format, not prose.
 
 See also: /meeting (when exploration reveals trade-offs needing multi-perspective debate), /review (when findings suggest code quality concerns).

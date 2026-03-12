@@ -62,11 +62,11 @@ Gather finds the current state, assess categorizes by severity, filter focuses o
 
 ```
 User: /gather how backlog integration works in this repo
-  → Findings on bd/tk commands, hooks, session lifecycle, backlog sync
+  → Findings on task tracking commands, hooks, session lifecycle, backlog sync
 User: /distill to 6 bullets
-  → bd create/close (or tk create/close) workflow, SessionStart hook injection, sync export, epic dependencies
+  → Task create/close workflow, SessionStart hook injection, sync export, epic dependencies
 User: /verify
-  → VERIFIED: SessionStart hook exists in settings.json (line 14); REFUTED: "bd sync runs on every commit" (no git hook found)
+  → VERIFIED: SessionStart hook exists in settings.json (line 14); REFUTED: "backlog sync runs on every commit" (no git hook found)
 ```
 
 ### Why This Chain
@@ -77,7 +77,7 @@ Gather collects scattered information, distill extracts essentials, verify confi
 
 ## 4. Tech Debt Triage
 
-**When to use**: Backlog grooming, sprint planning, or deciding what to tackle next from a pile of issues.
+**When to use**: Sprint planning, triage, or deciding what to tackle next from a pile of issues.
 
 **Chain**: gather → rank → filter → decompose
 

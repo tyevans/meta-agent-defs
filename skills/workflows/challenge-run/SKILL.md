@@ -1,6 +1,6 @@
 ---
 name: challenge-run
-description: "Dispatch an agent on targeted challenges and evaluate performance across result, trap detection, and confidence calibration dimensions. Use after /challenge-gen to execute the training loop. Keywords: challenge, run, evaluate, active-learning, training, agent, performance, calibration."
+description: "Use after /challenge-gen when challenges are ready to execute. Dispatches the agent on each challenge and evaluates result, trap detection, and calibration. Keywords: challenge, run, evaluate, active-learning, training, agent, performance, calibration."
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true

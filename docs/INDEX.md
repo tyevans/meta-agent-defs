@@ -63,7 +63,7 @@ Composable primitives following [pipe format](../rules/pipe-format.md), plus the
 
 ### Workflows (28) — `skills/workflows/`
 
-Orchestrated multi-step workflows with side effects (file writes, agent dispatch, backlog updates).
+Orchestrated multi-step workflows with side effects (file writes, agent dispatch, task tracking updates).
 
 | Skill | Purpose | Context |
 |-------|---------|---------|

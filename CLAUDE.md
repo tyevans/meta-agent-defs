@@ -6,16 +6,15 @@ Portable Claude Code workflow definitions (agents, skills, hooks, settings) main
 
 **Posture depends on project type:**
 - **Content-only projects** (no `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, or `Makefile` at root): prefer direct implementation over subagent dispatch for simple edits.
-- **Code projects**: orchestrator-only. Dispatch all implementation to subagents and manage the backlog.
+- **Code projects**: orchestrator-only. Dispatch all implementation to subagents and coordinate work.
 
 This repo itself (tackline) is content-only -- direct edits to `.md` and `.json` files are preferred over spawning agents for trivial changes.
 
 ### Orchestrator Responsibilities
 
-1. **Backlog Management**: Use `bd`/`tk` commands to triage, prioritize, and track issues
+1. **Task Tracking**: Triage, prioritize, and track work using your preferred task tracking approach
 2. **Task Dispatch**: Delegate implementation work to appropriate subagents via the Task tool
 3. **Coordination**: Manage dependencies between tasks, unblock work, review agent outputs
-4. **Session Management**: Run `bd sync` (beads) before completing sessions — not needed for tacks
 
 ### Dispatching Strategy
 
@@ -43,52 +42,9 @@ This repo itself (tackline) is content-only -- direct edits to `.md` and `.json`
 xargs rm -f < ~/.claude/.tackline.manifest
 ```
 
-## Backlog Tool
+## Skills
 
-This project supports both **beads** (`bd`) and **tacks** (`tk`) for task management. Hooks auto-detect which is available by checking for `.beads/` or `.tacks/` directories.
-
-```bash
-# Commands work the same for both tools — substitute tk for bd if using tacks
-bd stats                        # Backlog overview (tk stats)
-bd ready                        # Available work (tk ready)
-bd create --title="..." --type=task  # New task (tk create "..." — uses tags not types)
-bd create --type=epic --title="..."  # Create epic (tk: auto-tagged when subtask created)
-bd create --type=task --parent=<epic-id> --title="..."  # Child of epic (tk create --parent <id> "...")
-bd children <epic-id>           # List children (tk children <id>)
-bd epic status                  # Epic completion progress (tk epic)
-bd epic close-eligible          # Auto-close finished epics
-bd swarm validate <epic-id>     # Validate epic DAG (no tk equivalent)
-bd dep cycles                   # Detect dependency cycles (no tk equivalent)
-bd sync                         # Export to JSONL before session end (not needed for tk)
-bd query "status=open AND priority<=1"  # Find urgent open work (no tk equivalent — use tk list --json | jq)
-bd stale                        # Find forgotten issues (no tk equivalent)
-```
-
-### Key Differences
-- **Types vs Tags**: beads uses `--type=epic|task|bug`; tacks uses tags (`-t epic`, `-t bug`). The `epic` tag is auto-added when a subtask is created.
-- **Sync**: beads requires `bd sync` to export state; tacks is local-only (SQLite), no sync needed.
-- **Missing in tacks**: `bd query`, `bd stale`, `bd swarm validate`, `bd dep cycles`, `bd doctor` — use `tk list --json | jq` for filtering.
-
-## Skill Quick Reference
-
-| I want to... | Use |
-|---|---|
-| Explore something unknown | /blossom or /fractal |
-| Research + prioritize | /gather -> /distill -> /rank |
-| Compare approaches | /diff-ideas or /consensus |
-| Plan before building | /decompose -> /plan -> /spec |
-| Test an implementation | /test-strategy |
-| Deploy to production | /deploy |
-| Review code | /review |
-| Track definition changes | /evolution or /drift |
-| Run a session | /status -> ... -> /retro -> /handoff |
-| Manage a team | /assemble -> /standup -> /sprint |
-| Discuss with panels | /meeting |
-| Plan a goal with your team | /team-meeting |
-| Optimize agent learnings | /curate or /tend (curate + promote) |
-| Implement a plan autonomously | /drive (sustained sprint/retro loops) |
-
-All 48 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
+48 skills across three layers: **core** (14 composable primitives), **workflows** (25 orchestrated multi-step workflows), **teams** (9 team orchestration + learning lifecycle). Full catalog with decision tree and chain patterns: [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
 
 ## Project Structure
 
@@ -143,9 +99,7 @@ tackline/
 │   ├── agents/                 # 8 project-local agents (authoring, research, maintenance)
 │   ├── rules/                  # Architectural guardrails
 │   └── skills/                 # Project-local skill overrides
-├── CONTRIBUTING.md             # Contribution guidelines
-├── .beads/                     # Task management state (beads)
-└── .tacks/                     # Task management state (tacks) — alternative to .beads/
+└── CONTRIBUTING.md             # Contribution guidelines
 ```
 
 ## Architecture
@@ -160,13 +114,10 @@ tackline/
 - Agent frontmatter fields: `name`, `description`, `tools`, `model`, `permissionMode`
 - Skill frontmatter fields: `name`, `description`, `allowed-tools`, `context`, `disable-model-invocation`
 - Rule frontmatter fields: `strength` (must/should/may), `freshness` (date); some rules also have `paths` (glob patterns for conditional loading via `bin/rule-relevance.sh`)
-- Hooks fail gracefully with `|| true` for optional tools (like `bd`)
-- Epic hierarchy via `--parent`: `bd create --parent=<epic-id>` (not `bd dep add`). Use `bd dep add` only for cross-task ordering
+- Hooks fail gracefully with `|| true` for optional tools
 - Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE
 - If `memory/project/domain.md` exists, it contains project-specific terminology; consult it when a term is ambiguous
 
 ## Do Not Modify
 
-- `.beads/` internals (use `bd` commands only)
-- `.tacks/` internals (use `tk` commands only)
 - Symlink targets while symlinks are active (edit source files in this repo instead)

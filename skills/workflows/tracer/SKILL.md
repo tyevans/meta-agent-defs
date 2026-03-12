@@ -1,10 +1,10 @@
 ---
 name: tracer
-description: "Build a feature iteratively by implementing the thinnest end-to-end path first, then widening pass by pass. Use when integration risk is high, for features crossing system boundaries, or when you want always-working increments. Keywords: tracer, iterative, incremental, end-to-end, thin slice, vertical slice."
+description: "Use when a feature crosses system boundaries and integration risk is high. Implements the thinnest end-to-end path first, then widens pass by pass — always working. Keywords: tracer, iterative, incremental, end-to-end, thin slice, vertical slice."
 argument-hint: "<feature to implement>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(git:*), Bash(npm:*), Bash(npx:*), Task
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(git:*), Bash(npm:*), Bash(npx:*), Task
 context: fork
 ---
 
@@ -330,20 +330,7 @@ After completing the report, extract architectural findings discovered during im
 
 If follow-up work was identified:
 
-**If `.beads/` or `.tacks/` exists in the project root**, create beads tasks:
-
-```bash
-bd create --title="[follow-up task]" --type=task --priority=[0-4] \
-  --description="Follow-up from tracer: [feature name]. [Details and context.]"
-```
-
-**If neither `.beads/` nor `.tacks/` exists**, write follow-up tasks to `TODO.md` in the project root:
-
-```markdown
-## Follow-up from tracer: [feature name]
-
-- [ ] [follow-up task] — [details and context]
-```
+Create follow-up tasks using your preferred task tracking approach. Each task should include the title, priority, and context from the tracer work. If no tracker is configured, write follow-up tasks to `TODO.md` in the project root.
 
 ---
 
@@ -393,7 +380,7 @@ Task({
 8. **Stop at any phase.** If the session ends early, you have working code at the last committed phase.
 9. **Widen one concern at a time.** Don't mix error handling and validation in the same pass -- each pass is focused.
 10. **Follow project conventions.** Match existing patterns for error handling, validation, testing, and file organization.
-11. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks (or in `TODO.md` if a backlog tool is not available).
+11. **Create tasks for follow-up work.** If scope is cut or limitations are discovered, document them in your task tracker (or in `TODO.md` if no tracker is configured).
 
 ## See Also
 

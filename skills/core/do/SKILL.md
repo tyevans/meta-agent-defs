@@ -1,10 +1,10 @@
 ---
 name: do
-description: "Primary entrypoint for composable skills. Reads the canonical skill catalog, matches your goal to the right skill or pipeline, and executes it. Use when you have a goal and want the system to pick the right approach. Keywords: do, run, auto, go, execute, start, help me."
+description: "Use when you have a goal but don't know which skill fits. Routes to the right skill or pipeline. Keywords: do, run, auto, go, execute, start, help me."
 argument-hint: "<goal in natural language>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, Skill, Task, "Bash(bd:*)"]
+allowed-tools: [Read, Glob, Grep, Skill, Task]
 context: inline
 ---
 
@@ -60,20 +60,7 @@ Using the catalog from Phase 1, match the user's goal to:
 If the goal maps cleanly to one skill, select it. Prefer the most specific match. For example, "compare two auth approaches" maps to `/diff-ideas`, not `/gather`.
 
 ### Pipeline match
-If the goal requires multiple steps, select a pipeline from the Primitive Chain Patterns or Decision Tree. Common patterns:
-
-| Goal shape | Pipeline |
-|-----------|----------|
-| "Research X" | `/gather` -> `/distill` -> `/rank` |
-| "Compare A vs B" | `/diff-ideas` |
-| "Plan how to build X" | `/decompose` -> `/plan` |
-| "Explore X" | `/blossom` or `/fractal` |
-| "Review code" | `/review` |
-| "Find what's wrong with X" | `/critique` |
-| "Understand X deeply" | `/fractal` |
-| "Build X iteratively" | `/tracer` |
-| "Set up a new project" | `/bootstrap` |
-| "What should I work on?" | `/advise` |
+If the goal requires multiple steps, select a pipeline from the Primitive Chain Patterns or Decision Tree sections in INDEX.md (loaded in Phase 1).
 
 ### Ambiguity resolution
 If the goal could map to multiple skills with meaningfully different outcomes, present the top 2 options with a one-line tradeoff and ask which the user prefers. Do not present more than 2 options.
@@ -101,47 +88,10 @@ Starting with /gather to collect findings.
 
 Execute each step via the Skill tool. Between steps, do not add commentary — let the pipe format flow. Only intervene if a step produces no items (abort the pipeline and explain why).
 
-Write a checkpoint to `memory/scratch/do-checkpoint.md` after each completed step so the pipeline can be resumed if interrupted:
-
-```
-# /do pipeline checkpoint
-Goal: <original goal>
-Pipeline: /gather -> /distill -> /rank
-Completed: /gather
-Remaining: /distill -> /rank
-Last output: <one-line summary of last step's output>
-```
-
-Delete the checkpoint file when the pipeline completes successfully.
+For pipelines with 3+ steps, checkpoint per the compaction-resilience rule (`memory/scratch/do-checkpoint.md`). Delete the checkpoint on successful completion.
 
 ### Pipeline (parallel branches)
-When the matched pipeline includes independent branches — steps that operate on unrelated topics or sources and don't need each other's output — dispatch them as background Task agents simultaneously instead of sequentially.
-
-**Independence check:** Branches are independent when:
-- They target different subjects (e.g., two `/gather` calls on unrelated topics)
-- Neither branch's output is required as input to the other
-- They produce outputs that are later merged or ranked together
-
-**Parallel dispatch:**
-
-```
-Parallel branches detected: /gather [topic A] + /gather [topic B]
-Dispatching both simultaneously, then merging outputs.
-```
-
-Dispatch each branch via Task with `run_in_background=true`:
-
-```
-Task({
-  subagent_type: "general-purpose",
-  run_in_background: true,
-  prompt: "Run /[skill] with this goal: [branch-specific goal]. Return your full pipe-format output."
-})
-```
-
-Wait for all parallel branches to complete, then merge their outputs in context before continuing to the next sequential step (e.g., `/rank` or `/distill` across combined results).
-
-**Limit:** Dispatch at most 4 parallel branches. If more exist, serialize the excess.
+When the matched pipeline includes independent branches (e.g., two `/gather` calls on unrelated topics), dispatch them concurrently per the fan-out-protocol rule, then merge outputs before continuing to the next sequential step.
 
 ### Fork-context skills
 If the matched skill has `context: fork`, it runs in an isolated context automatically. No special handling needed — just invoke it.
@@ -150,29 +100,15 @@ If the matched skill has `context: fork`, it runs in an isolated context automat
 
 ## Iterative Mode (Resume)
 
-If interrupted mid-pipeline, /do can be resumed from where it left off.
-
-**How to resume:**
-> /do resume: <follow-up or "continue">
-
-**On resume, the skill should:**
-1. Detect the `resume:` prefix in `$ARGUMENTS`
-2. Read `memory/scratch/do-checkpoint.md` if it exists
-3. Report which steps have already completed and what remains
-4. Skip completed steps and continue from the first incomplete step
-5. Treat checkpoint items as confirmed prior output — do not re-run them
-
-If no checkpoint file exists, inform the user and restart from Phase 0.
+If interrupted mid-pipeline, /do can be resumed. On `resume:` prefix in `$ARGUMENTS`, read the checkpoint file, skip completed steps, continue from the first incomplete step.
 
 ---
 
 ## Guidelines
 
-- **Trust the catalog.** Match against docs/INDEX.md, not your training knowledge of what skills exist. If INDEX.md doesn't list it, it's not available.
-- **Prefer action over explanation.** The whole point of /do is to execute, not recommend. Only present options when genuinely ambiguous.
-- **Pass the original goal.** When invoking the Skill tool, pass the user's original `$ARGUMENTS` as the args, not a rewritten version.
-- **Sequential by default.** Execute pipelines one skill at a time unless branches are clearly independent. Each step's pipe-format output feeds the next via conversation context.
-- **Parallel only when independent.** Do not parallelize steps that consume each other's output. If in doubt, serialize.
-- **Checkpoint multi-step pipelines.** Write `memory/scratch/do-checkpoint.md` after each completed step in a pipeline with 3 or more steps.
-- **Abort on empty.** If a pipeline step produces 0 items, stop the pipeline and tell the user why rather than feeding nothing to the next step.
-- **Don't over-match.** If the goal doesn't map to any skill (e.g., "make me a sandwich"), say so plainly rather than forcing a bad match.
+- **Trust the catalog.** Match against docs/INDEX.md, not your training knowledge. If INDEX.md doesn't list it, it's not available.
+- **Prefer action over explanation.** Execute, don't recommend. Only present options when genuinely ambiguous.
+- **Pass the original goal.** Pass the user's original `$ARGUMENTS` as args, not a rewritten version.
+- **Sequential by default.** One skill at a time unless branches are clearly independent.
+- **Abort on empty.** If a step produces 0 items, stop the pipeline and explain why.
+- **Don't over-match.** If the goal doesn't map to any skill, say so plainly.
