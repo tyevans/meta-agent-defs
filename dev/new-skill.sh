@@ -125,7 +125,8 @@ Phase 1: Gather information
 ### 4a. Sync State
 
 ```bash
-bd sync
+BK=''; if [ -d .tacks ]; then BK=tk; elif [ -d .beads ]; then BK=bd; fi
+if [ "$BK" = bd ]; then bd sync 2>/dev/null || true; fi
 ```
 
 ### 4b. Final Status
