@@ -1,9 +1,4 @@
 {
-  "playwright": {
-    "command": "npx",
-    "args": ["-y", "@executeautomation/playwright-mcp-server"],
-    "description": "Browser automation for testing and scraping"
-  },
   "sequential-thinking": {
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
