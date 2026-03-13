@@ -148,7 +148,7 @@ Create `.claude/settings.json` for team-shared settings:
         "hooks": [
           {
             "type": "command",
-            "command": "mkdir -p memory/sessions && echo '# Pre-Compaction State\n\nAuto-persisted: '$(date -Iseconds) > memory/sessions/pre-compact.md"
+            "command": "mkdir -p .claude/tackline/memory/sessions && echo '# Pre-Compaction State\n\nAuto-persisted: '$(date -Iseconds) > .claude/tackline/memory/sessions/pre-compact.md"
           }
         ]
       }
@@ -157,7 +157,7 @@ Create `.claude/settings.json` for team-shared settings:
 }
 ```
 
-The PreCompact hook preserves session state before context compaction. This enables skills to recover from compaction events (see `rules/compaction-resilience.md`).
+The PreCompact hook preserves session state before context compaction. This enables skills to recover from compaction events (see `rules/memory-layout.md`).
 
 ### Language-Specific Hooks
 
@@ -351,14 +351,12 @@ Clear description of the rule and why it exists.
 Set up persistent memory for the orchestrator:
 
 ```bash
-# Find the Claude Code project memory path
-# It's based on the absolute path of the project
-PROJECT_PATH=$(pwd)
-MEMORY_DIR="$HOME/.claude/projects/$(echo "$PROJECT_PATH" | tr '/' '-' | sed 's/^-//')/memory"
-mkdir -p "$MEMORY_DIR"
+mkdir -p .claude/tackline/memory/sessions
+mkdir -p .claude/tackline/memory/agents
+mkdir -p .claude/tackline/memory/scratch
 ```
 
-Create initial `MEMORY.md`:
+Create initial `MEMORY.md` at `.claude/tackline/memory/MEMORY.md`:
 
 ```markdown
 # Project Memory
@@ -441,7 +439,7 @@ When complete, verify:
 - [ ] `.claude/settings.local.json` template exists
 - [ ] `.claude/rules/` exists with at least `commits.md` and `definition-of-done.md`
 - [ ] `.claude/skills/` contains installed skills (blossom at minimum, plus review, retro, status, handoff for full workflow)
-- [ ] Memory directory created with initial MEMORY.md
+- [ ] `.claude/tackline/memory/` directory created with initial MEMORY.md
 - [ ] `.gitignore` updated
 
 Provide the user with:

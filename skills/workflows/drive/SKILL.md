@@ -38,7 +38,7 @@ Load plan + assess current state
 ### 0a. Resolve the Plan Document
 
 If `$ARGUMENTS` is empty, check for plan documents in order:
-1. `memory/epics/*/epic.md` — most recent epic
+1. `.claude/tackline/memory/epics/*/epic.md` — most recent epic
 2. `.claude/plan.md` or `docs/plan.md`
 3. Any `*design*.md` or `*spec*.md` in docs/
 
@@ -66,7 +66,7 @@ Check your project's task tracker for current status (open tasks, in-progress wo
 
 ### 0d. Write Drive State
 
-Write initial state to `memory/scratch/drive-state.md`:
+Write initial state to `.claude/tackline/memory/scratch/drive-state.md`:
 
 ```markdown
 # Drive State
@@ -156,7 +156,7 @@ Let retro capture what worked, what didn't, and persist durable learnings.
 
 ### 4a. Update Drive State
 
-Read and update `memory/scratch/drive-state.md`:
+Read and update `.claude/tackline/memory/scratch/drive-state.md`:
 - Move completed areas from "Remaining" to "Completed"
 - Update sprint count
 - Note any blockers or discoveries
@@ -224,7 +224,7 @@ Drive supports resuming from a prior run.
 
 **On resume:**
 1. Detect the `resume:` prefix in `$ARGUMENTS`
-2. Read `memory/scratch/drive-state.md`
+2. Read `.claude/tackline/memory/scratch/drive-state.md`
 3. Report what sprints have completed and what remains
 4. Skip completed areas and continue from the next remaining area
 5. Return to Phase 1
@@ -240,7 +240,7 @@ Drive supports resuming from a prior run.
 5. **SOLID and DRY are guardrails, not goals.** Extract abstractions when duplication is real (3+ instances), not when it's hypothetical. Prefer simple code over clever code.
 6. **Documentation is part of done.** A feature without docs is a feature nobody can use. Update docs in the same sprint that builds the feature.
 7. **Vertical slices over horizontal layers.** Build one complete thing rather than half of everything. Users can try a complete thin slice; they can't try a half-built layer.
-8. **Compaction resilience.** This skill loops indefinitely. `memory/scratch/drive-state.md` is the recovery file. Update it religiously at Phase 4. If context compacts, reread it and resume.
+8. **Compaction resilience.** Per `rules/memory-layout.md`, `.claude/tackline/memory/scratch/drive-state.md` is the recovery file. Update at Phase 4; reread on resume.
 9. **Respect the stop signal.** When the user says stop, stop cleanly. Update state, commit work, run retro. Don't try to squeeze in "just one more thing."
 
 See also: /sprint (execution engine), /retro (post-sprint learning), /do (sub-task routing), /test-strategy (TDD workflow), /tracer (thin-slice implementation pattern), /handoff (session transition when drive spans sessions).

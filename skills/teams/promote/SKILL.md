@@ -80,8 +80,8 @@ Proceed to Phase 1 without pre-screening. All learnings will be evaluated.
 ### 1a. Discover All Agent Learnings
 
 ```bash
-ls memory/agents/*/learnings.md 2>/dev/null
-ls memory/agents/*/archive.md 2>/dev/null
+ls .claude/tackline/memory/agents/*/learnings.md 2>/dev/null
+ls .claude/tackline/memory/agents/*/archive.md 2>/dev/null
 ```
 
 Read each `learnings.md` file found. For each file, note:
@@ -91,7 +91,7 @@ Read each `learnings.md` file found. For each file, note:
 
 ### 1b. Load Archive Files
 
-Read each `memory/agents/*/archive.md` that exists. Archive entries can reveal historical patterns — an entry archived and re-added across multiple cycles is a strong promotion signal.
+Read each `.claude/tackline/memory/agents/*/archive.md` that exists. Archive entries can reveal historical patterns — an entry archived and re-added across multiple cycles is a strong promotion signal.
 
 ### 1c. Load Existing Rules
 
@@ -142,7 +142,7 @@ For each candidate cluster, evaluate all six criteria. **All six must pass** for
 Check the git history of the contributing learnings files:
 
 ```bash
-git log --follow --oneline -- memory/agents/<name>/learnings.md 2>/dev/null
+git log --follow --oneline -- .claude/tackline/memory/agents/<name>/learnings.md 2>/dev/null
 ```
 
 A survival cycle is a retro commit where the entry was present and not removed. Look for commits with "retro" in the message that span the entry's lifecycle.
@@ -155,7 +155,7 @@ A survival cycle is a retro commit where the entry was present and not removed. 
 ### Criterion 2: Stability (not modified in 21+ days)
 
 ```bash
-git log --follow --oneline --since="21 days ago" -- memory/agents/<name>/learnings.md 2>/dev/null
+git log --follow --oneline --since="21 days ago" -- .claude/tackline/memory/agents/<name>/learnings.md 2>/dev/null
 ```
 
 **PASS**: No modifications to the entry content in the last 21 days. The pattern is settled, not actively evolving.

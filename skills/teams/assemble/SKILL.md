@@ -124,8 +124,8 @@ Ask the user to approve, modify roles, adjust ownership, or suggest additions.
 
 ```bash
 mkdir -p .claude
-mkdir -p memory/agents
-mkdir -p memory/team
+mkdir -p .claude/tackline/memory/agents
+mkdir -p .claude/tackline/memory/team
 ```
 
 ### 2b. Write Team Manifest
@@ -152,7 +152,7 @@ members:
 
 ### 2c. Create Learnings Files
 
-For each member, create `memory/agents/<name>/learnings.md`:
+For each member, create `.claude/tackline/memory/agents/<name>/learnings.md`:
 
 ```markdown
 # Learnings: <name>
@@ -174,7 +174,7 @@ Seed each file with 2-3 initial observations based on Phase 1 exploration. For e
 
 ### 2d. Create Shared Memory
 
-Write `memory/team/decisions.md`:
+Write `.claude/tackline/memory/team/decisions.md`:
 
 ```markdown
 # Team Decisions
@@ -186,7 +186,7 @@ Write `memory/team/decisions.md`:
 - (none yet)
 ```
 
-Write `memory/team/retro-history.md`:
+Write `.claude/tackline/memory/team/retro-history.md`:
 
 ```markdown
 # Retrospective History
@@ -202,9 +202,9 @@ Write `memory/team/retro-history.md`:
 
 Check all expected files were created:
 - `.claude/team.yaml`
-- `memory/agents/<name>/learnings.md` for each member
-- `memory/team/decisions.md`
-- `memory/team/retro-history.md`
+- `.claude/tackline/memory/agents/<name>/learnings.md` for each member
+- `.claude/tackline/memory/team/decisions.md`
+- `.claude/tackline/memory/team/retro-history.md`
 
 ### 3b. Report
 
@@ -214,14 +214,14 @@ Check all expected files were created:
 ### Members
 | Role | Owns | Model | Learnings |
 |------|------|-------|-----------|
-| [role] | [patterns] | [model] | memory/agents/[name]/learnings.md |
+| [role] | [patterns] | [model] | .claude/tackline/memory/agents/[name]/learnings.md |
 | ... | ... | ... | ... |
 
 ### Files Created
 - `.claude/team.yaml` — Team manifest
-- `memory/agents/*/learnings.md` — Per-member learnings ([count] files)
-- `memory/team/decisions.md` — Shared decisions log
-- `memory/team/retro-history.md` — Retro history
+- `.claude/tackline/memory/agents/*/learnings.md` — Per-member learnings ([count] files)
+- `.claude/tackline/memory/team/decisions.md` — Shared decisions log
+- `.claude/tackline/memory/team/retro-history.md` — Retro history
 
 ### How to Use This Team
 - `/team-meeting [goal]` — Collaborative goal planning with the full team (run this first)

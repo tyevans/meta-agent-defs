@@ -17,7 +17,7 @@ Writing and editing skill definition files (`skills/<name>/SKILL.md`).
 | Rule | `.claude/rules/skill-authoring.md` |
 | Rule | `rules/pipe-format.md` |
 | Rule | `rules/information-architecture.md` |
-| Learnings | `memory/agents/skill-author/learnings.md` |
+| Learnings | `.claude/tackline/memory/agents/skill-author/learnings.md` |
 | Skill | `/evolution`, `/drift` |
 
 ### Agent Authoring
@@ -69,7 +69,7 @@ Managing learnings, rules, memory, and their lifecycle.
 |------|--------|
 | Rule | `rules/memory-layout.md` |
 | Rule | `rules/information-architecture.md` |
-| Learnings | `memory/agents/skill-author/learnings.md` |
+| Learnings | `.claude/tackline/memory/agents/skill-author/learnings.md` |
 | Skill | `/curate`, `/promote`, `/tend`, `/retro` |
 
 ### Git & Commits

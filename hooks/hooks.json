@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mkdir -p memory/sessions && { NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ); printf '## Pre-Compact Snapshot\\n**Time**: %s\\n\\n### Recent Commits\\n' \"$NOW\"; git log --oneline -5 2>/dev/null || echo '(no git)'; printf '\\n### Working Tree\\n'; git status --short 2>/dev/null || echo '(no git)'; printf '\\n### Open Questions\\n(fill in before context is lost)\\n\\n### Working Theories\\n(fill in before context is lost)\\n\\n### Key Decisions\\n(fill in before context is lost)\\n'; } > memory/sessions/pre-compact.md 2>/dev/null || true"
+            "command": "mkdir -p .claude/tackline/memory/sessions && { NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ); printf '## Pre-Compact Snapshot\\n**Time**: %s\\n\\n### Recent Commits\\n' \"$NOW\"; git log --oneline -5 2>/dev/null || echo '(no git)'; printf '\\n### Working Tree\\n'; git status --short 2>/dev/null || echo '(no git)'; printf '\\n### Open Questions\\n(fill in before context is lost)\\n\\n### Working Theories\\n(fill in before context is lost)\\n\\n### Key Decisions\\n(fill in before context is lost)\\n'; } > .claude/tackline/memory/sessions/pre-compact.md 2>/dev/null || true"
           }
         ]
       }
@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -c \"\nimport os, json, sys, re\ndomain = 'memory/project/domain.md'\nif not os.path.exists(domain): sys.exit(0)\ntry:\n    inp = json.loads(os.environ.get('CLAUDE_TOOL_INPUT', '{}'))\n    prompt = inp.get('prompt', '')\nexcept Exception: sys.exit(0)\nif not prompt: sys.exit(0)\ntext = open(domain).read()\nblocks = re.split(r'(?=^## )', text, flags=re.MULTILINE)\nmatched = [b for b in blocks if b.startswith('## ') and re.search(r'## (.+)', b) and re.search(re.escape(re.search(r'## (.+)', b).group(1)), prompt, re.IGNORECASE)]\nif not matched: sys.exit(0)\nprint('<!-- domain-context -->')\nfor b in matched:\n    print(b.strip())\n    print()\n\" 2>/dev/null || true"
+            "command": "python3 -c \"\nimport os, json, sys, re\ndomain = '.claude/tackline/memory/project/domain.md'\nif not os.path.exists(domain): sys.exit(0)\ntry:\n    inp = json.loads(os.environ.get('CLAUDE_TOOL_INPUT', '{}'))\n    prompt = inp.get('prompt', '')\nexcept Exception: sys.exit(0)\nif not prompt: sys.exit(0)\ntext = open(domain).read()\nblocks = re.split(r'(?=^## )', text, flags=re.MULTILINE)\nmatched = [b for b in blocks if b.startswith('## ') and re.search(r'## (.+)', b) and re.search(re.escape(re.search(r'## (.+)', b).group(1)), prompt, re.IGNORECASE)]\nif not matched: sys.exit(0)\nprint('<!-- domain-context -->')\nfor b in matched:\n    print(b.strip())\n    print()\n\" 2>/dev/null || true"
           }
         ]
       }
@@ -74,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mkdir -p memory/sessions && NOW=$(date -u '+%Y-%m-%dT%H-%M-%SZ') && FILE=\"memory/sessions/${NOW}.md\" && echo \"## Session: $NOW\" > \"$FILE\" && echo '' >> \"$FILE\" && echo '### Commits' >> \"$FILE\" && COMMITS=$(git log --oneline -10 2>/dev/null); if [ -n \"$COMMITS\" ]; then echo \"$COMMITS\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Working Tree' >> \"$FILE\" && TREE=$(git status --short 2>/dev/null); if [ -n \"$TREE\" ]; then echo \"$TREE\" >> \"$FILE\"; else echo 'clean' >> \"$FILE\"; fi && cp \"$FILE\" memory/sessions/last.md 2>/dev/null || true && ls -t memory/sessions/[0-9]*.md 2>/dev/null | tail -n +4 | xargs rm -f 2>/dev/null || true"
+            "command": "mkdir -p .claude/tackline/memory/sessions && NOW=$(date -u '+%Y-%m-%dT%H-%M-%SZ') && FILE=\".claude/tackline/memory/sessions/${NOW}.md\" && echo \"## Session: $NOW\" > \"$FILE\" && echo '' >> \"$FILE\" && echo '### Commits' >> \"$FILE\" && COMMITS=$(git log --oneline -10 2>/dev/null); if [ -n \"$COMMITS\" ]; then echo \"$COMMITS\" >> \"$FILE\"; else echo '(none)' >> \"$FILE\"; fi && echo '' >> \"$FILE\" && echo '### Working Tree' >> \"$FILE\" && TREE=$(git status --short 2>/dev/null); if [ -n \"$TREE\" ]; then echo \"$TREE\" >> \"$FILE\"; else echo 'clean' >> \"$FILE\"; fi && cp \"$FILE\" .claude/tackline/memory/sessions/last.md 2>/dev/null || true && ls -t .claude/tackline/memory/sessions/[0-9]*.md 2>/dev/null | tail -n +4 | xargs rm -f 2>/dev/null || true"
           }
         ]
       }

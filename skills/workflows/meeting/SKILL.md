@@ -19,10 +19,10 @@ Before assembling a new panel, check whether a prior meeting left panelists avai
 
 ```bash
 # Check for prior meeting scratch file
-ls memory/scratch/meeting-panelists.md 2>/dev/null
+ls .claude/tackline/memory/scratch/meeting-panelists.md 2>/dev/null
 ```
 
-<!-- Condition: only if memory/scratch/meeting-panelists.md exists -->
+<!-- Condition: only if .claude/tackline/memory/scratch/meeting-panelists.md exists -->
 If the file exists, read it and display:
 
 > A prior meeting panel is available:
@@ -32,7 +32,7 @@ If the file exists, read it and display:
 > **Resume** the prior panelists (they retain context from the last discussion), or **start fresh** with a new panel?
 
 - *Resume* → Skip Phase 1 entirely. Send the new topic/question as direct messages to each prior panelist using the agent IDs from the scratch file. Proceed to Phase 2.
-- *Start fresh* → Delete `memory/scratch/meeting-panelists.md` and proceed to Phase 1.
+- *Start fresh* → Delete `.claude/tackline/memory/scratch/meeting-panelists.md` and proceed to Phase 1.
 
 If the file does not exist, proceed directly to Phase 1.
 
@@ -96,7 +96,7 @@ Task({
 
 ### 1d. Capture Panelist IDs
 
-After all panelists are spawned, record their agent IDs to `memory/scratch/meeting-panelists.md` for compaction resilience and resume support:
+After all panelists are spawned, record their agent IDs to `.claude/tackline/memory/scratch/meeting-panelists.md` for compaction resilience and resume support:
 
 ```markdown
 # Meeting Panelists
@@ -228,7 +228,7 @@ TeamDelete()
 ```
 
 ```bash
-rm -f memory/scratch/meeting-panelists.md
+rm -f .claude/tackline/memory/scratch/meeting-panelists.md
 ```
 
 ### 3c. Optional: Create Tasks

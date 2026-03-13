@@ -105,7 +105,7 @@ Each operation transforms input into structured output. All emit **pipe format**
 
 ## Guidelines
 
-All output follows the pipe-format rule (loaded alongside this skill). For fan-out dispatch, follow the fan-out-protocol rule. For chains of 3+ operations, checkpoint per the compaction-resilience rule.
+All output follows the pipe-format rule (loaded alongside this skill). For fan-out dispatch, follow the fan-out-protocol rule. For chains of 3+ operations, checkpoint per rules/memory-layout.md.
 
 
 1. **Fewer operations is better.** Don't chain when one operation suffices.

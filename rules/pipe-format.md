@@ -68,4 +68,4 @@ When a skill consumes upstream pipe-format output:
 
 ## Limitation
 
-Long chains risk context compression destroying structured output. For chains spanning 3+ operations, write intermediate results to `memory/scratch/` per `rules/compaction-resilience.md`.
+Long chains risk context compression destroying structured output. For chains spanning 3+ operations, write intermediate results to `.claude/tackline/memory/scratch/` per `rules/memory-layout.md`.

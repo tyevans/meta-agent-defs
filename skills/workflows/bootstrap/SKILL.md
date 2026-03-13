@@ -343,7 +343,7 @@ If any gate produced a hard stop that was not resolved, bootstrap is incomplete.
 4. **Surface failures explicitly.** If the bootstrapper fails, ask the user before proceeding rather than running the agent generator on a broken setup.
 5. **Respect existing setup.** Both agents check for existing `.claude/` configuration and avoid overwriting intentional customizations.
 6. **No worktree isolation.** Worktree isolation creates an isolated copy of the repo where the skill is invoked, not the target project. Both dispatched agents write to `$PROJECT_PATH` -- an external directory -- so worktree isolation would protect the wrong repo. Cross-project bootstrap writes cannot be sandboxed by worktrees.
-7. **Compaction resilience.** This skill has 4 phases. Write intermediate state to `memory/scratch/bootstrap-checkpoint.md` at each phase gate boundary per `rules/compaction-resilience.md`.
+7. **Compaction resilience.** Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/bootstrap-checkpoint.md`.
 
 ---
 

@@ -404,7 +404,7 @@ The spec proposes a WebSocket-based notification system that pushes events to da
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/spec-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/spec-checkpoint.md`.
 2. **Fresh agents prevent contamination** — Each phase uses new agents with clean context
 3. **Ground in reality** — Agents must READ actual code, not speculate about what exists
 4. **The spec is the artifact** — It persists across context boundaries and survives context limits

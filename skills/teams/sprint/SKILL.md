@@ -69,14 +69,14 @@ Read `.claude/team.yaml`. If it doesn't exist, tell the user to run `/assemble` 
 
 ### 1b. Read All Learnings
 
-For each member, read `memory/agents/<name>/learnings.md`. Note the current size (line count) and most recent entries.
+For each member, read `.claude/tackline/memory/agents/<name>/learnings.md`. Note the current size (line count) and most recent entries.
 
 ### 1c. Load Epic State (conditional)
 
 Check for epic state files written by `/blossom`:
 
 ```bash
-ls memory/epics/*/epic.md 2>/dev/null
+ls .claude/tackline/memory/epics/*/epic.md 2>/dev/null
 ```
 
 If any epic state files exist, read them. These contain spike findings, priority order, task IDs, critical path, and parallel opportunities from a prior blossom run. When matching tasks to members in Phase 2, use the spike findings (confidence levels, file scopes, agent hints) and priority order from the epic state to inform assignments. If `$ARGUMENTS` names a specific epic, load only that epic's state file.
@@ -176,7 +176,7 @@ For each approved assignment, in the approved order:
 Build the task prompt following the spawn protocol from team-protocol.md:
 
 1. Read the member's current `learnings.md`
-2. **Compute the agent identity trailer**: Run `git log -1 --format=%h -- memory/agents/<name>/learnings.md` to get the short SHA of the last commit that modified this member's learnings. The trailer value is `<name>@<sha>`. If the learnings file has no git history (new member), use `git log -1 --format=%h` to get HEAD instead.
+2. **Compute the agent identity trailer**: Run `git log -1 --format=%h -- .claude/tackline/memory/agents/<name>/learnings.md` to get the short SHA of the last commit that modified this member's learnings. The trailer value is `<name>@<sha>`. If the learnings file has no git history (new member), use `git log -1 --format=%h` to get HEAD instead.
 3. Compose a prompt that includes: member identity (name, role, owns), learnings, task description, and reflection instructions
 4. Include any relevant context from previous dispatches in this sprint
 5. **Include the Commit Discipline section** from team-protocol.md's Prompt Template. Worktree agents must commit their own changes — uncommitted work in a worktree is effectively lost when the orchestrator merges results.
@@ -242,7 +242,7 @@ For each suggested learning:
 
 1. **Validate**: Is this learning durable (useful across sessions) or ephemeral (only relevant now)?
 2. **Categorize**: Map to the correct section (Codebase Patterns, Gotchas, Preferences, Cross-Agent Notes)
-3. **Append**: Add to `memory/agents/<name>/learnings.md` with today's date and dispatch provenance
+3. **Append**: Add to `.claude/tackline/memory/agents/<name>/learnings.md` with today's date and dispatch provenance
 4. **Route cross-agent**: If `for_agent` is specified, also add to that agent's learnings under "Cross-Agent Notes" prefixed with `(from <source-agent>)`
 
 When appending entries, include the `dispatch:` field to track task provenance:
@@ -342,7 +342,7 @@ After all tasks are dispatched (or the sprint is stopped), emit a pipe-format re
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/sprint-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/sprint-checkpoint.md`.
 2. **Parallelize with worktree isolation by default.** Dispatch independent tasks concurrently using `isolation: "worktree"` and `run_in_background: true`. Each agent gets its own repo copy, so parallelization is safe even for tasks touching overlapping files. Fall back to serial dispatch only when tasks have true sequential dependencies (each task needs the previous one's output).
 3. **Agents must commit their work.** Worktree agents that finish without committing produce results the orchestrator cannot merge. The Commit Discipline section in the prompt template ensures agents commit focused, incremental changes. If Phase 4 reveals a worktree with no commits, treat it as a partial/failed result.
 4. **Learnings are the product.** A sprint that completes tasks but doesn't persist learnings has wasted half its value. Always update learnings files.

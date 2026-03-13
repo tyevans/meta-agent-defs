@@ -474,7 +474,7 @@ After the close-out block, emit a pipe-format summary so downstream skills (/sta
 4. **Monitoring window is non-negotiable.** Do not declare success before the minimum monitoring window elapses. Stay in Phase 3 until the window passes or a rollback trigger fires.
 5. **Rollback first, investigate second.** If rollback triggers fire, execute rollback immediately. Root cause investigation happens after the service is stable.
 6. **Be conservative with health signals.** Ambiguous logs or elevated-but-not-alarming error rates should be escalated to the user, not silently accepted.
-7. **Compaction resilience.** This skill has 5 phases. Write intermediate state to `memory/scratch/deploy-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+7. **Compaction resilience.** Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/deploy-checkpoint.md`.
 8. **Secrets stay out.** Never write environment variables, credentials, or API keys into commit messages, log output, or any file. Reference them by name only.
 
 ## See Also

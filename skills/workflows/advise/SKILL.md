@@ -57,9 +57,9 @@ Extract:
 - **Recent commit pattern**: What types of work happened recently (feat/fix/chore)
 - **Branch context**: Are we on a feature branch? How far from main?
 
-### Layer 2: Session Continuity (if `memory/sessions/last.md` exists)
+### Layer 2: Session Continuity (if `.claude/tackline/memory/sessions/last.md` exists)
 
-Read `memory/sessions/last.md`.
+Read `.claude/tackline/memory/sessions/last.md`.
 
 Extract:
 - **What was worked on last**: Commits, in-progress items
@@ -80,7 +80,7 @@ Extract:
 Read `.claude/team.yaml` and check each member's learnings:
 
 ```bash
-ls memory/agents/*/learnings.md 2>/dev/null
+ls .claude/tackline/memory/agents/*/learnings.md 2>/dev/null
 ```
 
 For each member, check:

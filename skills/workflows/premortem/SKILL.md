@@ -323,7 +323,7 @@ Create the feature task if it doesn't exist yet.
 
 ## Guidelines
 
-- **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/premortem-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+- **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/premortem-checkpoint.md`.
 - **Concrete over abstract**: "SQL injection via search param at line X" beats "security could be compromised"
 - **Read the code**: Agents must ground scenarios in actual implementation, not hypothetical risks
 - **User decides**: Not every risk needs mitigation -- present options, let the human choose

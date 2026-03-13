@@ -33,7 +33,7 @@ output-contract: |
 
 Examples:
 - `"pipe-format Items list per rules/pipe-format.md"`
-- `"YAML capability profile (see memory/agents/<name>/capability.yaml)"`
+- `"YAML capability profile (see .claude/tackline/memory/agents/<name>/capability.yaml)"`
 - `"Structured report with sections: Summary, Findings (Critical/Warning/Suggestion/Nitpick), Verdict (APPROVE/REQUEST CHANGES/NEEDS DISCUSSION)"`
 - `"Sprint reflection: task_result (status, summary, files changed), reflection (what worked, what didn't, confidence), suggested_learnings, follow_up (blockers, next steps)"`
 

@@ -64,17 +64,17 @@ Determine operating mode by attempting to read `.claude/team.yaml`:
 - Operating in **SOLO MODE**
 - Print to the user: "SOLO MODE: .claude/team.yaml not found or agent '<name>' not in team. Running as 'main-session'."
 - Set learner persona to `main-session` for this run
-- All file paths that would reference `memory/agents/<name>/` now use `memory/agents/solo/` instead
+- All file paths that would reference `.claude/tackline/memory/agents/<name>/` now use `.claude/tackline/memory/agents/solo/` instead
 - The `role` is "main session", `model` is the current model, and `owns` is treated as the full project (no pattern filtering in git analysis)
 - If `$ARGUMENTS` was empty and team.yaml also does not exist, skip listing available agents -- instead prompt: "Which topic or skill area should I train on? (No team.yaml found -- running in solo mode.)"
 
-Read `memory/agents/<name>/learnings.md` (team mode) or `memory/agents/solo/learnings.md` (solo mode) if it exists -- note current line count as the baseline.
+Read `.claude/tackline/memory/agents/<name>/learnings.md` (team mode) or `.claude/tackline/memory/agents/solo/learnings.md` (solo mode) if it exists -- note current line count as the baseline.
 
 ### 0c. Load Prior Capability Data
 
 Check for existing capability tracking:
-- Team mode: Read `memory/agents/<name>/capability.yaml` if it exists
-- Solo mode: Read `memory/agents/solo/capability.yaml` if it exists
+- Team mode: Read `.claude/tackline/memory/agents/<name>/capability.yaml` if it exists
+- Solo mode: Read `.claude/tackline/memory/agents/solo/capability.yaml` if it exists
 - Read any prior evaluation files from the appropriate challenges directory
 - Note which weaknesses have been previously targeted (to avoid re-exercising resolved weaknesses)
 
@@ -99,10 +99,10 @@ Read the agent's learnings history from git:
 
 ```bash
 # Edit timeline
-git log --oneline --follow -- memory/agents/<name>/learnings.md
+git log --oneline --follow -- .claude/tackline/memory/agents/<name>/learnings.md
 
 # Actual diffs to see what changed
-git log -p --follow -- memory/agents/<name>/learnings.md
+git log -p --follow -- .claude/tackline/memory/agents/<name>/learnings.md
 ```
 
 Parse the diffs to extract:
@@ -213,11 +213,11 @@ Calibrate difficulty to the Difficulty Calibration level from Phase 1d.
 ### 2e. Write Challenge File
 
 ```bash
-mkdir -p memory/agents/<name>/challenges   # team mode
-mkdir -p memory/agents/solo/challenges     # solo mode
+mkdir -p .claude/tackline/memory/agents/<name>/challenges   # team mode
+mkdir -p .claude/tackline/memory/agents/solo/challenges     # solo mode
 ```
 
-Write challenges to `memory/agents/<name>/challenges/<timestamp>-round-<N>-challenges.md` (team mode) or `memory/agents/solo/challenges/<timestamp>-round-<N>-challenges.md` (solo mode):
+Write challenges to `.claude/tackline/memory/agents/<name>/challenges/<timestamp>-round-<N>-challenges.md` (team mode) or `.claude/tackline/memory/agents/solo/challenges/<timestamp>-round-<N>-challenges.md` (solo mode):
 
 ```markdown
 # Round <N> Challenges for <agent-name>
@@ -263,7 +263,7 @@ For each challenge, compose a self-contained prompt and dispatch via Task.
 In team mode use the agent name and role from team.yaml. In solo mode, substitute:
 - Agent name: `main-session`
 - Role: `main session practitioner`
-- Learnings path: `memory/agents/solo/learnings.md`
+- Learnings path: `.claude/tackline/memory/agents/solo/learnings.md`
 
 > You are **<agent-name or "main-session">**, a <role> on the team.
 >
@@ -390,7 +390,7 @@ Every rating MUST cite specific evidence from the agent's output. "MISSED" witho
 
 ### 3c. Write Round Evaluation
 
-Write to `memory/agents/<name>/challenges/<timestamp>-round-<N>-evaluation.md` (team mode) or `memory/agents/solo/challenges/<timestamp>-round-<N>-evaluation.md` (solo mode):
+Write to `.claude/tackline/memory/agents/<name>/challenges/<timestamp>-round-<N>-evaluation.md` (team mode) or `.claude/tackline/memory/agents/solo/challenges/<timestamp>-round-<N>-evaluation.md` (solo mode):
 
 ```markdown
 # Round <N> Evaluation: <agent-name>
@@ -437,7 +437,7 @@ From the round evaluation, extract learnings the agent should retain:
 
 ### 4b. Update Learnings File
 
-Read `memory/agents/<name>/learnings.md` (team mode) or `memory/agents/solo/learnings.md` (solo mode). Append new entries tagged with challenge provenance:
+Read `.claude/tackline/memory/agents/<name>/learnings.md` (team mode) or `.claude/tackline/memory/agents/solo/learnings.md` (solo mode). Append new entries tagged with challenge provenance:
 
 ```markdown
 - <learning description> (source: /active-learn round N, challenge: <title>, <date>)
@@ -450,7 +450,7 @@ Rules:
 
 ### 4c. Write Capability YAML
 
-Write or update `memory/agents/<name>/capability.yaml` (team mode) or `memory/agents/solo/capability.yaml` (solo mode):
+Write or update `.claude/tackline/memory/agents/<name>/capability.yaml` (team mode) or `.claude/tackline/memory/agents/solo/capability.yaml` (solo mode):
 
 ```yaml
 # Capability tracking for <agent-name or "solo">
@@ -557,7 +557,7 @@ In solo mode, prepend the SOLO MODE label to the summary block so the user knows
 
 ```markdown
 <!-- Solo mode only: -->
-> **SOLO MODE** -- No team.yaml found. Ran as 'main-session'. Results written to memory/agents/solo/.
+> **SOLO MODE** -- No team.yaml found. Ran as 'main-session'. Results written to .claude/tackline/memory/agents/solo/.
 
 ## Training Summary: <agent-name or "solo (main-session)">
 
@@ -611,14 +611,14 @@ Early stopped: <yes/no, reason>
 Ensure capability.yaml is up to date with the final state (written in Phase 4c of the last round).
 
 Report the file path so the user can review:
-- Team mode: `memory/agents/<name>/capability.yaml`
-- Solo mode: `memory/agents/solo/capability.yaml`
+- Team mode: `.claude/tackline/memory/agents/<name>/capability.yaml`
+- Solo mode: `.claude/tackline/memory/agents/solo/capability.yaml`
 
 ---
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 6 phases with a loop. Write intermediate state to `memory/scratch/active-learn-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/active-learn-checkpoint.md`.
 2. **Never leak evaluation criteria to agents.** Hidden Trap and Ground Truth exist solely for post-hoc evaluation. Including them in dispatch prompts invalidates the entire training cycle. This is the single most important constraint.
 3. **Serial dispatch, serial evaluation.** Process one challenge at a time within a round. This avoids API throttling and produces clean evaluation flow. Each challenge is a controlled experiment.
 4. **Evidence in every rating.** Every evaluation rating (result, trap detection, calibration) must cite specific evidence from the agent's output. Ratings without evidence are noise.

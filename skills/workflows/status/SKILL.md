@@ -43,7 +43,7 @@ Gather all data before producing any output. Read from the known paths defined i
 
 ### 1a. Last Session
 
-Read `memory/sessions/last.md`. If it does not exist, note "No previous session data."
+Read `.claude/tackline/memory/sessions/last.md`. If it does not exist, note "No previous session data."
 
 ### 1b. Backlog
 
@@ -61,7 +61,7 @@ git status --short
 
 ### 1d. Team
 
-**If `.claude/team.yaml` exists**, read it to get the team name and member list. Then for each member, check `memory/agents/<name>/learnings.md`:
+**If `.claude/team.yaml` exists**, read it to get the team name and member list. Then for each member, check `.claude/tackline/memory/agents/<name>/learnings.md`:
 
 - Line count (via Grep or Read)
 - Whether the file exists at all
@@ -99,7 +99,7 @@ Present all collected data in this structure. Do not add commentary or analysis 
 **Date**: [today]
 
 ### Last Session
-[Contents of memory/sessions/last.md — include verbatim, trimmed to first 20 lines if longer]
+[Contents of .claude/tackline/memory/sessions/last.md — include verbatim, trimmed to first 20 lines if longer]
 [Or: "No previous session data."]
 
 ### Backlog

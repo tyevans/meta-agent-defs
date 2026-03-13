@@ -68,11 +68,11 @@ Read `.claude/team.yaml` and extract all member names, roles, and ownership patt
 
 ### 1b. Read All Learnings
 
-For each member, read `memory/agents/<name>/learnings.md`. Note relevant learnings that might affect planning for this goal.
+For each member, read `.claude/tackline/memory/agents/<name>/learnings.md`. Note relevant learnings that might affect planning for this goal.
 
 ### 1c. Read Team Decisions
 
-Read `memory/team/decisions.md` for prior decisions that constrain this goal.
+Read `.claude/tackline/memory/team/decisions.md` for prior decisions that constrain this goal.
 
 ### 1d. Load Task State (conditional)
 
@@ -135,7 +135,7 @@ Task({
 > Your ownership areas: [owns patterns]
 >
 > ## Your Accumulated Learnings
-> [contents of memory/agents/<name>/learnings.md]
+> [contents of .claude/tackline/memory/agents/<name>/learnings.md]
 >
 > ## Relevant Team Decisions
 > [applicable entries from decisions.md]

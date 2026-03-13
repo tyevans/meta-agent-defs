@@ -137,7 +137,7 @@ Drop observations you cannot sharpen — they are not actionable yet. If the roo
 
 ### 4a. Read Team Learnings
 
-Read all `memory/agents/*/learnings.md` files. For each member, assess:
+Read all `.claude/tackline/memory/agents/*/learnings.md` files. For each member, assess:
 - **Total entries**: Count of non-empty bullet points
 - **Recent additions**: Entries with dates in the last 7 days
 - **Staleness**: Days since the last entry was added
@@ -148,7 +148,7 @@ Read all `memory/agents/*/learnings.md` files. For each member, assess:
 
 If any learnings file exceeds 50 lines (warning threshold) or 60 lines (hard cap):
 1. **Merge similar entries** — Combine entries that say the same thing differently
-2. **Archive stale entries** — Move entries older than 21 days (with no recent references) to `memory/agents/<name>/archive.md`
+2. **Archive stale entries** — Move entries older than 21 days (with no recent references) to `.claude/tackline/memory/agents/<name>/archive.md`
 3. **Note promotion candidates** — Do not promote entries inline. Instead, note entries that appear durable and cross-agent, and recommend running `/promote` or `/tend` after this retro to evaluate them with full graduation criteria
 4. **Validate cross-agent notes** — Notes older than 14 days must be acknowledged (merged), acted upon (integrated), or discarded (moved to archive with rationale)
 5. **Apply tiered structure** — Organize remaining entries into Core (30 lines max, high-reuse fundamentals) and Task-Relevant (30 lines max, context-specific)
@@ -177,7 +177,7 @@ For each member:
 
 ### 4e. Append to Retro History
 
-Append a summary to `memory/team/retro-history.md`:
+Append a summary to `.claude/tackline/memory/team/retro-history.md`:
 
 ```markdown
 ## Retro: [date]

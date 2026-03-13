@@ -287,7 +287,7 @@ Produce a final report:
 
 ### 6b. Persist Architectural Insights to Domain Memory
 
-After completing the report, extract architectural findings discovered during implementation and persist them to `memory/project/domain.md`.
+After completing the report, extract architectural findings discovered during implementation and persist them to `.claude/tackline/memory/project/domain.md`.
 
 **What to extract** — look for concepts that emerged during the tracer that are project-specific and would help a future session understand this codebase:
 - Layer names or boundary names specific to this project (e.g., "the service layer means X here, not Y")
@@ -311,7 +311,7 @@ After completing the report, extract architectural findings discovered during im
 ```
 
 **Process**:
-1. Read `memory/project/domain.md` if it exists. If it does not, create it with the header:
+1. Read `.claude/tackline/memory/project/domain.md` if it exists. If it does not, create it with the header:
    ```markdown
    # Project Domain Terminology
 
@@ -324,7 +324,7 @@ After completing the report, extract architectural findings discovered during im
    - Check if a `## <Term>` heading already exists (case-insensitive). If it does, skip — do not duplicate.
    - If new, append the entry below the last entry in the file.
 3. If no architectural insights were found worth persisting, skip this step entirely — do not write an empty or placeholder entry.
-4. After writing, confirm in the report output: "Persisted N domain concepts to `memory/project/domain.md`." (or "No new domain concepts to persist." if none).
+4. After writing, confirm in the report output: "Persisted N domain concepts to `.claude/tackline/memory/project/domain.md`." (or "No new domain concepts to persist." if none).
 
 ### 6c. Create Follow-Up Tasks
 
@@ -370,7 +370,7 @@ Task({
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 6 phases. Write intermediate state to `memory/scratch/tracer-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/tracer-checkpoint.md`.
 2. **Each phase produces a working increment.** Never proceed to the next phase if the current one is broken.
 3. **Commit after every phase.** Commits provide rollback points and document the tracer's progression.
 4. **Hard-coding in Phase 2 is expected.** The point is to prove the path, not build production code immediately.

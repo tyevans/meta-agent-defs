@@ -84,11 +84,11 @@ tackline/
 │   ├── batch-safety.md          # Batch processing safety (chunk at 12 items)
 │   ├── context-trust.md         # Trust user-provided context
 │   ├── information-architecture.md  # IA principles for knowledge organization
-│   ├── memory-layout.md         # Path registry for persistent state (paths: memory/**)
+│   ├── memory-layout.md         # Path registry + checkpoint protocol for persistent state
 │   ├── pipe-format.md           # Composable primitive output contract (paths: skills/**/SKILL.md)
 │   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
 │   └── test-conventions.md      # Testing conventions
-├── memory/                      # Persistent state (sessions, learnings, epics)
+├── .claude/tackline/memory/                      # Persistent state (sessions, learnings, epics)
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
 ├── mcp-servers.json            # MCP server definitions (installed globally)
@@ -115,7 +115,7 @@ tackline/
 - Rule frontmatter fields: `strength` (must/should/may), `freshness` (date); some rules also have `paths` (glob patterns for conditional loading via `bin/rule-relevance.sh`)
 - Hooks fail gracefully with `|| true` for optional tools
 - Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE
-- If `memory/project/domain.md` exists, it contains project-specific terminology; consult it when a term is ambiguous
+- If `.claude/tackline/memory/project/domain.md` exists, it contains project-specific terminology; consult it when a term is ambiguous
 
 ## Do Not Modify
 

@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Grep, Glob
 
 # Domain: Terminology Capture, Query, and Audit
 
-You are running the **domain** skill — managing project-specific terminology in `memory/project/domain.md`. Input: **$ARGUMENTS**
+You are running the **domain** skill — managing project-specific terminology in `.claude/tackline/memory/project/domain.md`. Input: **$ARGUMENTS**
 
 ## When to Use
 
@@ -23,7 +23,7 @@ You are running the **domain** skill — managing project-specific terminology i
 ## Don't Use When
 
 - The term is universally understood with no ambiguity in this project
-- You want to store general project notes — use `memory/project/` directly instead
+- You want to store general project notes — use `.claude/tackline/memory/project/` directly instead
 - The definition is speculative — only capture what is confirmed and stable
 
 ## Overview
@@ -72,7 +72,7 @@ If the input is too vague to extract a clear term and definition, ask one clarif
 
 ### Step 2 — Read domain.md
 
-Read `memory/project/domain.md` if it exists.
+Read `.claude/tackline/memory/project/domain.md` if it exists.
 
 - If the file does not exist, proceed to Phase 2C (you will create it).
 - If the file exists, scan for an existing `## <Term>` heading (case-insensitive).
@@ -127,7 +127,7 @@ Then append the entry below the separator.
 
 ### Verify
 
-After writing, read `memory/project/domain.md` and confirm the term appears under a `## <Term>` heading. State: "Verified: **<Term>** is present in domain.md."
+After writing, read `.claude/tackline/memory/project/domain.md` and confirm the term appears under a `## <Term>` heading. State: "Verified: **<Term>** is present in domain.md."
 
 If the read does not find the term, report the failure and do not claim success.
 
@@ -141,7 +141,7 @@ Emit a one-line summary: "Captured: **<Term>** — <definition>."
 
 Strip the `query:` prefix and trim whitespace to get the lookup term.
 
-Read `memory/project/domain.md`.
+Read `.claude/tackline/memory/project/domain.md`.
 
 - If the file does not exist: "No domain terminology has been captured yet."
 - Search for `## <Term>` heading (case-insensitive).
@@ -156,14 +156,14 @@ Read `memory/project/domain.md`.
 
 ### Step 1 — Read domain.md
 
-If `memory/project/domain.md` does not exist: "No domain file found. Nothing to audit." Exit.
+If `.claude/tackline/memory/project/domain.md` does not exist: "No domain file found. Nothing to audit." Exit.
 
 Extract all terms from `## ` headings. State: "N terms found in domain.md."
 
 ### Step 2 — Cross-check each term against codebase
 
-For each term, run Grep (case-insensitive) across the codebase (excluding `memory/`). Record:
-- **Active**: 1 or more matches found outside `memory/`
+For each term, run Grep (case-insensitive) across the codebase (excluding `.claude/tackline/memory/`). Record:
+- **Active**: 1 or more matches found outside `.claude/tackline/memory/`
 - **Stale**: 0 matches found (term does not appear in any source file)
 
 ### Step 3 — Emit audit findings in pipe format
@@ -172,13 +172,13 @@ For each term, run Grep (case-insensitive) across the codebase (excluding `memor
 ## Domain Audit: Stale Entry Report
 
 **Source**: /domain (audit)
-**Input**: audit of memory/project/domain.md
+**Input**: audit of .claude/tackline/memory/project/domain.md
 **Pipeline**: (none — working from direct input)
 
 ### Items (N)
 
 1. **<Term>** — stale: no codebase references found
-   - source: memory/project/domain.md
+   - source: .claude/tackline/memory/project/domain.md
    - confidence: LIKELY
 
 2. **<Term>** — active: found in <file:line>
@@ -206,7 +206,7 @@ For each confirmed stale entry, use Edit to remove the `## <Term>` block (headin
 
 **Verify removal:**
 
-After editing, read `memory/project/domain.md` and confirm none of the removed terms appear as `## ` headings. State: "Verified: removed terms are no longer present."
+After editing, read `.claude/tackline/memory/project/domain.md` and confirm none of the removed terms appear as `## ` headings. State: "Verified: removed terms are no longer present."
 
 If any removed term still appears, report the failure explicitly.
 
@@ -217,7 +217,7 @@ If any removed term still appears, report the failure explicitly.
 - Keep definitions to one sentence. Disambiguation can be a second sentence or short clause.
 - Do not infer or fabricate definitions — only write what the user provides or what is confirmed in code.
 - Preserve all existing entries when appending or editing.
-- The canonical file path is `memory/project/domain.md`. Do not write to any other location.
+- The canonical file path is `.claude/tackline/memory/project/domain.md`. Do not write to any other location.
 - Use today's date for `**Added**` fields.
 - Verification is not optional — always confirm writes succeeded by re-reading the file.
 - In audit mode, LIKELY confidence is correct for stale entries — grep absence is strong evidence but not proof.

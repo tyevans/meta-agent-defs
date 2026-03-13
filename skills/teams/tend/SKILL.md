@@ -43,7 +43,7 @@ Before orchestrating, gather the inputs that both /curate and /promote need.
 Read `.claude/team.yaml`. If it doesn't exist, check for learnings files directly:
 
 ```bash
-ls memory/agents/*/learnings.md 2>/dev/null
+ls .claude/tackline/memory/agents/*/learnings.md 2>/dev/null
 ```
 
 If neither exists, stop: "No team manifest or agent learnings found. Nothing to tend."
@@ -59,7 +59,7 @@ If neither exists, stop: "No team manifest or agent learnings found. Nothing to 
 Capture what work is coming so /curate has the signal it needs:
 
 ```bash
-ls memory/epics/*/epic.md 2>/dev/null
+ls .claude/tackline/memory/epics/*/epic.md 2>/dev/null
 ```
 
 Check your project's task tracker for ready and in-progress work. If no task tracker is available, note that curate will rely on git signals and conversation context only.
@@ -99,7 +99,7 @@ Task({
   prompt: "Run /curate for agent <agent-name>.
 
 Agent: <agent-name>
-Learnings file: memory/agents/<agent-name>/learnings.md
+Learnings file: .claude/tackline/memory/agents/<agent-name>/learnings.md
 
 Upcoming work snapshot:
 <paste task tracker ready / in_progress / epic output from Phase 0c>
@@ -314,7 +314,7 @@ Present a unified report of the full lifecycle run:
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/tend-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/tend-checkpoint.md`.
 2. **Run curate before promote.** Curate ensures learnings are clean and relevant. Promote then works with high-quality input.
 3. **Don't force promotions.** If /promote finds no candidates meeting graduation criteria, that's fine. Better no rule than a premature one.
 4. **Flag gaps as actionable items.** If curate reveals knowledge gaps for upcoming work, surface them — they may warrant investigation tasks.

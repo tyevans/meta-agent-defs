@@ -403,21 +403,21 @@ Present the final blossom report in **pipe format** so downstream primitives (/r
 10. **Confidence levels.** Every finding is CONFIRMED, LIKELY, or POSSIBLE. Possible triggers a deeper spike.
 11. **Clean shutdown.** After consolidation, shut down all teammates before proceeding to final phases. The orchestrator works solo for prioritization, verification, and reporting.
 
-12. **Persist epic state.** After reporting, write `memory/epics/<epic-id>/epic.md` so downstream skills (/sprint) can load context across sessions.
+12. **Persist epic state.** After reporting, write `.claude/tackline/memory/epics/<epic-id>/epic.md` so downstream skills (/sprint) can load context across sessions.
 13. **Report that tasks exist.** The Phase 6 report MUST include the Backlog Status callout stating that all items already exist as tracked tasks. The caller (primary session) should NOT create duplicate tasks — blossom has already done this in Phases 2-4.
-14. **Compaction resilience**: This skill has 7 phases. Write intermediate state to `memory/scratch/blossom-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+14. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/blossom-checkpoint.md`.
 
 ## Phase 7: Persist Epic State
 
-After the Phase 6 report, write epic state to `memory/epics/<epic-id>/epic.md` so that `/sprint` and other downstream skills can load blossom findings in a later session without re-exploring.
+After the Phase 6 report, write epic state to `.claude/tackline/memory/epics/<epic-id>/epic.md` so that `/sprint` and other downstream skills can load blossom findings in a later session without re-exploring.
 
 **Create the directory and file:**
 
 ```bash
-mkdir -p memory/epics/<epic-id>
+mkdir -p .claude/tackline/memory/epics/<epic-id>
 ```
 
-Write `memory/epics/<epic-id>/epic.md` with this structure:
+Write `.claude/tackline/memory/epics/<epic-id>/epic.md` with this structure:
 
 ```markdown
 # Epic: [epic title]

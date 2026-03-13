@@ -243,7 +243,7 @@ git status
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 3 phases. Write intermediate state to `memory/scratch/fractal-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/fractal-checkpoint.md`.
 2. **Goal is king.** Every decision filters through "does this serve the goal?" The goal never changes during a run.
 3. **Prune aggressively.** Interesting-but-tangential findings get PRUNE, not DEEPEN. Fractal rewards focus.
 4. **Depth over breadth.** 3 deep investigations beat 6 shallow ones. Start with 2-4 areas, not 6+.

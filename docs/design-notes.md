@@ -43,9 +43,9 @@ Fork skills (blossom, consensus, review, etc.) run in an isolated context and re
 ## Learnings capped at 60 lines
 
 **Date:** 2025-02
-**Context:** Persistent agent learnings (`memory/agents/<name>/learnings.md`) accumulate across sessions and get injected into agent prompts.
+**Context:** Persistent agent learnings (`.claude/tackline/memory/agents/<name>/learnings.md`) accumulate across sessions and get injected into agent prompts.
 
-Uncapped learnings would grow until they consumed significant prompt budget, degrading agent performance. The 60-line cap (30 core + 30 task-relevant) forces triage: only the most durable insights survive. Stale entries (>21 days without use) get archived to `archive.md`. This mirrors how human teams work — you remember the important patterns, not every detail from every sprint.
+Uncapped learnings would grow until they consumed significant prompt budget, degrading agent performance. The 60-line cap (30 core + 30 task-relevant) forces triage: only the most durable insights survive. Stale entries (>21 days without use) get archived to `.claude/tackline/memory/agents/<name>/archive.md`. This mirrors how human teams work — you remember the important patterns, not every detail from every sprint.
 
 ---
 

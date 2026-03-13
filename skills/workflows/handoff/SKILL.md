@@ -173,7 +173,7 @@ Produce a structured handoff document:
 
 If `$ARGUMENTS` specifies a focus area, use it as the filename context. Write the handoff note to the project's memory:
 
-Create a handoff task in your task tracker with the full handoff note content, or write the handoff note to `memory/handoff-[date].md` for persistent reference if the project has a `memory/` directory.
+Create a handoff task in your task tracker with the full handoff note content, or write the handoff note to `.claude/tackline/memory/handoff-[date].md` for persistent reference if the project has a `.claude/tackline/memory/` directory.
 
 ### 4b. Pipe-Format Summary
 

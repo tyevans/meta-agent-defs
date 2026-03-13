@@ -85,7 +85,7 @@ Record: number of commits, date of most recent commit, and whether any commits a
 
 ### 2b. Learning Health
 
-Read each member's `memory/agents/<name>/learnings.md` and note:
+Read each member's `.claude/tackline/memory/agents/<name>/learnings.md` and note:
 - **Total entries**: Number of non-empty bullet points
 - **Recent additions**: Entries with dates in the last 7 days
 - **Staleness**: Time since last entry was added

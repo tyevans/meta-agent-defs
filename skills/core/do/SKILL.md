@@ -88,7 +88,7 @@ Starting with /gather to collect findings.
 
 Execute each step via the Skill tool. Between steps, do not add commentary — let the pipe format flow. Only intervene if a step produces no items (abort the pipeline and explain why).
 
-For pipelines with 3+ steps, checkpoint per the compaction-resilience rule (`memory/scratch/do-checkpoint.md`). Delete the checkpoint on successful completion.
+For pipelines with 3+ steps, checkpoint at phase boundaries per `rules/memory-layout.md`. Delete the checkpoint on successful completion.
 
 ### Pipeline (parallel branches)
 When the matched pipeline includes independent branches (e.g., two `/gather` calls on unrelated topics), dispatch them concurrently per the fan-out-protocol rule, then merge outputs before continuing to the next sequential step.

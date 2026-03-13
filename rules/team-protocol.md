@@ -51,14 +51,14 @@ members:
 
 **When to set `isolation: worktree`:**
 - The member's `owns` patterns don't overlap with any other member's patterns
-- The member's tasks don't require reading or writing shared state files (e.g., `memory/team/decisions.md`)
+- The member's tasks don't require reading or writing shared state files (e.g., `.claude/tackline/memory/team/decisions.md`)
 - The member's work is self-contained within its owned paths for the duration of the sprint
 
 **Consumed by /sprint**: The sprint skill reads `isolation` at dispatch time and passes worktree-isolated members to the worktree dispatch path. Members with `isolation: none` (or no `isolation` field) are dispatched in the main context.
 
 ## Learnings Files
 
-Each member has a file at `memory/agents/<name>/learnings.md`. These are version-controlled, human-readable, and injected into every spawn.
+Each member has a file at `.claude/tackline/memory/agents/<name>/learnings.md`. These are version-controlled, human-readable, and injected into every spawn.
 
 ### Format
 
@@ -96,7 +96,7 @@ Learnings files are capped at **60 lines**. Structure them as:
 
 When a file exceeds 60 lines or meets any of these conditions:
 1. **Merge similar entries**: Consolidate learnings that say the same thing in different ways
-2. **Archive stale entries**: Move entries older than 21 days (without recent references) to `memory/agents/<name>/archive.md`
+2. **Archive stale entries**: Move entries older than 21 days (without recent references) to `.claude/tackline/memory/agents/<name>/archive.md`
 3. **Promote high-value entries**: If a learning has been confirmed across 3+ sprints, promote it to `.claude/rules/` or CLAUDE.md
 4. **Validate cross-agent notes**: Notes in "Cross-Agent Notes" that are older than 14 days must be either:
    - Acknowledged (merged into other sections)
@@ -105,7 +105,7 @@ When a file exceeds 60 lines or meets any of these conditions:
 
 ## Shared Team Memory
 
-Cross-cutting decisions live in `memory/team/decisions.md`:
+Cross-cutting decisions live in `.claude/tackline/memory/team/decisions.md`:
 
 ```markdown
 # Team Decisions
@@ -117,7 +117,7 @@ Cross-cutting decisions live in `memory/team/decisions.md`:
 - All dates stored as ISO 8601 UTC (decided: 2026-02-13, by: backend)
 ```
 
-Retrospective summaries append to `memory/team/retro-history.md`.
+Retrospective summaries append to `.claude/tackline/memory/team/retro-history.md`.
 
 ## Spawn Protocol
 
@@ -128,7 +128,7 @@ The orchestrator dispatches team members via the Task tool.
 Use the Task tool with `subagent_type: "general-purpose"` (or a custom agent type matching the member name if registered in `.claude/agents/`).
 
 The task prompt must include:
-1. The member's accumulated learnings (contents of `memory/agents/<name>/learnings.md`)
+1. The member's accumulated learnings (contents of `.claude/tackline/memory/agents/<name>/learnings.md`)
 2. The task description with context
 3. Reflection instructions requesting structured output
 
@@ -140,7 +140,7 @@ Role: <role>
 Owns: <owns patterns>
 
 ## Your Accumulated Learnings
-<contents of memory/agents/<name>/learnings.md>
+<contents of .claude/tackline/memory/agents/<name>/learnings.md>
 
 ## Task
 <task description>
@@ -185,7 +185,7 @@ Having dependencies between tasks is not sufficient justification for native tea
 
 Regardless of dispatch mechanism, the orchestrator always injects learnings into the agent's initial prompt. Agents never self-load their own learnings files.
 
-1. Read `memory/agents/<name>/learnings.md` before dispatching.
+1. Read `.claude/tackline/memory/agents/<name>/learnings.md` before dispatching.
 2. Embed the contents in the agent's initial prompt (see Prompt Template above).
 3. This applies to both Task tool dispatch and native TeamCreate spawns.
 
@@ -206,7 +206,7 @@ After expensive phases — multi-turn research, large code generation, or long i
 When the Task tool returns an agent ID for a completed or partial run, write it to a checkpoint file:
 
 ```
-memory/scratch/<skill-name>-agent-<member>.md
+.claude/tackline/memory/scratch/<skill-name>-agent-<member>.md
 ```
 
 Format:
@@ -302,8 +302,8 @@ Every spawned team member returns this JSON structure:
 ## Learning Lifecycle
 
 ### 1. Seed (during /assemble)
-- Create `memory/agents/<name>/learnings.md` with initial role context
-- Create `memory/team/decisions.md` with empty sections
+- Create `.claude/tackline/memory/agents/<name>/learnings.md` with initial role context
+- Create `.claude/tackline/memory/team/decisions.md` with empty sections
 
 ### 2. Inject (during spawn)
 - Read learnings file, embed in `--append-system-prompt`

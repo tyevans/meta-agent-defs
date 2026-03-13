@@ -107,7 +107,7 @@ tackline/
     test-conventions.md       # Testing conventions
   templates/
     teams/                    # Starter team.yaml files for common project types
-  memory/                     # Persistent state (sessions, learnings, epics)
+  .claude/tackline/memory/    # Persistent state (sessions, learnings, epics)
   mcp-servers.json            # MCP server definitions (installed via plugin system)
   CLAUDE.md                   # Context file for working on this repo itself
   CONTRIBUTING.md             # Contribution guidelines

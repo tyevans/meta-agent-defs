@@ -73,7 +73,7 @@ Each team member has:
 
 ### Learnings Files
 
-Each member has a markdown file at `memory/agents/<name>/learnings.md` containing:
+Each member has a markdown file at `.claude/tackline/memory/agents/<name>/learnings.md` containing:
 - **Codebase Patterns**: Confirmed conventions, architectural rules
 - **Gotchas**: Bugs, quirks, workarounds discovered the hard way
 - **Preferences**: User/project style preferences
@@ -122,8 +122,8 @@ If you prefer manual setup or want to understand the internals:
 
 ```bash
 mkdir -p .claude
-mkdir -p memory/agents
-mkdir -p memory/team
+mkdir -p .claude/tackline/memory/agents
+mkdir -p .claude/tackline/memory/team
 ```
 
 #### Step 2: Write Team Manifest
@@ -159,12 +159,12 @@ members:
 
 #### Step 3: Create Learnings Files
 
-For each member, create `memory/agents/<name>/learnings.md`:
+For each member, create `.claude/tackline/memory/agents/<name>/learnings.md`:
 
 ```bash
 # For backend
-mkdir -p memory/agents/backend
-cat > memory/agents/backend/learnings.md << 'EOF'
+mkdir -p .claude/tackline/memory/agents/backend
+cat > .claude/tackline/memory/agents/backend/learnings.md << 'EOF'
 # Learnings: backend
 
 ## Codebase Patterns
@@ -223,7 +223,7 @@ Role: Server logic, data models, business rules
 Owns: src/api/**, src/models/**, tests/api/**
 
 ## Your Accumulated Learnings
-<contents of memory/agents/backend/learnings.md>
+<contents of .claude/tackline/memory/agents/backend/learnings.md>
 
 ## Task
 [Task description or manual context]
@@ -292,7 +292,7 @@ The orchestrator (you or `/sprint`) processes the reflection:
 3. **Appends to learnings file**: Adds entries with today's date
 4. **Routes cross-agent notes**: If `for_agent` is specified, also adds to that member's file under "Cross-Agent Notes"
 
-Example update to `memory/agents/backend/learnings.md`:
+Example update to `.claude/tackline/memory/agents/backend/learnings.md`:
 
 ```markdown
 ## Codebase Patterns
@@ -302,7 +302,7 @@ Example update to `memory/agents/backend/learnings.md`:
 - Empty user queries need explicit [] not null for frontend compatibility (added: 2026-02-13)
 ```
 
-And to `memory/agents/frontend/learnings.md`:
+And to `.claude/tackline/memory/agents/frontend/learnings.md`:
 
 ```markdown
 ## Cross-Agent Notes
@@ -324,7 +324,7 @@ The next time you dispatch the backend member, they see these new learnings in t
 
 ### Learnings File Format
 
-Each `memory/agents/<name>/learnings.md` follows this structure:
+Each `.claude/tackline/memory/agents/<name>/learnings.md` follows this structure:
 
 ```markdown
 # Learnings: <name>
@@ -411,7 +411,7 @@ Combine entries that say the same thing in different ways.
 
 #### 2. Archive Stale Entries
 
-Move entries older than 21 days (with no recent references) to `memory/agents/<name>/archive.md`.
+Move entries older than 21 days (with no recent references) to `.claude/tackline/memory/agents/<name>/archive.md`.
 
 Create the archive file if it doesn't exist:
 
@@ -431,7 +431,7 @@ Learnings that were once relevant but are no longer active. Preserved for histor
 If a learning has been confirmed across 3+ sprints, promote it to:
 - `.claude/rules/` (if it's a rule all agents should follow)
 - `CLAUDE.md` (if it's fundamental project context)
-- `memory/team/decisions.md` (if it's a team-wide architectural decision)
+- `.claude/tackline/memory/team/decisions.md` (if it's a team-wide architectural decision)
 
 **Example promotion:**
 
@@ -440,7 +440,7 @@ Learnings file had:
 - All dates stored as ISO 8601 UTC (added: 2026-02-01, confirmed in 8 sprints)
 ```
 
-Promoted to `memory/team/decisions.md`:
+Promoted to `.claude/tackline/memory/team/decisions.md`:
 ```markdown
 ## Conventions
 - All dates stored as ISO 8601 UTC (decided: 2026-02-01, by: backend)
@@ -477,7 +477,7 @@ After (merged into Codebase Patterns):
 If you're pruning manually (not using `/retro`):
 
 1. **Read the learnings file** and identify candidates for each consolidation type
-2. **Create archive file** if needed: `memory/agents/<name>/archive.md`
+2. **Create archive file** if needed: `.claude/tackline/memory/agents/<name>/archive.md`
 3. **Edit the learnings file**:
    - Merge similar entries
    - Move stale entries to archive
@@ -547,7 +547,7 @@ This keeps Cross-Agent Notes sections clean and actionable.
 
 ### Team-Wide Decisions
 
-Some knowledge benefits the entire team, not just one member. Use `memory/team/decisions.md` for:
+Some knowledge benefits the entire team, not just one member. Use `.claude/tackline/memory/team/decisions.md` for:
 - Architectural choices that affect everyone
 - Conventions adopted team-wide
 - Major technology decisions
@@ -580,7 +580,7 @@ The team system integrates with four primary skills: `/assemble`, `/standup`, `/
 1. Explores your project structure
 2. Proposes roles and ownership patterns
 3. Creates `.claude/team.yaml`
-4. Creates `memory/agents/<name>/learnings.md` for each member
+4. Creates `.claude/tackline/memory/agents/<name>/learnings.md` for each member
 5. Optionally initializes a backlog with your preferred task tracker
 
 **Output:** A fully configured team ready for dispatch.
@@ -835,7 +835,7 @@ The learning loop works identically — a task tracker just provides backlog str
 **Cause:** The gotcha isn't in learnings, or learnings file wasn't injected.
 
 **Fix:**
-- Verify the gotcha is documented in `memory/agents/<name>/learnings.md` under Gotchas
+- Verify the gotcha is documented in `.claude/tackline/memory/agents/<name>/learnings.md` under Gotchas
 - Check that the dispatch prompt includes the learnings (read the Task prompt)
 - Add the gotcha manually if the agent didn't suggest it
 
@@ -846,7 +846,7 @@ The learning loop works identically — a task tracker just provides backlog str
 **Fix:**
 - Run `/retro` to trigger automatic pruning, then `/tend` or `/curate` + `/promote` for the full lifecycle
 - Manually consolidate similar entries
-- Archive stale entries (>21 days) to `memory/agents/<name>/archive.md`
+- Archive stale entries (>21 days) to `.claude/tackline/memory/agents/<name>/archive.md`
 - Promote high-value entries to `.claude/rules/` or `CLAUDE.md`
 
 #### "Cross-agent note is stale (>14 days)"
@@ -894,7 +894,7 @@ At the end of each session or epic, run `/retro` to prune bloated files and extr
 
 #### Use Cross-Agent Notes Sparingly
 
-Cross-agent notes are for **action triggers**, not documentation. If a pattern is relevant to multiple agents, promote it to `memory/team/decisions.md` instead.
+Cross-agent notes are for **action triggers**, not documentation. If a pattern is relevant to multiple agents, promote it to `.claude/tackline/memory/team/decisions.md` instead.
 
 #### Promote High-Value Learnings
 
@@ -916,7 +916,7 @@ Some projects benefit from specialized roles beyond backend/frontend/tester:
 You can add new roles mid-project:
 
 1. Add the member to `.claude/team.yaml`
-2. Create `memory/agents/<name>/learnings.md`
+2. Create `.claude/tackline/memory/agents/<name>/learnings.md`
 3. Seed with relevant context from existing members
 4. Dispatch via `/sprint`
 
@@ -971,7 +971,7 @@ The persistent learning team system transforms agent dispatch from stateless exe
 **Key takeaways:**
 
 1. **Teams persist across sessions** via version-controlled files
-2. **Learnings accumulate** in `memory/agents/<name>/learnings.md`
+2. **Learnings accumulate** in `.claude/tackline/memory/agents/<name>/learnings.md`
 3. **The learning loop** ensures agents get smarter with every task
 4. **Cross-agent notes** route knowledge between team members
 5. **Pruning** keeps learnings focused and high-signal

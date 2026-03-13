@@ -7,7 +7,7 @@ settings.json
 CLAUDE.local.md
 
 # Runtime state (created by hooks and skills, not distributable)
-memory/
+.claude/tackline/memory/
 .tacks/
 
 # Python artifacts

@@ -38,7 +38,7 @@ Detect artifact type (learnings or rules)
           -> [rules] Compute passive context budget
             -> Emit pipe-format report
               -> [learnings] (Optional) Write back to learnings.md and archive.md
-              -> [rules] Write review manifest to memory/scratch/
+              -> [rules] Write review manifest to .claude/tackline/memory/scratch/
 ```
 
 ---
@@ -58,17 +58,17 @@ Otherwise:
 ### 0b. Validate Agent (learnings mode)
 
 If `$ARGUMENTS` is empty:
-1. Run `ls memory/agents/` to list available agents
+1. Run `ls .claude/tackline/memory/agents/` to list available agents
 2. Ask: "Which agent should I curate? Available: [names]"
 3. Stop and wait for response
 
 If `$ARGUMENTS` is provided:
-1. Check whether `memory/agents/<name>/learnings.md` exists
+1. Check whether `.claude/tackline/memory/agents/<name>/learnings.md` exists
 2. If not found:
    - Check whether `.claude/team.yaml` exists and lists this agent
    - If the agent IS listed in team.yaml: print "No learnings found for <name>. Entering bootstrap mode — pulling from cross-agent sources." Set **bootstrap mode = true**. Continue to Phase 1.
-   - If the agent is NOT in team.yaml (or team.yaml does not exist): "No learnings file at memory/agents/<name>/learnings.md. Has this agent been dispatched yet?" Stop and wait for response.
-3. Note whether `memory/agents/<name>/archive.md` exists (needed for Phase 4)
+   - If the agent is NOT in team.yaml (or team.yaml does not exist): "No learnings file at .claude/tackline/memory/agents/<name>/learnings.md. Has this agent been dispatched yet?" Stop and wait for response.
+3. Note whether `.claude/tackline/memory/agents/<name>/archive.md` exists (needed for Phase 4)
 4. Note whether `.claude/team.yaml` exists (used in Phase 1d to read the agent definition)
 
 ### 0c. Validate Rules (rules mode)
@@ -88,7 +88,7 @@ If `$ARGUMENTS` is provided:
 
 **Learnings mode (bootstrap):** Skip this step. The target has no learnings.md. Note that the starting entry count is 0. Continue to Phase 1b.
 
-**Learnings mode (normal):** Read `memory/agents/<name>/learnings.md`. Note:
+**Learnings mode (normal):** Read `.claude/tackline/memory/agents/<name>/learnings.md`. Note:
 - Total line count (cap is 60 lines: 30 Core + 30 Task-Relevant)
 - Each distinct entry (entries separated by blank lines or bullet markers)
 - Entry provenance where present: `(added: YYYY-MM-DD, dispatch: <source>)`
@@ -110,7 +110,7 @@ Also read `CLAUDE.md` and note any overlap between CLAUDE.md content and rule fi
 Gather the upcoming task signal from whichever sources are available. Check your project's task tracker for ready and in-progress work, and check for epic state files:
 
 ```bash
-ls memory/epics/*/epic.md 2>/dev/null
+ls .claude/tackline/memory/epics/*/epic.md 2>/dev/null
 ```
 
 Read any epic state files found. Extract:
@@ -140,7 +140,7 @@ Read each rule file. Read `CLAUDE.md`. Build a list of topics already covered pa
 **Rules mode:** Read agent learnings to find PASSIVE rules (rules whose content has been internalized by agents):
 
 ```bash
-ls memory/agents/*/learnings.md 2>/dev/null
+ls .claude/tackline/memory/agents/*/learnings.md 2>/dev/null
 ```
 
 For each rule, check whether 3+ agents have learnings entries that restate the rule's constraints. A rule internalized by 3+ agents is a candidate for PASSIVE — the knowledge is already distributed and the rule may be adding redundant passive context cost.
@@ -288,7 +288,7 @@ Domain area: hook scripting
 
 **Skip this step in rules mode.** Rules are not archived — they are reviewed and manually maintained.
 
-If `memory/agents/<name>/archive.md` exists, read it. Scan for entries that match gap areas. These are **archive candidates** — entries that were previously archived but are now relevant again.
+If `.claude/tackline/memory/agents/<name>/archive.md` exists, read it. Scan for entries that match gap areas. These are **archive candidates** — entries that were previously archived but are now relevant again.
 
 ### 3d. Check Cross-Agent Sources (learnings mode only)
 
@@ -297,7 +297,7 @@ If `memory/agents/<name>/archive.md` exists, read it. Scan for entries that matc
 Scan other agents' learnings files for entries relevant to the gap areas:
 
 ```bash
-ls memory/agents/*/learnings.md 2>/dev/null
+ls .claude/tackline/memory/agents/*/learnings.md 2>/dev/null
 ```
 
 Read each file that is not the target agent's. For each gap, check whether another agent has an entry covering it. Cross-agent candidates are flagged for potential pull-in. Note the source agent name — this is also relevant for `/promote` (patterns across agents indicate rule candidacy).
@@ -326,7 +326,7 @@ Emit in pipe format per `rules/pipe-format.md`. The format depends on artifact t
    - freshness: fresh | aging | stale
    - scope: agent | project | global
    - reason: <why this relevance — reference to specific upcoming task or file>
-   - source: memory/agents/<name>/learnings.md
+   - source: .claude/tackline/memory/agents/<name>/learnings.md
    - related: <comma-separated list of related entry titles, if any>
 
 2. **ARCHIVE: <entry title>** — <full entry text>
@@ -334,21 +334,21 @@ Emit in pipe format per `rules/pipe-format.md`. The format depends on artifact t
    - freshness: aging | stale
    - scope: agent | project | global
    - reason: <why archived — no upcoming tasks, or covered by rule: filename>
-   - source: memory/agents/<name>/learnings.md
+   - source: .claude/tackline/memory/agents/<name>/learnings.md
 
 3. **ADD (from archive): <entry title>** — <entry text>
    - relevance: high | medium
    - freshness: <from original added date>
    - scope: agent | project | global
    - reason: <gap area this fills>
-   - source: memory/agents/<name>/archive.md
+   - source: .claude/tackline/memory/agents/<name>/archive.md
 
 4. **ADD (cross-agent): <entry title>** — <entry text>
    - relevance: high | medium
    - freshness: <from original added date>
    - scope: project | global
    - reason: <gap area this fills; note if same entry exists in 2+ agents — promote candidate>
-   - source: memory/agents/<other-name>/learnings.md
+   - source: .claude/tackline/memory/agents/<other-name>/learnings.md
    - cross-agent: true
    - related: <comma-separated list of related entry titles from any agent, if detected>
 
@@ -383,7 +383,7 @@ Use this format when bootstrap mode is active (no existing learnings.md):
    - freshness: <from original added date>
    - scope: agent | project | global
    - reason: <gap area this fills — reference to agent role or upcoming work domain>
-   - source: memory/agents/<other-name>/learnings.md | memory/agents/<other-name>/archive.md
+   - source: .claude/tackline/memory/agents/<other-name>/learnings.md | .claude/tackline/memory/agents/<other-name>/archive.md
    - cross-agent: true
    - related: <comma-separated list of related entry titles, if any>
 
@@ -477,7 +477,7 @@ When re-organizing:
 
 **5b. Update archive.md**
 
-Append each ARCHIVE entry to `memory/agents/<name>/archive.md`:
+Append each ARCHIVE entry to `.claude/tackline/memory/agents/<name>/archive.md`:
 
 ```markdown
 - <entry text> (archived: YYYY-MM-DD, reason: relevance low, freshness stale — no upcoming tasks in this area)
@@ -501,13 +501,13 @@ Read the updated `learnings.md` and confirm:
 
 After presenting the bootstrap output, ask the user:
 
-> "Create memory/agents/<name>/learnings.md with these seeded entries? (y/n)"
+> "Create .claude/tackline/memory/agents/<name>/learnings.md with these seeded entries? (y/n)"
 
 If the user approves:
 
 **5a. Create learnings.md**
 
-Create `memory/agents/<name>/learnings.md` (and the directory if it does not exist) with:
+Create `.claude/tackline/memory/agents/<name>/learnings.md` (and the directory if it does not exist) with:
 
 ```markdown
 # Learnings: <agent-name>
@@ -538,7 +538,7 @@ Read the newly created `learnings.md` and confirm:
 
 **Never auto-delete or auto-modify rule files.** Rules mode is report-only.
 
-Write a review manifest to `memory/scratch/rules-review.md`:
+Write a review manifest to `.claude/tackline/memory/scratch/rules-review.md`:
 
 ```markdown
 # Rules Review Manifest
