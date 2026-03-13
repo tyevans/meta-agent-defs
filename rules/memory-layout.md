@@ -11,7 +11,7 @@ Single source of truth for persistent state: where it lives, who writes it, and 
 
 ## Root Path
 
-All persistent state lives under `.claude/tackline/memory/`. Do not use `memory/` at the project root.
+All persistent state lives under `.claude/tackline/memory/`.
 
 ## Path Registry
 
