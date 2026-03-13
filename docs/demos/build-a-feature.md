@@ -251,8 +251,8 @@ You are running a **session recap** — summarizing what happened in the current
 - TODO: Skip task tracker section if no tracker is configured
 ```
 
-2. **install.sh symlink entry** — No changes needed
-   - /recap lives in skills/ directory, so install.sh will auto-symlink it to ~/.claude/skills/recap/
+2. **Plugin pickup** — No changes needed
+   - /recap lives in skills/ directory, so `claude plugin update` will pick it up automatically
 
 3. **AGENTS.md skill catalog entry** — Optional documentation
    - Add /recap to the skill catalog with one-line description: "Session summary via narrative + timeline + file changes"
@@ -276,10 +276,10 @@ The sketch shows /recap's file structure, frontmatter, and three-phase workflow 
 
 ### Items
 
-1. **Claim: install.sh auto-symlinks skills/ directories**
+1. **Claim: plugin system auto-discovers skills/ directories**
    - Status: VERIFIED
-   - Evidence: install.sh lines 89-95 use `find skills/ -name SKILL.md` and creates symlinks to ~/.claude/skills/
-   - source: /home/ty/workspace/tackline/install.sh:89-95
+   - Evidence: plugin.json `skills` field points to `./skills/core/`, `./skills/workflows/`, `./skills/teams/` directories
+   - source: .claude-plugin/plugin.json
    - confidence: CONFIRMED
 
 2. **Claim: /retro uses conditional backlog support**

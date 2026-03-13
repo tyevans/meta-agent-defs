@@ -26,7 +26,7 @@ Four Model Context Protocol servers installed globally via `claude mcp add`.
 | `context7` | Up-to-date library documentation lookup |
 | `memory` | Persistent knowledge graph across sessions |
 
-MCP servers are defined in `mcp-servers.json`. Add or remove entries there and rerun `./install.sh`.
+MCP servers are defined in `mcp-servers.json` and installed via the plugin system.
 
 ## Project Structure
 
@@ -108,8 +108,7 @@ tackline/
   templates/
     teams/                    # Starter team.yaml files for common project types
   memory/                     # Persistent state (sessions, learnings, epics)
-  mcp-servers.json            # MCP server definitions (installed globally by install.sh)
-  install.sh                  # Symlink installer (idempotent, non-destructive)
+  mcp-servers.json            # MCP server definitions (installed via plugin system)
   CLAUDE.md                   # Context file for working on this repo itself
   CONTRIBUTING.md             # Contribution guidelines
 ```

@@ -1,10 +1,10 @@
 ---
 name: sync-auditor
-description: Audits cross-artifact consistency across the repo -- verifies README.md, CLAUDE.md, AGENTS.md, and install.sh all reflect the actual files present. Use after adding, renaming, or removing agent/skill/settings files, or when you suspect documentation has drifted from reality.
+description: Audits cross-artifact consistency across the repo -- verifies README.md, CLAUDE.md, and AGENTS.md all reflect the actual files present. Use after adding, renaming, or removing agent/skill/settings files, or when you suspect documentation has drifted from reality.
 tools: Read, Glob, Grep, Bash(ls:*), Bash(git diff:*), Bash(git log:*)
 model: haiku
 output-contract: |
-  Sync audit report with per-sync-point PASS/FAIL verdicts (README.md, CLAUDE.md, AGENTS.md, install.sh, Skills, Internal Agents), summary counts, and specific fixes needed list. Orchestrator reads FAIL items to create fix tasks.
+  Sync audit report with per-sync-point PASS/FAIL verdicts (README.md, CLAUDE.md, AGENTS.md, Skills, Internal Agents), summary counts, and specific fixes needed list. Orchestrator reads FAIL items to create fix tasks.
 ---
 
 # Sync Auditor
@@ -16,7 +16,6 @@ You verify that all cross-cutting documentation and tooling in the tackline repo
 - Compare actual files on disk against what README.md documents
 - Compare actual files against what CLAUDE.md describes
 - Verify AGENTS.md (at repo root) lists all agents with accurate descriptions
-- Confirm install.sh covers all artifact directories (agents, skills)
 - Verify skills/ directory consistency (every subdirectory has a valid SKILL.md)
 - Flag any drift between reality and documentation
 
@@ -29,7 +28,6 @@ These are the artifacts that reference other files and must stay current:
 The README contains a tree listing under "What's Included". Verify:
 - Every `.md` file in `agents/` is listed
 - Every skill directory in `skills/` is listed with its `SKILL.md`
-- `install.sh` is listed
 - No files are listed that do not exist on disk
 
 ### 2. CLAUDE.md Project Structure Section
@@ -47,14 +45,7 @@ The root `AGENTS.md` describes available agents. Verify:
 - Agent descriptions match their frontmatter `description` field
 - No entries exist for agents that have been removed
 
-### 4. install.sh
-
-The installer creates symlinks. Verify:
-- It loops over `agents/*.md`
-- It handles `skills/*/` directories for global installation
-- If new artifact directories have been added, the installer covers them
-
-### 5. Skills Directory Consistency
+### 4. Skills Directory Consistency
 
 The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
 - Every subdirectory in `skills/` contains a `SKILL.md` file
@@ -62,9 +53,9 @@ The `skills/` directory contains subdirectories each with a `SKILL.md`. Verify:
 - Skills referenced in CLAUDE.md or README.md match actual directories on disk
 - No orphan directories (directories without `SKILL.md`)
 
-### 6. Internal Agents (`.claude/agents/`)
+### 5. Internal Agents (`.claude/agents/`)
 
-The `.claude/agents/` directory contains internal agents not shipped via the installer. Verify:
+The `.claude/agents/` directory contains project-local agents. Verify:
 - Every `.md` file in `.claude/agents/` has valid frontmatter (`name`, `description`, `tools`, `model`)
 - No stale references to internal agents in CLAUDE.md or other documentation
 - No duplicate agents (same purpose covered by both a public and internal agent)
@@ -99,9 +90,6 @@ The `.claude/agents/` directory contains internal agents not shipped via the ins
 - FAIL: Missing entry for `agent-generator`
 - FAIL: Description for `project-bootstrapper` does not match frontmatter
 
-### install.sh
-- PASS: Covers all artifact directories
-
 ### Skills
 - PASS: All skill directories contain SKILL.md
 - FAIL: `skills/new-skill/` directory has no SKILL.md
@@ -111,7 +99,7 @@ The `.claude/agents/` directory contains internal agents not shipped via the ins
 - FAIL: `.claude/agents/removed-agent.md` referenced in CLAUDE.md but does not exist
 
 ### Summary
-- Sync points checked: 6
+- Sync points checked: 5
 - Passing: 2
 - Failing: 3
 - Specific fixes needed: [list]

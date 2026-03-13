@@ -48,22 +48,20 @@ Each skill's output feeds the next through conversation context. No file passing
 ## Install
 
 ```bash
-git clone https://github.com/tyevans/tackline
-cd tackline
-./install.sh
-```
+# Install as a Claude Code plugin (skills, agents, hooks, MCP)
+claude plugin install tackline@tacklines
 
-Zero dependencies. The installer symlinks everything into `~/.claude/`. Rerun after pulling updates -- it's idempotent, existing files are backed up.
-
-```bash
-./install.sh /path/to/project    # Project-local install (agents + skills only)
-./install.sh --hardlink           # Hardlinks instead of symlinks
+# Install global rules (plugin system doesn't support rules yet)
+mkdir -p ~/.claude/rules
+for f in /path/to/tackline/rules/*.md; do ln -sf "$f" ~/.claude/rules/; done
 ```
 
 ### Uninstall
 
 ```bash
-xargs rm -f < ~/.claude/.tackline.manifest
+claude plugin uninstall tackline@tacklines
+# Remove rule symlinks (leaves non-tackline rules intact)
+for f in /path/to/tackline/rules/*.md; do rm -f ~/.claude/rules/"$(basename "$f")"; done
 ```
 
 ## Getting Started
@@ -104,9 +102,9 @@ xargs rm -f < ~/.claude/.tackline.manifest
 
 ## Extending
 
-**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter. Rerun `./install.sh`.
+**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter. Run `claude plugin update tackline@tacklines`.
 
-**Add an agent:** Create `agents/<name>.md` with YAML frontmatter. Rerun `./install.sh`.
+**Add an agent:** Create `agents/<name>.md` with YAML frontmatter. Run `claude plugin update tackline@tacklines`.
 
 ## Learn More
 

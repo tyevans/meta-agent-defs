@@ -212,7 +212,7 @@ Each spike agent (whether background Task or team teammate) receives these instr
 
 **For team teammates, add this prefix to the instructions:**
 
-> When your investigation is complete, send your full report via SendMessage to the orchestrator (team lead). Do not create beads or tasks directly -- the orchestrator handles that.
+> When your investigation is complete, send your full report via SendMessage to the orchestrator (team lead). Do not create tasks directly -- the orchestrator handles that.
 
 ### After Each Spike Completes
 

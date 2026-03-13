@@ -16,7 +16,6 @@ What "done" means for each type of change in this repo.
 - [ ] Tools list is minimal -- read-only agents should not have Write/Edit
 - [ ] `output-contract` included if output is parsed by another skill or agent (optional otherwise)
 - [ ] Agent catalog (AGENTS.md in target project) updated if applicable
-- [ ] `install.sh` re-run to verify symlink creation
 
 ## New Skill (`skills/<name>/SKILL.md`)
 
@@ -25,7 +24,6 @@ What "done" means for each type of change in this repo.
 - [ ] Has clear phase structure with numbered steps
 - [ ] Includes Phase 0 or equivalent precondition gate if the skill has prerequisites (e.g., loaded context, clean git state, prior skill output)
 - [ ] Tested by running the slash command in a live session
-- [ ] `install.sh` re-run to verify symlink creation
 - [ ] `docs/INDEX.md` updated with new skill entry
 
 ## Bug Fix

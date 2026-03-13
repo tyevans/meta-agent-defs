@@ -29,17 +29,16 @@ This repo itself (tackline) is content-only -- direct edits to `.md` and `.json`
 ## Quick Reference
 
 ```bash
-# Install (global symlinks to ~/.claude/)
-./install.sh
+# Install as a Claude Code plugin
+claude plugin install tackline@tacklines
 
-# Install to a specific project
-./install.sh /path/to/project
+# Install global rules (not supported by plugin system)
+mkdir -p ~/.claude/rules
+for f in /path/to/tackline/rules/*.md; do ln -sf "$f" ~/.claude/rules/; done
 
-# Install with hardlinks instead of symlinks
-./install.sh --hardlink
-
-# Uninstall (uses manifest written during install)
-xargs rm -f < ~/.claude/.tackline.manifest
+# Uninstall
+claude plugin uninstall tackline@tacklines
+for f in /path/to/tackline/rules/*.md; do rm -f ~/.claude/rules/"$(basename "$f")"; done
 ```
 
 ## Skills
@@ -93,10 +92,10 @@ tackline/
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
 ├── mcp-servers.json            # MCP server definitions (installed globally)
-├── install.sh                  # Symlink installer (idempotent)
+├── .claude-plugin/             # Plugin manifest for `claude plugin install`
 ├── .claude/                    # Project-local Claude Code config (NOT symlinked globally)
 │   ├── AGENTS.md               # Agent catalog for project-local agents
-│   ├── agents/                 # 8 project-local agents (authoring, research, maintenance)
+│   ├── agents/                 # 6 project-local agents (authoring, research, maintenance)
 │   ├── rules/                  # Architectural guardrails
 │   └── skills/                 # Project-local skill overrides
 └── CONTRIBUTING.md             # Contribution guidelines
@@ -105,8 +104,8 @@ tackline/
 ## Architecture
 
 - **No source code, no build system, no tests.** This is a content-only repo of Markdown definitions and JSON config.
-- `install.sh` is idempotent. It backs up existing regular files before symlinking.
-- `mcp-servers.json` defines MCP servers installed globally via `claude mcp add --scope user`. Config lives in `~/.claude.json` (not symlinked).
+- Installation is via `claude plugin install`. The plugin system handles skills, agents, hooks, and MCP servers.
+- Global rules must be symlinked individually to `~/.claude/rules/` since plugins don't support rules yet.
 
 ## Key Patterns
 

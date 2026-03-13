@@ -22,7 +22,7 @@ You are running the **Bootstrap** workflow -- a structured orchestration that co
 - `project-bootstrapper` -- must be registered and reachable via the Task tool before running this skill
 - `agent-generator` -- same requirement
 
-If either agent is missing, stop in Phase 0 and tell the user to install tackline (run `install.sh`).
+If either agent is missing, stop in Phase 0 and tell the user to install tackline (`claude plugin install tackline@tacklines`).
 
 ## When to Use
 
@@ -85,7 +85,7 @@ ls ~/.claude/agents/agent-generator.md
 
 If either file is missing, stop and report:
 
-> Required agent `<name>` is not installed. Run `install.sh` from the tackline repo to register it, then retry.
+> Required agent `<name>` is not installed. Run `claude plugin install tackline@tacklines` to register it, then retry.
 
 ### 0d. Detect Project State
 
@@ -165,10 +165,10 @@ The project was just bootstrapped. Here is what the bootstrapper found:
 
 Your job: Explore the project, understand its architecture and patterns, and generate a suite of tailored agents in .claude/agents/.
 
-Follow your full phase sequence (discovery, beads integration, strategy, generation, hooks, catalog, quality check).
+Follow your full phase sequence (discovery, strategy, generation, hooks, catalog, quality check).
 
 Important:
-- The project already has CLAUDE.md, hooks, rules, and beads set up -- do not recreate these
+- The project already has CLAUDE.md, hooks, and rules set up -- do not recreate these
 - Focus on generating agents that are specific to THIS project's patterns
 - Include Investigation Protocol, Context Management, and Knowledge Transfer sections in every agent
 - Create .claude/AGENTS.md catalog

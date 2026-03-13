@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Colors (matching install.sh style)
+# Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
@@ -144,8 +144,8 @@ log "Created: $TARGET"
 echo ""
 info "Next steps:"
 echo "  1. Edit $TARGET to fill in the TODO sections"
-echo "  2. Run ./install.sh to create symlinks"
-echo "  3. Verify with: ls -la ~/.claude/agents/${NAME}.md"
+echo "  2. Run 'claude plugin update tackline@tacklines' to pick up changes"
+echo "  3. Start a new session and verify the agent is available"
 echo ""
 info "Definition of done checklist (from .claude/rules/definition-of-done.md):"
 echo "  [ ] YAML frontmatter includes: name, description, tools, model"
@@ -153,5 +153,5 @@ echo "  [ ] Description says WHEN to use the agent"
 echo "  [ ] Investigation Protocol, Context Management, Knowledge Transfer sections filled"
 echo "  [ ] Model selection matches task complexity"
 echo "  [ ] Tools list is minimal"
-echo "  [ ] install.sh re-run to verify symlink creation"
+echo "  [ ] Plugin updated to pick up changes"
 echo ""

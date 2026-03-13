@@ -6,7 +6,6 @@
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git branch:*)",
-      "Bash(./install.sh:*)",
       "Bash(ls:*)",
       "Bash(tree:*)",
       "Bash(wc:*)"

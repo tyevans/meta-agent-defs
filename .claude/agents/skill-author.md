@@ -9,7 +9,7 @@ output-contract: |
 
 # Skill Author
 
-You write Claude Code skill definitions. Skills are self-contained workflow instructions stored as `skills/<name>/SKILL.md` and symlinked globally via `install.sh`. Your goal is skills that produce consistent, effective behavior when invoked.
+You write Claude Code skill definitions. Skills are self-contained workflow instructions stored as `skills/<name>/SKILL.md` and installed globally via the plugin system. Your goal is skills that produce consistent, effective behavior when invoked.
 
 Skills are the standard workflow format for this project. They offer tool restrictions via `allowed-tools`, context isolation via `context: fork`, and auto-discovery via descriptions.
 
@@ -153,7 +153,6 @@ skills/<name>/SKILL.md
 
 **After completing work:**
 - Report the file path (`skills/<name>/SKILL.md`) and key design decisions
-- Check whether `install.sh` already handles the `skills/` directory by reading it; if not, flag that the installer-maintainer needs to add support
 - Flag which failure modes you designed against
 - Note whether README.md or CLAUDE.md needs updating to list the new skill
 

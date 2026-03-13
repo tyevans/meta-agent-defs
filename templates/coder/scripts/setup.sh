@@ -71,17 +71,9 @@ AGENT_EOF
 esac
 
 # --- Install tackline skills (if available) ---
-if [ -d "/workspace/repo/tackline" ]; then
-  echo "Installing tackline..."
-  cd /workspace/repo/tackline && bash install.sh || true
-elif command -v git &>/dev/null; then
-  # Clone tackline for skills/agents
-  if [ ! -d "/workspace/.tackline" ]; then
-    git clone https://github.com/tacklines/tackline.git /workspace/.tackline 2>/dev/null || true
-    if [ -d "/workspace/.tackline" ]; then
-      cd /workspace/.tackline && bash install.sh || true
-    fi
-  fi
+if command -v claude &>/dev/null; then
+  echo "Installing tackline plugin..."
+  claude plugin install tackline@tacklines 2>/dev/null || true
 fi
 
 # --- Coder CLI config ---
