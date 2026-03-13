@@ -53,8 +53,6 @@ tackline/
 │   ├── agent-generator.md      # Generates project-specific agents
 │   ├── project-bootstrapper.md # Bootstraps projects with full Claude Code setup
 │   └── code-reviewer.md        # Read-only code review agent
-├── bin/
-│   └── rule-relevance.sh       # SessionStart hook: matches rules to file activity via paths: frontmatter
 ├── skills/                      # Skill definitions (flattened to ~/.claude/skills/ on install)
 │   ├── core/                    # Composable primitives + entrypoints (16 skills)
 │   │   ├── gather/, distill/, rank/, filter/, assess/, verify/
@@ -112,7 +110,7 @@ tackline/
 - All artifact files are Markdown with YAML frontmatter (agents, skills, rules)
 - Agent frontmatter fields: `name`, `description`, `tools`, `model`, `permissionMode`
 - Skill frontmatter fields: `name`, `description`, `allowed-tools`, `context`, `disable-model-invocation`
-- Rule frontmatter fields: `strength` (must/should/may), `freshness` (date); some rules also have `paths` (glob patterns for conditional loading via `bin/rule-relevance.sh`)
+- Rule frontmatter fields: `strength` (must/should/may), `freshness` (date)
 - Hooks fail gracefully with `|| true` for optional tools
 - Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE
 - If `.claude/tackline/memory/project/domain.md` exists, it contains project-specific terminology; consult it when a term is ambiguous

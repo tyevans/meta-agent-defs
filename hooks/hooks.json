@@ -7,10 +7,6 @@
           {
             "type": "command",
             "command": "echo '=== Session Start ==='; git log --oneline -3 2>/dev/null | sed 's/^/Last:    /'; git diff --stat --cached 2>/dev/null; echo \"Tree:    $(git status --short 2>/dev/null | wc -l) uncommitted files\"; echo '=== ==='"
-          },
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/rule-relevance.sh\" 2>/dev/null || true"
           }
         ]
       }
