@@ -18,13 +18,5 @@
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-memory"],
     "description": "Persistent knowledge graph across sessions"
-  },
-  "coder": {
-    "command": "coder",
-    "args": ["exp", "mcp", "server"],
-    "description": "Coder workspace management — create, start, stop workspaces and execute commands in sandboxes",
-    "env": {
-      "CODER_MCP_APP_STATUS_SLUG": "agent"
-    }
   }
 }

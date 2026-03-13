@@ -40,7 +40,7 @@ Detect:
 - **Test framework**: pytest, jest, cargo test, go test
 - **Linting/formatting**: ruff, eslint, prettier, rustfmt
 - **Architecture**: flat vs layered vs DDD, monolith vs microservices
-- **Sandbox environment**: Check for `CODER_AGENT_TOKEN` env var (Coder workspace), Docker `.dockerenv`, or container runtime indicators
+- **Sandbox environment**: Check for Docker `.dockerenv` or container runtime indicators
 
 ## Phase 2: Create CLAUDE.md
 
@@ -455,19 +455,6 @@ Provide the user with:
 - `/status` — Orient new sessions in unfamiliar projects
 - `/blossom` — Explore unfamiliar codebases with spike-driven discovery
 - `/review` — Establish code quality baseline
-
-## Coder Workspace Detection
-
-If `CODER_AGENT_TOKEN` is set or `/workspace` exists as the root working directory, the project is running inside a Coder workspace:
-
-1. **Set working directory** in CLAUDE.md to `/workspace/repo` (not `~`)
-2. **Note sandbox constraints** in CLAUDE.md: network may be restricted, workspace has TTL
-3. **Add Coder MCP server** to the project's MCP config if `coder` CLI is available:
-   ```json
-   {"coder": {"command": "coder", "args": ["exp", "mcp", "server"]}}
-   ```
-4. **Configure hooks** to use workspace-relative paths
-5. **Skip SSH/git remote setup** if the workspace was created with a repo_url parameter (already cloned)
 
 ## Notes
 

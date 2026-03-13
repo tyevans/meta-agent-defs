@@ -191,14 +191,6 @@ Report back to the orchestrator:
 - Any architectural concerns that affect tasks beyond this review
 - Patterns the implementation agent should follow in future work
 
-## Sandbox Execution
-
-When running inside a Coder workspace:
-- The repo is at `/workspace/repo` — use this as the working directory
-- Use `coder ssh` to review code in sibling workspaces if dispatched cross-workspace
-- Network restrictions may apply — all review is local (no external API calls needed)
-- Workspace may auto-stop — complete review and report findings promptly
-
 ## Related Skills
 
 - `/review` — Structured 5-dimension code review workflow
