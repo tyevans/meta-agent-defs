@@ -1,10 +1,10 @@
 ---
 name: premortem
-description: "Identify how a feature could fail before building it, then design mitigations into the implementation plan. Use for high-stakes features, security-sensitive changes, anything touching money/auth/data integrity, or when you want to surface hidden risks. Keywords: premortem, risk, failure, security, resilience, mitigation."
+description: "Use before building high-stakes features — anything touching money, auth, data integrity, or security. Identifies failure modes and designs mitigations into the plan. Keywords: premortem, risk, failure, security, resilience, mitigation."
 argument-hint: "<feature or change to stress-test>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Task, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Bash(git:*), Task, AskUserQuestion
 context: fork
 ---
 
@@ -29,7 +29,7 @@ Understand the feature (what changes, what it touches)
   -> Generate failure scenarios (3 agents, different lenses)
     -> Prioritize with user (which failures matter most)
       -> Design mitigations (concrete code/test/monitoring changes)
-        -> Report and create beads tasks
+        -> Report and create tasks
 ```
 
 ---
@@ -309,33 +309,13 @@ Emit the report in pipe format so downstream skills (`/spec`, `/tracer`, `/test-
 
 Items include only the prioritized scenarios (user-selected in Phase 3). Unprioritized scenarios are omitted from pipe-format output but referenced in the Failure Analysis counts.
 
-### 5b. Create Beads Tasks
+### 5b. Create Tasks
 
-Create an epic to group mitigations, then create each mitigation as a child:
+Create tasks in your task tracker to track mitigations:
 
-```bash
-# tacks
-tk create "EPIC: Pre-mortem mitigations for [feature]"
-# bd equivalent: bd create --title="EPIC: Pre-mortem mitigations for [feature]" --type=epic --priority=1
-```
-
-For each mitigation in the plan:
-
-```bash
-# tacks
-tk create --parent <mitigation-epic-id> "[MITIGATION]: [scenario title]"
-# bd equivalent: bd create --title="[MITIGATION]: [scenario title]" --type=task \
-#   --priority=<0-for-catastrophic,1-for-major,2-for-minor> \
-#   --parent=<mitigation-epic-id> \
-#   --description="Pre-mortem mitigation for [feature]. Failure scenario: [brief]. Prevention: [what to build]. Detection: [monitoring]. Test: [verification]. Effort: [S/M/L]."
-```
-
-Wire the mitigation epic as a dependency of the main feature task so mitigations complete before implementation:
-
-```bash
-tk dep add <feature-task> <mitigation-epic-id>
-# bd equivalent: bd dep add <feature-task> <mitigation-epic-id>
-```
+1. **Create an epic or parent task** to group all mitigations for this feature
+2. **Create a child task for each mitigation** with title, priority (P0 for catastrophic, P1 for major, P2 for minor), and description including the failure scenario, prevention, detection, monitoring, and effort estimate
+3. **Wire dependencies** so the mitigation epic blocks the main feature task — mitigations should complete before implementation begins
 
 Create the feature task if it doesn't exist yet.
 
@@ -343,12 +323,12 @@ Create the feature task if it doesn't exist yet.
 
 ## Guidelines
 
-- **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/premortem-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+- **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/premortem-checkpoint.md`.
 - **Concrete over abstract**: "SQL injection via search param at line X" beats "security could be compromised"
 - **Read the code**: Agents must ground scenarios in actual implementation, not hypothetical risks
 - **User decides**: Not every risk needs mitigation -- present options, let the human choose
 - **Proportional response**: Minor/unlikely scenarios don't justify major architectural changes
-- **This produces a plan**: Premortem outputs a mitigation backlog, not an implementation -- feed it into /tracer or /spec
+- **This produces a plan**: Premortem outputs a mitigation task list, not an implementation -- feed it into /tracer or /spec
 - **No false confidence**: If a scenario is POSSIBLE but not CONFIRMED, say so and recommend a deeper spike
 - **Verify mitigations**: Every mitigation needs prevention (code), detection (monitoring), and verification (test)
 - **Fail safely**: Design mitigations to fail closed (deny by default) not open (allow by default)
@@ -356,5 +336,5 @@ Create the feature task if it doesn't exist yet.
 ## See also
 
 - `/spec` — formalize the design before or after premortem; premortem findings become constraints in the spec
-- `/tracer` — trace mitigation tasks through implementation; feed the beads epic created by premortem into tracer
+- `/tracer` — trace mitigation tasks through implementation; feed the mitigation epic created by premortem into tracer
 - `/test-strategy` — failure modes identified by premortem become concrete test cases; run after mitigations are designed

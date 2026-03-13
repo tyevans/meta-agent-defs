@@ -1,10 +1,10 @@
 ---
 name: meeting
-description: "Form an agent team and have an interactive group discussion to flesh out requirements, explore ideas, or get diverse perspectives on a topic. Use when you want to brainstorm with multiple viewpoints, clarify requirements through dialogue, or pressure-test an idea before committing. Keywords: discuss, brainstorm, requirements, team, dialogue, perspectives, workshop."
+description: "Use when you need multiple perspectives on a topic — brainstorming, requirements clarification, or pressure-testing an idea before committing. Runs an interactive agent panel discussion. Keywords: discuss, brainstorm, requirements, team, dialogue, perspectives, workshop."
 argument-hint: "<topic or question>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(rm:*), Bash(ls:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Write, Bash(git:*), Bash(rm:*), Bash(ls:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
 ---
 
 # Meeting: Interactive Multi-Agent Dialogue
@@ -19,10 +19,10 @@ Before assembling a new panel, check whether a prior meeting left panelists avai
 
 ```bash
 # Check for prior meeting scratch file
-ls memory/scratch/meeting-panelists.md 2>/dev/null
+ls .claude/tackline/memory/scratch/meeting-panelists.md 2>/dev/null
 ```
 
-<!-- Condition: only if memory/scratch/meeting-panelists.md exists -->
+<!-- Condition: only if .claude/tackline/memory/scratch/meeting-panelists.md exists -->
 If the file exists, read it and display:
 
 > A prior meeting panel is available:
@@ -32,7 +32,7 @@ If the file exists, read it and display:
 > **Resume** the prior panelists (they retain context from the last discussion), or **start fresh** with a new panel?
 
 - *Resume* → Skip Phase 1 entirely. Send the new topic/question as direct messages to each prior panelist using the agent IDs from the scratch file. Proceed to Phase 2.
-- *Start fresh* → Delete `memory/scratch/meeting-panelists.md` and proceed to Phase 1.
+- *Start fresh* → Delete `.claude/tackline/memory/scratch/meeting-panelists.md` and proceed to Phase 1.
 
 If the file does not exist, proceed directly to Phase 1.
 
@@ -96,7 +96,7 @@ Task({
 
 ### 1d. Capture Panelist IDs
 
-After all panelists are spawned, record their agent IDs to `memory/scratch/meeting-panelists.md` for compaction resilience and resume support:
+After all panelists are spawned, record their agent IDs to `.claude/tackline/memory/scratch/meeting-panelists.md` for compaction resilience and resume support:
 
 ```markdown
 # Meeting Panelists
@@ -203,7 +203,7 @@ Example:
 - ❌ "Investigate the auth refactor further"
 - ✅ "Spike JWT vs session cookies in src/auth/provider.ts, produce decision doc with latency + security tradeoffs"
 
-Drop items that can't be sharpened, or convert to investigation beads with explicit research questions.
+Drop items that can't be sharpened, or convert to investigation tasks with explicit research questions.
 
 ### Key Insight
 [The single most valuable thing that emerged from the discussion]
@@ -228,21 +228,12 @@ TeamDelete()
 ```
 
 ```bash
-rm -f memory/scratch/meeting-panelists.md
+rm -f .claude/tackline/memory/scratch/meeting-panelists.md
 ```
 
 ### 3c. Optional: Create Tasks
 
-If sharpened action items emerged, offer to create tasks:
-
-```bash
-# tacks
-tk create "[action item]"
-# bd equivalent: bd create --title="[action item]" --type=task --priority=[0-4] \
-#   --description="From meeting on [topic]. Context: [relevant discussion point]"
-```
-
-Use the sharpened form as the title. The 3-test pattern ensures tasks are immediately dispatchable.
+If sharpened action items emerged, offer to create tasks in your task tracker with the sharpened form as the title, priority, and meeting context. The 3-test pattern ensures tasks are immediately dispatchable.
 
 ---
 

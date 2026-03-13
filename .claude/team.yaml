@@ -18,7 +18,7 @@ members:
     owns: ["agents/**", ".claude/agents/**", ".claude/rules/**"]
 
   - name: infra
-    role: "Installer, hooks, MCP config, ensuring symlinks work and hooks fire correctly"
-    tools: [Read, Write, Edit, Grep, Glob, "Bash(git:*)", "Bash(./install.sh:*)", "Bash(ls:*)"]
-    owns: ["install.sh", "mcp-servers.json"]
+    role: "Plugin config, hooks, MCP config, ensuring hooks fire correctly"
+    tools: [Read, Write, Edit, Grep, Glob, "Bash(git:*)", "Bash(ls:*)"]
+    owns: [".claude-plugin/**", "mcp-servers.json"]
 

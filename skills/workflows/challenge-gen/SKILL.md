@@ -1,6 +1,6 @@
 ---
 name: challenge-gen
-description: "Generate targeted challenges for agent improvement from a /diagnose-agent struggle profile. Produces domain edge-case and commit-replay challenges calibrated to the agent's weak areas. Use after /diagnose-agent to create training material. Keywords: challenge, training, improvement, active-learning, edge-case, replay, agent, weakness."
+description: "Use after /diagnose-agent when you have a struggle profile and need training challenges. Generates edge-case and commit-replay challenges calibrated to weak areas. Keywords: challenge, training, improvement, active-learning, edge-case, replay, agent, weakness."
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
@@ -31,7 +31,7 @@ This skill requires the following infrastructure:
 
 - **team.yaml** — Agent must be listed in `.claude/team.yaml` with `ownership` patterns defining their domain ([how to create](/assemble))
 - **diagnose-agent profile** — A `/diagnose-agent` struggle profile for the target agent should exist in the current session context; without it the skill falls back to basic profiling from learnings alone, producing less calibrated challenges ([how to generate](/diagnose-agent))
-- **learnings file** — `memory/agents/<agent>/learnings.md` should exist with accumulated history; used to extract Gotchas and known weaknesses when no upstream profile is available ([populated by /retro and /active-learn](/retro))
+- **learnings file** — `.claude/tackline/memory/agents/<agent>/learnings.md` should exist with accumulated history; used to extract Gotchas and known weaknesses when no upstream profile is available ([populated by /retro and /active-learn](/retro))
 
 If the diagnose-agent profile is missing, the skill warns and continues with basic profiling — challenges will be generated but may not be well-targeted to the agent's actual weaknesses. If team.yaml is missing or the agent is not listed, the skill stops and asks the user to select an agent from the available list.
 
@@ -44,7 +44,7 @@ Detect upstream /diagnose-agent output (or accept $ARGUMENTS)
     -> Strategy A: Research domain edge cases (WebSearch + codebase)
       -> Strategy B: Find commit-replay candidates (raw git)
         -> Assemble 3-5 challenges with quality gate
-          -> Write challenges to memory/agents/<name>/challenges/
+          -> Write challenges to .claude/tackline/memory/agents/<name>/challenges/
             -> Emit pipe format output
 ```
 
@@ -57,7 +57,7 @@ Detect upstream /diagnose-agent output (or accept $ARGUMENTS)
          Agent B: Find commit-replay candidates (raw git)
     -> Collect results from both agents
       -> Assemble 3-5 challenges with quality gate
-        -> Write challenges to memory/agents/<name>/challenges/
+        -> Write challenges to .claude/tackline/memory/agents/<name>/challenges/
           -> Emit pipe format output
 ```
 
@@ -89,7 +89,7 @@ Search conversation context for the pipe-format pattern:
 
 1. Read `.claude/team.yaml` and confirm the agent name exists in the `members` list
 2. Extract the agent's `owns` patterns (file globs defining ownership areas)
-3. Read `memory/agents/<name>/learnings.md` if it exists — scan for Gotchas and known weaknesses
+3. Read `.claude/tackline/memory/agents/<name>/learnings.md` if it exists — scan for Gotchas and known weaknesses
 4. If no upstream struggle profile exists, construct a minimal one from learnings Gotchas + sparse categories
 
 ---
@@ -412,10 +412,10 @@ Drop any challenge that fails a check. If fewer than 3 survive, return to Phase 
 ### 4a. Write Challenge File
 
 ```bash
-mkdir -p memory/agents/<name>/challenges
+mkdir -p .claude/tackline/memory/agents/<name>/challenges
 ```
 
-Write challenges to `memory/agents/<name>/challenges/<timestamp>-challenges.md` using this structure:
+Write challenges to `.claude/tackline/memory/agents/<name>/challenges/<timestamp>-challenges.md` using this structure:
 
 ```markdown
 # Challenges for <agent-name>

@@ -14,7 +14,7 @@ A comprehensive guide to the persistent learning team system for Claude Code —
 6. [Pruning & Maintenance](#pruning--maintenance)
 7. [Cross-Agent Knowledge Sharing](#cross-agent-knowledge-sharing)
 8. [Workflow Integration](#workflow-integration)
-9. [Working Without Beads/Tacks](#working-without-beadstacks)
+9. [Working Without a Task Tracker](#working-without-a-task-tracker)
 10. [Troubleshooting & Tips](#troubleshooting--tips)
 
 ---
@@ -73,7 +73,7 @@ Each team member has:
 
 ### Learnings Files
 
-Each member has a markdown file at `memory/agents/<name>/learnings.md` containing:
+Each member has a markdown file at `.claude/tackline/memory/agents/<name>/learnings.md` containing:
 - **Codebase Patterns**: Confirmed conventions, architectural rules
 - **Gotchas**: Bugs, quirks, workarounds discovered the hard way
 - **Preferences**: User/project style preferences
@@ -122,8 +122,8 @@ If you prefer manual setup or want to understand the internals:
 
 ```bash
 mkdir -p .claude
-mkdir -p memory/agents
-mkdir -p memory/team
+mkdir -p .claude/tackline/memory/agents
+mkdir -p .claude/tackline/memory/team
 ```
 
 #### Step 2: Write Team Manifest
@@ -159,12 +159,12 @@ members:
 
 #### Step 3: Create Learnings Files
 
-For each member, create `memory/agents/<name>/learnings.md`:
+For each member, create `.claude/tackline/memory/agents/<name>/learnings.md`:
 
 ```bash
 # For backend
-mkdir -p memory/agents/backend
-cat > memory/agents/backend/learnings.md << 'EOF'
+mkdir -p .claude/tackline/memory/agents/backend
+cat > .claude/tackline/memory/agents/backend/learnings.md << 'EOF'
 # Learnings: backend
 
 ## Codebase Patterns
@@ -223,10 +223,10 @@ Role: Server logic, data models, business rules
 Owns: src/api/**, src/models/**, tests/api/**
 
 ## Your Accumulated Learnings
-<contents of memory/agents/backend/learnings.md>
+<contents of .claude/tackline/memory/agents/backend/learnings.md>
 
 ## Task
-[Task description with bead reference or manual context]
+[Task description or manual context]
 
 ## Reflection Protocol
 After completing your task, end your response with a structured reflection:
@@ -292,7 +292,7 @@ The orchestrator (you or `/sprint`) processes the reflection:
 3. **Appends to learnings file**: Adds entries with today's date
 4. **Routes cross-agent notes**: If `for_agent` is specified, also adds to that member's file under "Cross-Agent Notes"
 
-Example update to `memory/agents/backend/learnings.md`:
+Example update to `.claude/tackline/memory/agents/backend/learnings.md`:
 
 ```markdown
 ## Codebase Patterns
@@ -302,7 +302,7 @@ Example update to `memory/agents/backend/learnings.md`:
 - Empty user queries need explicit [] not null for frontend compatibility (added: 2026-02-13)
 ```
 
-And to `memory/agents/frontend/learnings.md`:
+And to `.claude/tackline/memory/agents/frontend/learnings.md`:
 
 ```markdown
 ## Cross-Agent Notes
@@ -324,7 +324,7 @@ The next time you dispatch the backend member, they see these new learnings in t
 
 ### Learnings File Format
 
-Each `memory/agents/<name>/learnings.md` follows this structure:
+Each `.claude/tackline/memory/agents/<name>/learnings.md` follows this structure:
 
 ```markdown
 # Learnings: <name>
@@ -411,7 +411,7 @@ Combine entries that say the same thing in different ways.
 
 #### 2. Archive Stale Entries
 
-Move entries older than 21 days (with no recent references) to `memory/agents/<name>/archive.md`.
+Move entries older than 21 days (with no recent references) to `.claude/tackline/memory/agents/<name>/archive.md`.
 
 Create the archive file if it doesn't exist:
 
@@ -431,7 +431,7 @@ Learnings that were once relevant but are no longer active. Preserved for histor
 If a learning has been confirmed across 3+ sprints, promote it to:
 - `.claude/rules/` (if it's a rule all agents should follow)
 - `CLAUDE.md` (if it's fundamental project context)
-- `memory/team/decisions.md` (if it's a team-wide architectural decision)
+- `.claude/tackline/memory/team/decisions.md` (if it's a team-wide architectural decision)
 
 **Example promotion:**
 
@@ -440,7 +440,7 @@ Learnings file had:
 - All dates stored as ISO 8601 UTC (added: 2026-02-01, confirmed in 8 sprints)
 ```
 
-Promoted to `memory/team/decisions.md`:
+Promoted to `.claude/tackline/memory/team/decisions.md`:
 ```markdown
 ## Conventions
 - All dates stored as ISO 8601 UTC (decided: 2026-02-01, by: backend)
@@ -477,7 +477,7 @@ After (merged into Codebase Patterns):
 If you're pruning manually (not using `/retro`):
 
 1. **Read the learnings file** and identify candidates for each consolidation type
-2. **Create archive file** if needed: `memory/agents/<name>/archive.md`
+2. **Create archive file** if needed: `.claude/tackline/memory/agents/<name>/archive.md`
 3. **Edit the learnings file**:
    - Merge similar entries
    - Move stale entries to archive
@@ -547,7 +547,7 @@ This keeps Cross-Agent Notes sections clean and actionable.
 
 ### Team-Wide Decisions
 
-Some knowledge benefits the entire team, not just one member. Use `memory/team/decisions.md` for:
+Some knowledge benefits the entire team, not just one member. Use `.claude/tackline/memory/team/decisions.md` for:
 - Architectural choices that affect everyone
 - Conventions adopted team-wide
 - Major technology decisions
@@ -580,8 +580,8 @@ The team system integrates with four primary skills: `/assemble`, `/standup`, `/
 1. Explores your project structure
 2. Proposes roles and ownership patterns
 3. Creates `.claude/team.yaml`
-4. Creates `memory/agents/<name>/learnings.md` for each member
-5. Optionally initializes a backlog (beads or tacks)
+4. Creates `.claude/tackline/memory/agents/<name>/learnings.md` for each member
+5. Optionally initializes a backlog with your preferred task tracker
 
 **Output:** A fully configured team ready for dispatch.
 
@@ -600,7 +600,7 @@ The team system integrates with four primary skills: `/assemble`, `/standup`, `/
 **What it does:**
 1. Reads team manifest and learnings files
 2. Checks git activity by ownership patterns
-3. Checks backlog (if beads or tacks available)
+3. Checks backlog (if a task tracker is available)
 4. Reports per-member status and learning health
 
 **Output:** A status board showing team activity, learning health, blockers, and suggested actions.
@@ -621,11 +621,6 @@ Sample output:
 | backend | 3 in owned files | 12 entries (2 new) | 🟢 healthy |
 | frontend | 1 in owned files | 8 entries (1 new) | 🟢 healthy |
 | tester | 0 in owned files | 5 entries (0 new) | 🟡 stale |
-
-### Backlog Snapshot
-- **Ready**: 3 tasks available
-- **In Progress**: 1 task active
-- **Blocked**: 0 tasks blocked
 
 ### Blockers
 No blockers
@@ -658,12 +653,7 @@ No blockers
 
 **Output:** Completed tasks + updated learnings files.
 
-**Example with beads/tacks:**
-```
-/sprint
-```
-
-**Example without beads/tacks:**
+**Example:**
 ```
 /sprint Add user authentication
 ```
@@ -673,18 +663,15 @@ Sample sprint plan:
 ```markdown
 ## Sprint Plan
 
-| Bead | Title | Assigned To | Reason |
+| Task | Title | Assigned To | Reason |
 |------|-------|-------------|--------|
-| 42 | Add user authentication endpoint | backend | Ownership: src/api/** |
-| 43 | Create login form component | frontend | Ownership: src/components/** |
-| 44 | Add auth integration tests | tester | Ownership: tests/** |
+| 1 | Add user authentication endpoint | backend | Ownership: src/api/** |
+| 2 | Create login form component | frontend | Ownership: src/components/** |
+| 3 | Add auth integration tests | tester | Ownership: tests/** |
 
-### Dispatch Order
-1. Bead 42: backend — Foundation layer (auth endpoint must exist before UI/tests)
-2. Bead 43: frontend — UI layer (depends on endpoint contract)
-3. Bead 44: tester — Validation layer (depends on both endpoint and UI)
-
-**Strategy**: Serial dispatch (sequential dependencies — auth endpoint must exist before UI, both must exist before tests)
+### Dispatch Strategy
+- Task 1 (backend) and Task 2 (frontend): dispatch in parallel via `isolation: "worktree"` + `run_in_background: true` — endpoint contract is defined upfront, so frontend can work from the contract while backend implements
+- Task 3 (tester): serial after Tasks 1+2 complete — tests depend on both endpoint and UI existing
 ```
 
 After user approval, `/sprint` dispatches each task, parses reflections, updates learnings, and reports:
@@ -734,7 +721,7 @@ Sample output:
 ## Session Retrospective
 
 ### Summary
-Completed 8 tasks across 3 team members with 12 new learnings persisted. Serial dispatch strategy worked well — no rework needed.
+Completed 8 tasks across 3 team members with 12 new learnings persisted. Parallel worktree dispatch for independent tasks worked well — no merge conflicts or rework needed.
 
 ### What Went Well
 - All 8 tasks completed on first attempt with high confidence ratings
@@ -750,7 +737,7 @@ Completed 8 tasks across 3 team members with 12 new learnings persisted. Serial 
 - [ ] Assign tester a spike task to explore edge cases and generate fresh learnings
 
 ### Memory Updates
-- Added: "Serial dispatch with clear dependency order prevents rework"
+- Added: "Parallel worktree dispatch for independent tasks; serial only for true dependencies"
 - Updated: "Cross-agent notes are action triggers — 14-day validation window keeps them relevant"
 
 ### Team Learning Health
@@ -785,22 +772,22 @@ The complete team workflow cycle:
 
 ---
 
-## Working Without Tacks/Beads
+## Working Without a Task Tracker
 
-The team system **does not require tacks or beads** (the `tk`/`bd` CLI backlog trackers). All team skills support a fallback mode for projects without either tool.
+The team system **does not require a specific task tracker**. All team skills support a fallback mode for projects without one.
 
 ### How Skills Adapt
 
-| Skill | With Tacks/Beads | Without Tacks/Beads |
+| Skill | With Task Tracker | Without Task Tracker |
 |-------|-----------------|---------------------|
 | `/assemble` | Optionally creates initial epic | Skips backlog initialization |
 | `/standup` | Shows backlog snapshot (ready, in-progress, blocked) | Shows only git activity + learning health |
-| `/sprint` | Pulls tasks from `tk ready` (or `bd ready`) | Accepts manual task descriptions from user |
+| `/sprint` | Pulls tasks from the backlog | Accepts manual task descriptions from user |
 | `/retro` | Includes backlog stats in analysis | Relies on git + conversation context only |
 
 ### Manual Task Dispatch
 
-If you don't have tacks or beads, you provide task descriptions directly to `/sprint`:
+If you don't have a task tracker configured, you provide task descriptions directly to `/sprint`:
 
 ```
 /sprint Add pagination to user listing endpoint
@@ -812,11 +799,11 @@ Sprint will:
 3. Dispatch as normal
 4. Persist learnings as normal
 
-The learning loop works identically — tacks/beads just provide backlog structure and task tracking.
+The learning loop works identically — a task tracker just provides backlog structure and status tracking.
 
-### When to Use Tacks/Beads
+### When to Use a Task Tracker
 
-**Use tacks/beads if:**
+**Use a task tracker if:**
 - You want structured backlog management
 - You need dependency tracking between tasks
 - You want to track task status (ready, in-progress, blocked, closed)
@@ -848,7 +835,7 @@ The learning loop works identically — tacks/beads just provide backlog structu
 **Cause:** The gotcha isn't in learnings, or learnings file wasn't injected.
 
 **Fix:**
-- Verify the gotcha is documented in `memory/agents/<name>/learnings.md` under Gotchas
+- Verify the gotcha is documented in `.claude/tackline/memory/agents/<name>/learnings.md` under Gotchas
 - Check that the dispatch prompt includes the learnings (read the Task prompt)
 - Add the gotcha manually if the agent didn't suggest it
 
@@ -859,7 +846,7 @@ The learning loop works identically — tacks/beads just provide backlog structu
 **Fix:**
 - Run `/retro` to trigger automatic pruning, then `/tend` or `/curate` + `/promote` for the full lifecycle
 - Manually consolidate similar entries
-- Archive stale entries (>21 days) to `memory/agents/<name>/archive.md`
+- Archive stale entries (>21 days) to `.claude/tackline/memory/agents/<name>/archive.md`
 - Promote high-value entries to `.claude/rules/` or `CLAUDE.md`
 
 #### "Cross-agent note is stale (>14 days)"
@@ -907,7 +894,7 @@ At the end of each session or epic, run `/retro` to prune bloated files and extr
 
 #### Use Cross-Agent Notes Sparingly
 
-Cross-agent notes are for **action triggers**, not documentation. If a pattern is relevant to multiple agents, promote it to `memory/team/decisions.md` instead.
+Cross-agent notes are for **action triggers**, not documentation. If a pattern is relevant to multiple agents, promote it to `.claude/tackline/memory/team/decisions.md` instead.
 
 #### Promote High-Value Learnings
 
@@ -929,7 +916,7 @@ Some projects benefit from specialized roles beyond backend/frontend/tester:
 You can add new roles mid-project:
 
 1. Add the member to `.claude/team.yaml`
-2. Create `memory/agents/<name>/learnings.md`
+2. Create `.claude/tackline/memory/agents/<name>/learnings.md`
 3. Seed with relevant context from existing members
 4. Dispatch via `/sprint`
 
@@ -984,12 +971,12 @@ The persistent learning team system transforms agent dispatch from stateless exe
 **Key takeaways:**
 
 1. **Teams persist across sessions** via version-controlled files
-2. **Learnings accumulate** in `memory/agents/<name>/learnings.md`
+2. **Learnings accumulate** in `.claude/tackline/memory/agents/<name>/learnings.md`
 3. **The learning loop** ensures agents get smarter with every task
 4. **Cross-agent notes** route knowledge between team members
 5. **Pruning** keeps learnings focused and high-signal
 6. **Seven skills** integrate the system: `/assemble`, `/standup`, `/sprint`, `/retro`, `/curate`, `/promote`, `/tend`
-7. **Beads/tacks are optional** — teams work with or without backlog tracking
+7. **Task trackers are optional** — teams work with or without backlog tracking
 
 **Next steps:**
 

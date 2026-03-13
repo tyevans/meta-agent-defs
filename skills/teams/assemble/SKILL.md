@@ -1,10 +1,10 @@
 ---
 name: assemble
-description: "Create a persistent learning team for a project with roles, ownership, and file-based learnings that improve agent behavior across sessions. Use when starting a new project, forming a team for long-horizon work, or upgrading from ad-hoc agent dispatch to structured team coordination. Keywords: team, project, setup, roles, persistent, agents, staff, learning."
+description: "Use when starting a project, forming a team for long-horizon work, or upgrading from ad-hoc agent dispatch. Creates persistent roles with ownership and learnings that improve across sessions. Keywords: team, project, setup, roles, persistent, agents, staff, learning."
 argument-hint: "<project description>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(mkdir:*), Write, Edit, Task, AskUserQuestion
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(mkdir:*), Write, Edit, Task, AskUserQuestion
 ---
 
 # Assemble: Persistent Learning Team Creation
@@ -28,7 +28,7 @@ Route (args vs interactive) → Explore project → Propose roles + ownership �
   → Write team.yaml manifest
     → Create learnings.md per member (seeded with role context)
       → Create shared team memory (decisions.md)
-        → Initialize backlog → Report
+        → Report
 ```
 
 ## Phase 0: Route
@@ -124,8 +124,8 @@ Ask the user to approve, modify roles, adjust ownership, or suggest additions.
 
 ```bash
 mkdir -p .claude
-mkdir -p memory/agents
-mkdir -p memory/team
+mkdir -p .claude/tackline/memory/agents
+mkdir -p .claude/tackline/memory/team
 ```
 
 ### 2b. Write Team Manifest
@@ -152,7 +152,7 @@ members:
 
 ### 2c. Create Learnings Files
 
-For each member, create `memory/agents/<name>/learnings.md`:
+For each member, create `.claude/tackline/memory/agents/<name>/learnings.md`:
 
 ```markdown
 # Learnings: <name>
@@ -174,7 +174,7 @@ Seed each file with 2-3 initial observations based on Phase 1 exploration. For e
 
 ### 2d. Create Shared Memory
 
-Write `memory/team/decisions.md`:
+Write `.claude/tackline/memory/team/decisions.md`:
 
 ```markdown
 # Team Decisions
@@ -186,25 +186,13 @@ Write `memory/team/decisions.md`:
 - (none yet)
 ```
 
-Write `memory/team/retro-history.md`:
+Write `.claude/tackline/memory/team/retro-history.md`:
 
 ```markdown
 # Retrospective History
 
 (No retrospectives yet. Run /retro to add entries.)
 ```
-
-### 2e. Initialize Backlog (optional)
-
-**If `.tacks/` or `.beads/` exists** in the project root, ask the user if they want backlog tracking:
-
-```bash
-# tacks
-tk create -t epic "EPIC: [project name] team setup"
-# bd equivalent: bd create --title="EPIC: [project name] team setup" --type=epic --priority=2
-```
-
-**If neither exists**, skip this step. The team can still function without a backlog tool by using manual task descriptions in `/sprint`.
 
 ---
 
@@ -214,9 +202,9 @@ tk create -t epic "EPIC: [project name] team setup"
 
 Check all expected files were created:
 - `.claude/team.yaml`
-- `memory/agents/<name>/learnings.md` for each member
-- `memory/team/decisions.md`
-- `memory/team/retro-history.md`
+- `.claude/tackline/memory/agents/<name>/learnings.md` for each member
+- `.claude/tackline/memory/team/decisions.md`
+- `.claude/tackline/memory/team/retro-history.md`
 
 ### 3b. Report
 
@@ -226,14 +214,14 @@ Check all expected files were created:
 ### Members
 | Role | Owns | Model | Learnings |
 |------|------|-------|-----------|
-| [role] | [patterns] | [model] | memory/agents/[name]/learnings.md |
+| [role] | [patterns] | [model] | .claude/tackline/memory/agents/[name]/learnings.md |
 | ... | ... | ... | ... |
 
 ### Files Created
 - `.claude/team.yaml` — Team manifest
-- `memory/agents/*/learnings.md` — Per-member learnings ([count] files)
-- `memory/team/decisions.md` — Shared decisions log
-- `memory/team/retro-history.md` — Retro history
+- `.claude/tackline/memory/agents/*/learnings.md` — Per-member learnings ([count] files)
+- `.claude/tackline/memory/team/decisions.md` — Shared decisions log
+- `.claude/tackline/memory/team/retro-history.md` — Retro history
 
 ### How to Use This Team
 - `/team-meeting [goal]` — Collaborative goal planning with the full team (run this first)

@@ -43,18 +43,9 @@ Fork skills (blossom, consensus, review, etc.) run in an isolated context and re
 ## Learnings capped at 60 lines
 
 **Date:** 2025-02
-**Context:** Persistent agent learnings (`memory/agents/<name>/learnings.md`) accumulate across sessions and get injected into agent prompts.
+**Context:** Persistent agent learnings (`.claude/tackline/memory/agents/<name>/learnings.md`) accumulate across sessions and get injected into agent prompts.
 
-Uncapped learnings would grow until they consumed significant prompt budget, degrading agent performance. The 60-line cap (30 core + 30 task-relevant) forces triage: only the most durable insights survive. Stale entries (>21 days without use) get archived to `archive.md`. This mirrors how human teams work — you remember the important patterns, not every detail from every sprint.
-
----
-
-## Two-tier install (global + project-local)
-
-**Date:** 2025-01
-**Context:** Some definitions (rules, skills, agents) should apply everywhere. Others are specific to this repo.
-
-Global artifacts (`rules/`, `skills/`, `agents/`, `settings.json`) are symlinked to `~/.claude/` by `install.sh` and load in every project. Project-local artifacts (`.claude/agents/`, `.claude/rules/`, `.claude/skills/`) only load when working in this repo. This separation means a skill like /gather works in any project, while a project-local agent like `skill-author` only appears when editing this repo. The alternative — everything global — would pollute other projects with tackline-specific tooling.
+Uncapped learnings would grow until they consumed significant prompt budget, degrading agent performance. The 60-line cap (30 core + 30 task-relevant) forces triage: only the most durable insights survive. Stale entries (>21 days without use) get archived to `.claude/tackline/memory/agents/<name>/archive.md`. This mirrors how human teams work — you remember the important patterns, not every detail from every sprint.
 
 ---
 

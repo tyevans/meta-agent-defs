@@ -11,7 +11,7 @@ Rules for writing hooks in `~/.claude/settings.json` (global) and `.claude/setti
 
 ## Fail Gracefully
 
-- Always append `|| true` when calling optional tools (`bd`, `tk`, project-specific CLIs) so hooks do not block the session if the tool is missing
+- Always append `|| true` when calling optional tools (project-specific CLIs, task trackers) so hooks do not block the session if the tool is missing
 - Test hook behavior when dependency tools are not installed -- the hook should degrade silently or emit a stderr warning, never error out
 - Use `command -v <tool> >/dev/null 2>&1` to check for tool existence before calling it
 
@@ -39,7 +39,7 @@ Hooks have access to these variables provided by Claude Code:
 
 - Use stderr (`>&2`) for warnings so they appear in hook output
 - Keep output concise -- one or two lines for warnings, not paragraphs
-- Prefix warnings with a category label (e.g., `DESTRUCTIVE WARNING:`, `BEADS WARNING:`)
+- Prefix warnings with a category label (e.g., `DESTRUCTIVE WARNING:`, `TRACKER WARNING:`)
 
 ## One Hook Per Concern
 

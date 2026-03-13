@@ -1,6 +1,6 @@
 ---
 name: verify
-description: "Check claims and assertions against source code, documentation, or reality. Marks each claim as VERIFIED, REFUTED, or UNCERTAIN with evidence. Keywords: fact-check, validate, confirm, test, assert, prove, check."
+description: "Use when prior findings contain claims that need fact-checking against code, docs, or reality. Marks each VERIFIED, REFUTED, or UNCERTAIN with cited evidence. Keywords: fact-check, validate, confirm, test, assert, prove, check."
 argument-hint: "[claims to verify | 'verify' to check prior findings]"
 disable-model-invocation: false
 user-invocable: true
@@ -22,7 +22,7 @@ You are running the **verify** primitive — checking claims and assertions agai
 
 ### Phase 0: Claim Count Assessment
 
-Identify and count all claims to verify. Parse $ARGUMENTS or read findings from prior primitive output in context (detected via pipe format: `## ... / **Source**: /...`). State: "N claims identified."
+Identify and count all claims to verify. Parse $ARGUMENTS or detect upstream pipe-format output in context. State: "N claims identified."
 
 - **8+ claims → fan-out mode** (dispatch up to 4 background agents)
 - **Fewer than 8 claims → serial mode (default)** (verify sequentially in-context)
@@ -31,7 +31,7 @@ Identify and count all claims to verify. Parse $ARGUMENTS or read findings from 
 
 ### Serial Mode (default, fewer than 8 claims)
 
-1. **Identify claims**: Parse $ARGUMENTS or upstream pipe-format output. If upstream found, read its `**Pipeline**` field to construct provenance
+1. **Identify claims**: Parse $ARGUMENTS or upstream pipe-format output
 2. **Gather evidence**: Use Grep/Read to check code, git log/show for history, WebSearch/WebFetch for external claims
 3. **Assess each claim**: Mark as **VERIFIED** (evidence confirms), **REFUTED** (evidence contradicts), or **UNCERTAIN** (insufficient/conflicting evidence)
 4. **Emit structured output** in pipe format with verification status prominent
@@ -40,32 +40,11 @@ Identify and count all claims to verify. Parse $ARGUMENTS or read findings from 
 
 ### Fan-Out Mode (8+ claims)
 
-In fan-out mode, claims are distributed across up to 4 background agents for parallel evidence gathering. The orchestrator then merges verdicts and resolves conflicts.
+Dispatch per the fan-out-protocol rule (loaded alongside this skill). Verify-specific details:
 
-**Step 1 — Partition claims:**
-Divide the N claims into up to 4 balanced subsets (e.g., 10 claims → two agents of 5). Prefer grouping thematically related claims in the same agent to reduce redundant file reads.
+**Partitioning:** Divide claims into up to 4 balanced subsets. Group thematically related claims in the same agent to reduce redundant file reads. Sizing: 8–11 claims → 2 agents, 12–19 → 3, 20+ → 4.
 
-**Step 2 — Dispatch agents:**
-Launch one background Task agent per subset concurrently:
-
-```
-Task({
-  subagent_type: "Explore",
-  run_in_background: true,
-  model: "sonnet",
-  prompt: "<self-contained agent prompt — see Agent Prompt Template below>"
-})
-```
-
-**Step 3 — Collect results:**
-Retrieve TaskOutput for each agent as it completes. Do not wait for all agents before processing completed ones.
-
-**Step 4 — Merge and resolve conflicts:**
-Combine all agent verdicts into a single ordered list. For any claim where two agents return different verdicts, apply conflict resolution (see Fan-Out Guidelines). Emit the merged output in standard pipe format.
-
-#### Agent Prompt Template
-
-Every dispatched agent prompt must be self-contained and include:
+**Agent prompt template** (include verbatim in each dispatched agent):
 
 ```
 You are verifying a subset of claims against source code, documentation, or reality.
@@ -87,13 +66,11 @@ Return your results as a numbered list matching the claim numbers above. For eac
 - Detail: one sentence explaining why
 ```
 
+**Merge:** Combine all agent verdicts into a single ordered list. Resolve conflicts per Fan-Out Guidelines below.
+
 ## Output Format
 
-- **Header**: `## [Verification of ...]`
-- **Metadata**: `**Source**: /verify`, `**Input**: [one-line claims summary]`, `**Pipeline**: [upstream chain -> /verify (N items)]` or `(none — working from direct input)`
-- **Items**: Numbered list with title, verification status (VERIFIED/REFUTED/UNCERTAIN), evidence, source (file:line or URL), and confidence (CONFIRMED for verified, POSSIBLE for uncertain)
-- **Mode note** *(fan-out only)*: `<!-- fan-out: N agents, M conflicts resolved -->` after the Pipeline line
-- **Summary**: One paragraph synthesis of verification results
+Output in pipe format. Each item includes verification status (VERIFIED/REFUTED/UNCERTAIN), evidence, and source. In fan-out mode, add `<!-- fan-out: N agents, M conflicts resolved -->` after Pipeline.
 
 Each verified or refuted claim must cite specific evidence (file:line, commit hash, URL, or doc reference). Refuted claims are as valuable as verified ones — highlight what's wrong and why.
 
@@ -114,7 +91,6 @@ If you need finer control (e.g., custom evidence sources or a different verdict 
 - Code and git history are more authoritative than docs or web — prioritize codebase evidence
 - Refuted claims should clearly state what was wrong and what the actual situation is
 - If evidence is conflicting, mark UNCERTAIN and explain the conflict in the detail
-- If composing with a prior primitive, verify all claims from that output
 - Keep verification evidence concise — cite specific lines or commit hashes rather than quoting large blocks
 
 ### Fan-Out Guidelines

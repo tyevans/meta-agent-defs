@@ -1,10 +1,10 @@
 ---
 name: review
-description: "Run a structured code review across correctness, security, style, architecture, and testing dimensions. Use after subagent implementation, before merging PRs, when reviewing commit ranges, or for a second opinion on changes."
+description: "Use after subagent implementation, before merging PRs, or when reviewing commit ranges. Structured review across correctness, security, style, architecture, and testing."
 argument-hint: "[target: staged changes, commit, range, PR#]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(gh:*), Bash(bd:*), Bash(tk:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(gh:*)
 context: fork
 ---
 
@@ -272,14 +272,7 @@ and recommended next actions.]
 
 ### 5b. Create Tasks for Findings
 
-For CRITICAL and WARNING findings, create tasks so they are tracked. Use /bug to file each finding as a tracked issue, or create tasks directly:
-
-```bash
-# tacks
-tk create -t bug "[SEVERITY]: [finding title]"
-# bd equivalent: bd create --title="[SEVERITY]: [finding title]" --type=task --priority=<1-for-critical,2-for-warning> \
-#   --description="Found during code review of [target]. Location: [file:line]. Issue: [description]. Suggestion: [fix]."
-```
+For CRITICAL and WARNING findings, create tasks in your task tracker so they are tracked. Use /bug to file each finding as a tracked issue, or create tasks directly with title, severity, location, and suggested fix.
 
 ---
 

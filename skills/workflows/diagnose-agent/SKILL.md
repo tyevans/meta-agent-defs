@@ -1,6 +1,6 @@
 ---
 name: diagnose-agent
-description: "Profile a team agent's strengths and weaknesses from learnings evolution and commit history. Outputs a struggle profile in pipe format for downstream consumption by /challenge-gen or /active-learn. Use when you want to understand where an agent excels or struggles before generating training challenges. Keywords: diagnose, profile, agent, weakness, strength, capability, assessment."
+description: "Use when an agent's performance is uneven and you want to understand where it excels or struggles. Produces a struggle profile for /challenge-gen or /active-learn. Keywords: diagnose, profile, agent, weakness, strength, capability, assessment."
 argument-hint: "<agent-name>"
 disable-model-invocation: false
 user-invocable: true
@@ -41,7 +41,7 @@ If `$ARGUMENTS` does not contain `resume:`, proceed to the standard Phase 0 belo
 This skill requires the following infrastructure:
 
 - **team.yaml** — Agent must be listed in `.claude/team.yaml` with `ownership` patterns (file globs); these drive Phase 3 commit signal analysis ([how to create](/assemble))
-- **learnings file** — `memory/agents/<agent>/learnings.md` must exist with at least 5 entries; below this threshold there is insufficient signal for meaningful weakness detection ([populated by /retro and /active-learn](/retro))
+- **learnings file** — `.claude/tackline/memory/agents/<agent>/learnings.md` must exist with at least 5 entries; below this threshold there is insufficient signal for meaningful weakness detection ([populated by /retro and /active-learn](/retro))
 - **git history for the learnings file** — Phase 2 runs `git log -p` on the learnings file to detect entry churn, survival, and velocity; a file with no commits (never version-controlled) will produce empty results for Phase 2
 
 If the learnings file is missing, the skill produces a partial profile from git commit signals alone (Phase 3 only) and notes the limitation in the Summary. If the agent is not in team.yaml, the skill stops and lists available agents. If the learnings file has no git history, Phase 2 is skipped and the profile relies entirely on Phase 3 signals.
@@ -67,7 +67,7 @@ If `$ARGUMENTS` is empty:
 
 If `$ARGUMENTS` is provided:
 1. Read `.claude/team.yaml` and confirm the agent name exists in the `members` list
-2. Check that `memory/agents/<name>/learnings.md` exists
+2. Check that `.claude/tackline/memory/agents/<name>/learnings.md` exists
 3. If agent not found in team.yaml, error: "Agent '<name>' not found in .claude/team.yaml. Available agents: [list]."
 4. If learnings file missing, note it — the skill can still produce partial results from git signals alone, but learnings evolution (Phase 2) will be skipped
 
@@ -79,10 +79,10 @@ Read the agent's learnings history from git:
 
 ```bash
 # Edit timeline
-git log --oneline --follow -- memory/agents/<name>/learnings.md
+git log --oneline --follow -- .claude/tackline/memory/agents/<name>/learnings.md
 
 # Actual diffs to see what changed
-git log -p --follow -- memory/agents/<name>/learnings.md
+git log -p --follow -- .claude/tackline/memory/agents/<name>/learnings.md
 ```
 
 Parse the diffs to extract five signals:
@@ -227,7 +227,7 @@ Order items: WEAKNESS (HIGH first) -> GAP (HIGH first) -> STRENGTH (HIGH first).
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/diagnose-agent-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/diagnose-agent-checkpoint.md`.
 2. **Read-only.** No file writes, no git operations beyond read-only log/diff/show. No modifications to learnings, team.yaml, or any other file.
 3. **Evidence-based.** Every item in the output must cite a specific source — a git diff, a learnings entry, or a file path. No speculation without evidence.
 4. **Graceful degradation.** Work with whatever is available. No dispatch provenance? Skip Phase 4. No learnings file? Produce a partial profile from git signals alone, and note the limitation in the Summary.

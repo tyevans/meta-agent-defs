@@ -1,10 +1,10 @@
 ---
 name: status
-description: "Show unified system status: backlog, recent activity, team health, and last session summary. Use when you want a full picture of where things stand in one view. Keywords: status, overview, dashboard, state, orientation."
+description: "Use at session start or when you need to orient. Shows backlog, recent activity, team health, and last session summary in one view. Keywords: status, overview, dashboard, state, orientation."
 argument-hint: "[focus area]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: [Read, Glob, Grep, TaskList, "Bash(bd:*)", "Bash(tk:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)"]
+allowed-tools: [Read, Glob, Grep, TaskList, "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)"]
 context: inline
 ---
 
@@ -25,12 +25,12 @@ You are generating a **system status snapshot** — a single-command overview of
 
 - You need deep diagnosis of why a session feels wrong — use /session-health instead
 - You already know what to work on and just need to start — /status adds no value if the path is already clear
-- You only need backlog info — run `tk ready` or `tk stats` directly rather than the full status view
+- You only need backlog info — check your task tracker directly rather than the full status view
 
 ## How It Works
 
 ```
-Read known paths → Run bd + git commands → Format sections → Suggest actions
+Read known paths → Check task tracker + git commands → Format sections → Suggest actions
 ```
 
 No agents dispatched. No files written. Pure read + format.
@@ -43,21 +43,11 @@ Gather all data before producing any output. Read from the known paths defined i
 
 ### 1a. Last Session
 
-Read `memory/sessions/last.md`. If it does not exist, note "No previous session data."
+Read `.claude/tackline/memory/sessions/last.md`. If it does not exist, note "No previous session data."
 
 ### 1b. Backlog
 
-**If `.tacks/` or `.beads/` exists**, run:
-
-```bash
-# tacks
-tk stats
-tk ready
-tk epic
-# bd equivalents: bd stats / bd ready / bd epic status
-```
-
-**If neither `.tacks/` nor `.beads/` exists**, note "Backlog not configured."
+Check your project's task tracker for backlog statistics, ready tasks, and epic progress. If no task tracker is configured, note "No task tracker configured."
 
 ### 1c. Recent Activity
 
@@ -71,7 +61,7 @@ git status --short
 
 ### 1d. Team
 
-**If `.claude/team.yaml` exists**, read it to get the team name and member list. Then for each member, check `memory/agents/<name>/learnings.md`:
+**If `.claude/team.yaml` exists**, read it to get the team name and member list. Then for each member, check `.claude/tackline/memory/agents/<name>/learnings.md`:
 
 - Line count (via Grep or Read)
 - Whether the file exists at all
@@ -91,7 +81,7 @@ git log --oneline --since="7 days ago" | head -20
 Call TaskList to retrieve active task state. If TaskList returns results, collect:
 
 - **Running tasks**: tasks with status `running` — capture agent name, task description
-- **Completed tasks**: tasks with status `completed` that have not yet been reviewed (no corresponding commit or bead close since completion)
+- **Completed tasks**: tasks with status `completed` that have not yet been reviewed (no corresponding commit or task close since completion)
 - **Idle agents**: agents listed in `.claude/team.yaml` (if present) that have no running or recently completed task
 
 **If TaskList returns no results**, skip this section entirely.
@@ -109,17 +99,17 @@ Present all collected data in this structure. Do not add commentary or analysis 
 **Date**: [today]
 
 ### Last Session
-[Contents of memory/sessions/last.md — include verbatim, trimmed to first 20 lines if longer]
+[Contents of .claude/tackline/memory/sessions/last.md — include verbatim, trimmed to first 20 lines if longer]
 [Or: "No previous session data."]
 
 ### Backlog
-[tk stats output, formatted]
-[tk ready output — show task titles, max 5]
-[Or: "Backlog not configured."]
+[Task tracker stats, formatted]
+[Ready tasks — show task titles, max 5]
+[Or: "No task tracker configured."]
 
 ### Epic Progress
-[tk epic output — show each epic with completion %]
-[Omit section if no epics exist or backlog not configured]
+[Epic status — show each epic with completion %]
+[Omit section if no epics exist or no task tracker configured]
 
 ### Recent Activity
 [git log --oneline -5 output]
@@ -164,13 +154,13 @@ Generate 1-5 suggestions based purely on observed state. Use these rules:
 | Condition | Suggestion |
 |-----------|------------|
 | Working tree is dirty | "Commit or stash uncommitted changes" |
-| Ready tasks exist (beads) | "Work on: [top 3 ready task titles]" |
+| Ready tasks exist | "Work on: [top 3 ready task titles]" |
 | Blocked tasks exist | "Unblock: [blocked task titles]" |
 | Any team member is bloated (>120 lines) | "Run `/retro` to consolidate [member] learnings" |
 | Any team member is cold | "Dispatch work to [member] to build learnings" |
 | No last session file | "First session — review backlog and pick a starting task" |
 | In-progress tasks exist | "Resume in-progress work: [task titles]" |
-| Epics with all children complete | "Run `tk epic` to check and close completed epics (or `bd epic close-eligible` for beads)" |
+| Epics with all children complete | "Close completed epics in your task tracker" |
 | Everything is clean and no ready tasks | "Backlog is clear — create new tasks or run `/blossom` to explore" |
 | Completed tasks awaiting review (from TaskList) | "Review results from [agent name]: [task description]" |
 | Idle agents with ready backlog tasks | "Dispatch [agent name] to: [top ready task title]" |
@@ -216,7 +206,7 @@ After the Suggested Actions section, emit a pipe-format summary so /advise can c
 ## Guidelines
 
 1. **Fast.** This should complete in under 10 seconds. No agent dispatch, no synthesis essays.
-2. **Honest.** Show actual data. "No team configured" and "Beads not configured" are valid outputs.
+2. **Honest.** Show actual data. "No team configured" and "No task tracker configured" are valid outputs.
 3. **Mechanical.** Suggested actions are derived from rules, not LLM creativity. If no rule matches, say "No immediate actions suggested."
 4. **Read-only.** No file writes, no bead creation, no git commits. Pure observation.
 5. **Graceful degradation.** Every section works independently. Missing data sources produce a one-line fallback, not an error.

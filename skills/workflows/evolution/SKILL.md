@@ -1,6 +1,6 @@
 ---
 name: evolution
-description: "Track how any definition changed over time — edit history, churn, stability, fix-after-feat patterns. Use when reviewing a skill/agent/rule for maintenance or understanding why it looks the way it does. Keywords: history, evolution, changes, timeline, churn, lifecycle."
+description: "Use when reviewing a skill/agent/rule and you need to understand why it looks the way it does. Shows edit history, churn, stability, and fix-after-feat patterns. Keywords: history, evolution, changes, timeline, churn, lifecycle."
 argument-hint: "<file-path> [commit1..commit2]"
 disable-model-invocation: false
 user-invocable: true

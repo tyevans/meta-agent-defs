@@ -8,7 +8,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Colors (matching install.sh style)
+# Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
@@ -160,8 +160,8 @@ echo ""
 info "Next steps:"
 echo "  1. Edit $TARGET to fill in the TODO sections"
 echo "  2. Choose a context mode: uncomment 'context: fork' in frontmatter if this is a heavyweight skill"
-echo "  3. Run ./install.sh to create symlinks"
-echo "  4. Verify with: ls -la ~/.claude/skills/${NAME}"
+echo "  3. Run 'claude plugin update tackline@tacklines' to pick up changes"
+echo "  4. Verify with: /discover ${NAME}"
 echo ""
 info "Skill frontmatter reference:"
 echo "  name:                     Skill identifier (used in /slash-command)"

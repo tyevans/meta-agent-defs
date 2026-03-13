@@ -1,6 +1,6 @@
 ---
 name: expand
-description: "Elaborate sparse items into detailed descriptions. Inverse of distill — takes compressed findings and adds depth, context, and actionable detail. Keywords: elaborate, expand, detail, unpack, enrich, flesh out."
+description: "Use when prior findings are too sparse for action. Adds depth, context, and evidence to compressed items. Inverse of distill. Keywords: elaborate, expand, detail, unpack, enrich, flesh out."
 argument-hint: "[depth target: to paragraphs | with examples | with evidence]"
 disable-model-invocation: false
 user-invocable: true
@@ -20,7 +20,7 @@ You are running the **expand** primitive — elaborating sparse items into detai
 
 ## Process
 
-1. **Detect Input Source**: Check conversation context for prior primitive output (the `## ... / **Source**: /...` pattern). If found, use those items as input and read its `**Pipeline**` field to construct provenance. Otherwise treat $ARGUMENTS as both target and item source.
+1. **Detect Input Source**: Detect upstream pipe-format output in context. If none found, treat $ARGUMENTS as both target and item source.
 
 2. **Parse Depth Target**: Extract elaboration target from $ARGUMENTS. Options:
    - "to paragraphs" — expand each item to a full paragraph (default)
@@ -38,13 +38,13 @@ You are running the **expand** primitive — elaborating sparse items into detai
 
 **Gate**: Claims added during elaboration are grounded in at least one cited source (file path or URL). If no evidence was found for a claim, mark it POSSIBLE rather than presenting it as fact.
 
-4. **Emit Output**: Structured in pipe format with header, metadata (including `**Pipeline**` — append this step to the upstream chain), numbered items with expanded detail, and one-paragraph summary.
+4. **Emit Output**: Output in pipe format.
 
 ## Guidelines
 
 - Preserve original item numbering and titles — expand the detail, don't replace it
 - Each item expands independently — do not merge or reorder items
 - Ground elaborations in evidence (cite files, URLs) rather than generating unsourced prose
-- Confidence levels from upstream are preserved; new claims added during expansion get their own confidence
+- New claims added during expansion get their own confidence level
 - If an item is already detailed enough, pass it through unchanged rather than padding it
 - Summary should note what depth was added and which items changed most

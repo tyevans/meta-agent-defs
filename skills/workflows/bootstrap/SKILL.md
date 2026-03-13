@@ -1,10 +1,10 @@
 ---
 name: bootstrap
-description: "Bootstrap a new project end-to-end: set up Claude Code infrastructure (CLAUDE.md, hooks, beads, rules, skills) then generate tailored project agents. Use when starting a new project from scratch or adding full Claude Code support to an existing codebase. Keywords: bootstrap, scaffold, setup, new project, init, kickstart."
+description: "Use when starting a new project or adding Claude Code support to an existing one. Sets up CLAUDE.md, hooks, rules, and generates tailored agents. Keywords: bootstrap, scaffold, setup, new project, init, kickstart."
 argument-hint: "<project path or description>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(ls:*), Bash(test:*), Bash(mkdir:*), Task
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(ls:*), Bash(test:*), Bash(mkdir:*), Task
 context: inline
 ---
 
@@ -22,7 +22,7 @@ You are running the **Bootstrap** workflow -- a structured orchestration that co
 - `project-bootstrapper` -- must be registered and reachable via the Task tool before running this skill
 - `agent-generator` -- same requirement
 
-If either agent is missing, stop in Phase 0 and tell the user to install tackline (run `install.sh`).
+If either agent is missing, stop in Phase 0 and tell the user to install tackline (`claude plugin install tackline@tacklines`).
 
 ## When to Use
 
@@ -85,7 +85,7 @@ ls ~/.claude/agents/agent-generator.md
 
 If either file is missing, stop and report:
 
-> Required agent `<name>` is not installed. Run `install.sh` from the tackline repo to register it, then retry.
+> Required agent `<name>` is not installed. Run `claude plugin install tackline@tacklines` to register it, then retry.
 
 ### 0d. Detect Project State
 
@@ -110,9 +110,9 @@ Task({
   mode: "bypassPermissions",
   prompt: "Bootstrap the project at $PROJECT_PATH.
 
-Your job: Set up everything this project needs for effective Claude Code + Beads workflow.
+Your job: Set up everything this project needs for effective Claude Code workflow.
 
-Follow your full phase sequence (discovery, beads init, CLAUDE.md, hooks, permissions, rules, memory, skills, gitignore, initial beads).
+Follow your full phase sequence (discovery, CLAUDE.md, hooks, permissions, rules, memory, skills, gitignore).
 
 Important:
 - Read the existing codebase thoroughly before generating any files
@@ -165,10 +165,10 @@ The project was just bootstrapped. Here is what the bootstrapper found:
 
 Your job: Explore the project, understand its architecture and patterns, and generate a suite of tailored agents in .claude/agents/.
 
-Follow your full phase sequence (discovery, beads integration, strategy, generation, hooks, catalog, quality check).
+Follow your full phase sequence (discovery, strategy, generation, hooks, catalog, quality check).
 
 Important:
-- The project already has CLAUDE.md, hooks, rules, and beads set up -- do not recreate these
+- The project already has CLAUDE.md, hooks, and rules set up -- do not recreate these
 - Focus on generating agents that are specific to THIS project's patterns
 - Include Investigation Protocol, Context Management, and Knowledge Transfer sections in every agent
 - Create .claude/AGENTS.md catalog
@@ -238,19 +238,7 @@ cat "$PROJECT_PATH/.claude/settings.json" | grep -c "hooks"
 
 If `settings.json` is invalid JSON, report it and stop -- broken settings will silently disable all hooks.
 
-### 3c. Backlog Doctor (conditional)
-
-If `.beads/` exists in `$PROJECT_PATH` (beads-only command):
-
-```bash
-cd "$PROJECT_PATH" && bd doctor
-```
-
-If `.tacks/` exists instead, tacks has no `doctor` command — skip this check.
-
-Report any issues found. Non-fatal issues (warnings) can be noted but do not block completion.
-
-### 3d. Verification Summary
+### 3c. Verification Summary
 
 Collect all check results into a pass/fail table for the Phase 4 report:
 
@@ -264,7 +252,6 @@ Collect all check results into a pass/fail table for the Phase 4 report:
 | All agents have required frontmatter | pass/fail |
 | Hook scripts executable | pass/fail |
 | `settings.json` is valid JSON | pass/fail |
-| `bd doctor` clean (if `.beads/` present) | pass/fail/skipped |
 
 ---
 
@@ -328,8 +315,7 @@ After the pipe-format block, present a human-readable next steps section:
 1. **Review CLAUDE.md** -- adjust project description, commands, and key patterns to your preferences
 2. **Review generated agents** -- read `.claude/AGENTS.md` for the full catalog
 3. **Resolve manual steps** -- install any missing tools flagged above
-4. **Explore the backlog** -- run `tk ready` (or `bd ready`) to see initial backlog items (if a backlog tool was set up)
-5. **Orient the session** -- run `/status` to start working
+4. **Orient the session** -- run `/status` to start working
 ```
 
 ---
@@ -357,7 +343,7 @@ If any gate produced a hard stop that was not resolved, bootstrap is incomplete.
 4. **Surface failures explicitly.** If the bootstrapper fails, ask the user before proceeding rather than running the agent generator on a broken setup.
 5. **Respect existing setup.** Both agents check for existing `.claude/` configuration and avoid overwriting intentional customizations.
 6. **No worktree isolation.** Worktree isolation creates an isolated copy of the repo where the skill is invoked, not the target project. Both dispatched agents write to `$PROJECT_PATH` -- an external directory -- so worktree isolation would protect the wrong repo. Cross-project bootstrap writes cannot be sandboxed by worktrees.
-7. **Compaction resilience.** This skill has 4 phases. Write intermediate state to `memory/scratch/bootstrap-checkpoint.md` at each phase gate boundary per `rules/compaction-resilience.md`.
+7. **Compaction resilience.** Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/bootstrap-checkpoint.md`.
 
 ---
 

@@ -6,16 +6,15 @@ Portable Claude Code workflow definitions (agents, skills, hooks, settings) main
 
 **Posture depends on project type:**
 - **Content-only projects** (no `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, or `Makefile` at root): prefer direct implementation over subagent dispatch for simple edits.
-- **Code projects**: orchestrator-only. Dispatch all implementation to subagents and manage the backlog.
+- **Code projects**: orchestrator-only. Dispatch all implementation to subagents and coordinate work.
 
 This repo itself (tackline) is content-only -- direct edits to `.md` and `.json` files are preferred over spawning agents for trivial changes.
 
 ### Orchestrator Responsibilities
 
-1. **Backlog Management**: Use `tk`/`bd` commands to triage, prioritize, and track issues
+1. **Task Tracking**: Triage, prioritize, and track work using your preferred task tracking approach
 2. **Task Dispatch**: Delegate implementation work to appropriate subagents via the Task tool
 3. **Coordination**: Manage dependencies between tasks, unblock work, review agent outputs
-4. **Session Management**: Tacks (`tk`) is the default — no sync needed. If using beads, run `bd sync` before completing sessions.
 
 ### Dispatching Strategy
 
@@ -30,62 +29,21 @@ This repo itself (tackline) is content-only -- direct edits to `.md` and `.json`
 ## Quick Reference
 
 ```bash
-# Install (global symlinks to ~/.claude/)
-./install.sh
+# Install as a Claude Code plugin
+claude plugin install tackline@tacklines
 
-# Install to a specific project
-./install.sh /path/to/project
+# Install global rules (not supported by plugin system)
+mkdir -p ~/.claude/rules
+for f in /path/to/tackline/rules/*.md; do ln -sf "$f" ~/.claude/rules/; done
 
-# Install with hardlinks instead of symlinks
-./install.sh --hardlink
-
-# Uninstall (uses manifest written during install)
-xargs rm -f < ~/.claude/.tackline.manifest
+# Uninstall
+claude plugin uninstall tackline@tacklines
+for f in /path/to/tackline/rules/*.md; do rm -f ~/.claude/rules/"$(basename "$f")"; done
 ```
 
-## Backlog Tool
+## Skills
 
-This project supports both **tacks** (`tk`) and **beads** (`bd`) for task management. Hooks auto-detect which is available by checking for `.tacks/` or `.beads/` directories.
-
-```bash
-# Commands work the same for both tools — substitute bd for tk if using beads
-tk stats                        # Backlog overview (bd stats)
-tk ready                        # Available work (bd ready)
-tk create "..."                 # New task — uses tags not types (bd create --title="..." --type=task)
-tk create "..." -t epic         # Create epic — auto-tagged when subtask created (bd create --type=epic --title="...")
-tk create --parent <id> "..."   # Child of epic (bd create --type=task --parent=<epic-id> --title="...")
-tk children <id>                # List children (bd children <epic-id>)
-tk epic                         # Epic completion progress (bd epic status)
-tk list --json | jq             # Filter tasks (bd query "status=open AND priority<=1")
-                                # bd only: bd swarm validate <epic-id>, bd dep cycles, bd stale, bd epic close-eligible
-bd sync                         # Export to JSONL before session end (not needed for tk)
-```
-
-### Key Differences
-- **Types vs Tags**: tacks uses tags (`-t epic`, `-t bug`); the `epic` tag is auto-added when a subtask is created. Beads uses `--type=epic|task|bug`.
-- **Sync**: tacks is local-only (SQLite), no sync needed. Beads requires `bd sync` to export state.
-- **Missing in tacks**: `bd query`, `bd stale`, `bd swarm validate`, `bd dep cycles`, `bd doctor` — use `tk list --json | jq` for filtering.
-
-## Skill Quick Reference
-
-| I want to... | Use |
-|---|---|
-| Explore something unknown | /blossom or /fractal |
-| Research + prioritize | /gather -> /distill -> /rank |
-| Compare approaches | /diff-ideas or /consensus |
-| Plan before building | /decompose -> /plan -> /spec |
-| Test an implementation | /test-strategy |
-| Deploy to production | /deploy |
-| Review code | /review |
-| Track definition changes | /evolution or /drift |
-| Run a session | /status -> ... -> /retro -> /handoff |
-| Manage a team | /assemble -> /standup -> /sprint |
-| Discuss with panels | /meeting |
-| Plan a goal with your team | /team-meeting |
-| Optimize agent learnings | /curate or /tend (curate + promote) |
-| Implement a plan autonomously | /drive (sustained sprint/retro loops) |
-
-All 48 skills: see [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
+48 skills across three layers: **core** (14 composable primitives), **workflows** (25 orchestrated multi-step workflows), **teams** (9 team orchestration + learning lifecycle). Full catalog with decision tree and chain patterns: [docs/INDEX.md](docs/INDEX.md). Composable primitives follow [pipe format](rules/pipe-format.md).
 
 ## Project Structure
 
@@ -126,30 +84,28 @@ tackline/
 │   ├── batch-safety.md          # Batch processing safety (chunk at 12 items)
 │   ├── context-trust.md         # Trust user-provided context
 │   ├── information-architecture.md  # IA principles for knowledge organization
-│   ├── memory-layout.md         # Path registry for persistent state (paths: memory/**)
+│   ├── memory-layout.md         # Path registry + checkpoint protocol for persistent state
 │   ├── pipe-format.md           # Composable primitive output contract (paths: skills/**/SKILL.md)
 │   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
 │   └── test-conventions.md      # Testing conventions
-├── memory/                      # Persistent state (sessions, learnings, epics)
+├── .claude/tackline/memory/                      # Persistent state (sessions, learnings, epics)
 ├── templates/                   # Team templates (symlinked to ~/.claude/templates/)
 │   └── teams/                   # Starter team.yaml files for common project types
 ├── mcp-servers.json            # MCP server definitions (installed globally)
-├── install.sh                  # Symlink installer (idempotent)
+├── .claude-plugin/             # Plugin manifest for `claude plugin install`
 ├── .claude/                    # Project-local Claude Code config (NOT symlinked globally)
 │   ├── AGENTS.md               # Agent catalog for project-local agents
-│   ├── agents/                 # 8 project-local agents (authoring, research, maintenance)
+│   ├── agents/                 # 6 project-local agents (authoring, research, maintenance)
 │   ├── rules/                  # Architectural guardrails
 │   └── skills/                 # Project-local skill overrides
-├── CONTRIBUTING.md             # Contribution guidelines
-├── .tacks/                     # Task management state (tacks)
-└── .beads/                     # Task management state (beads) — alternative to .tacks/
+└── CONTRIBUTING.md             # Contribution guidelines
 ```
 
 ## Architecture
 
 - **No source code, no build system, no tests.** This is a content-only repo of Markdown definitions and JSON config.
-- `install.sh` is idempotent. It backs up existing regular files before symlinking.
-- `mcp-servers.json` defines MCP servers installed globally via `claude mcp add --scope user`. Config lives in `~/.claude.json` (not symlinked).
+- Installation is via `claude plugin install`. The plugin system handles skills, agents, hooks, and MCP servers.
+- Global rules must be symlinked individually to `~/.claude/rules/` since plugins don't support rules yet.
 
 ## Key Patterns
 
@@ -157,13 +113,10 @@ tackline/
 - Agent frontmatter fields: `name`, `description`, `tools`, `model`, `permissionMode`
 - Skill frontmatter fields: `name`, `description`, `allowed-tools`, `context`, `disable-model-invocation`
 - Rule frontmatter fields: `strength` (must/should/may), `freshness` (date); some rules also have `paths` (glob patterns for conditional loading via `bin/rule-relevance.sh`)
-- Hooks fail gracefully with `|| true` for optional tools (like `tk`/`bd`)
-- Epic hierarchy via `--parent`: `tk create --parent <id>` or `bd create --parent=<epic-id>` (not `bd dep add`). Use `bd dep add` only for cross-task ordering
+- Hooks fail gracefully with `|| true` for optional tools
 - Confidence levels for spike findings: CONFIRMED > LIKELY > POSSIBLE
-- If `memory/project/domain.md` exists, it contains project-specific terminology; consult it when a term is ambiguous
+- If `.claude/tackline/memory/project/domain.md` exists, it contains project-specific terminology; consult it when a term is ambiguous
 
 ## Do Not Modify
 
-- `.tacks/` internals (use `tk` commands only)
-- `.beads/` internals (use `bd` commands only)
 - Symlink targets while symlinks are active (edit source files in this repo instead)

@@ -1,20 +1,18 @@
 ---
 name: consolidate
-description: "Review and tighten the backlog by deduplicating tasks, filling vertical slice gaps, detecting stale items, and cleaning up dependencies. Use after a blossom run, when the backlog feels unwieldy, before starting a new sprint, or when you suspect duplicate or stale tasks. Keywords: backlog, cleanup, dedup, triage, hygiene, review, organize."
+description: "Use when the backlog feels unwieldy — after a blossom run, before a sprint, or when you suspect duplicates or stale tasks. Deduplicates, fills gaps, and cleans up dependencies. Keywords: backlog, cleanup, dedup, triage, hygiene, review, organize."
 argument-hint: "[area or scope]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
+allowed-tools: Read, Grep, Glob, Bash(git:*)
 context: fork
 ---
 
-!`tk list --status=open 2>/dev/null || bd list --status=open 2>/dev/null`
-
 # Consolidate: Backlog Review and Tightening
 
-You are running the **Consolidate** workflow — a structured pass over the current backlog to eliminate sprawl, fill gaps, and sharpen priorities. Target area (optional): **$ARGUMENTS**
+You are running the **Consolidate** workflow — a structured pass over the current task backlog to eliminate sprawl, fill gaps, and sharpen priorities. Target area (optional): **$ARGUMENTS**
 
-**If neither `.tacks/` nor `.beads/` exists in the project root:** This workflow cannot run in full — there is no backlog to consolidate. If a `TODO.md` file exists, review it manually: scan for duplicates, reorder by priority, and remove items already completed (check git log). Then stop. Do not proceed through the phases below.
+Review the current backlog using your project's task tracking approach. If only a `TODO.md` file exists, review it manually: scan for duplicates, reorder by priority, and remove items already completed (check git log).
 
 ## When to Use
 
@@ -42,12 +40,7 @@ Survey [gather]
 
 ### 1a. Get the Full Picture
 
-```bash
-tk stats
-tk list --status=open
-tk list --status=in_progress
-tk blocked
-```
+Survey all open tasks, in-progress work, and blocked items using your project's task tracking approach.
 
 ### 1b. Build a Mental Map
 
@@ -79,20 +72,10 @@ Within each cluster, look for:
 For each overlap found:
 
 1. **Exact duplicates**: Close the newer one with a note pointing to the older one
-   ```bash
-   tk close <newer-id>
-   ```
-
 2. **Subset tasks**: Close the subset, add its specifics as notes on the parent
-   ```bash
-   tk close <subset-id>
-   # Note absorbed details in the parent via tk update or comments
-   ```
-
 3. **Convergent tasks**: Keep the better-scoped one, close the other
-   ```bash
-   tk close <weaker-id>
-   ```
+
+For each closure, record the reason (e.g., "Duplicate of [other task]", "Absorbed into [parent task]", "Superseded by [better task]").
 
 ### 2c. Report Dedup Results
 
@@ -131,16 +114,7 @@ For every task that touches a core/inner layer, verify companion tasks exist acr
 
 For each missing companion, create as a child of the epic (if one exists) or standalone:
 
-**If `.tacks/` or `.beads/` exists:**
-```bash
-# tacks
-tk create --parent <epic-id> "[layer]: [companion task description]"
-# bd equivalent: bd create --title="..." --type=task --priority=<N> --parent=<epic-id>
-```
-
-If no epic exists, omit `--parent` and wire ordering dependencies with `tk dep add` as needed.
-
-**If neither `.beads/` nor `.tacks/` exists:** Add missing companion tasks to `TODO.md` under the relevant section.
+Create each missing companion task in your project's task tracker as a child of the epic (if one exists). If using `TODO.md`, add missing companion tasks under the relevant section.
 
 ### 3d. Wire Dependencies
 
@@ -151,10 +125,7 @@ Ensure the natural flow follows the project's dependency direction (inner layers
 - Service tasks block interface/exposure tasks
 - Test tasks can run in parallel with their layer
 
-```bash
-# Example: outer layer depends on inner layer
-tk dep add <outer-task> <inner-task>
-```
+Wire dependencies so outer layers depend on inner layers in your task tracker.
 
 ---
 
@@ -180,9 +151,7 @@ For each potentially stale task:
 
 ### 4c. Close Stale Tasks
 
-```bash
-tk close <stale-id>
-```
+Close stale tasks with a reason (e.g., "Stale: [explanation]" or "Already completed in commit [hash]").
 
 ---
 
@@ -190,34 +159,15 @@ tk close <stale-id>
 
 ### 5a. Remove Redundant Transitive Dependencies
 
-If A depends on B, and B depends on C, then A does NOT need a direct dependency on C. The transitive dependency through B is sufficient.
-
-```bash
-# Check: does A directly depend on C when B already bridges them?
-tk show <A>  # Look at depends-on list
-# If A -> B -> C AND A -> C, remove A -> C
-```
+If A depends on B, and B depends on C, then A does NOT need a direct dependency on C. The transitive dependency through B is sufficient. Review each task's dependency list and remove redundant transitive edges.
 
 ### 5b. Check for Cycles and Validate Structure
 
-```bash
-tk children <epic-id>   # Verify tasks are properly parented
-tk blocked              # Check for unexpected blockers
-# Note: bd dep cycles and bd swarm validate are beads-only; use tk list --json | jq for custom queries
-```
-
-If cycles are found, break them by identifying which dependency is the weakest (most optional) and removing it.
+Check for dependency cycles in your task tracker. If cycles are found, break them by identifying which dependency is the weakest (most optional) and removing it. Validate the full epic structure for orphaned or disconnected tasks and re-parent or wire them.
 
 ### 5c. Validate Epic Structure
 
-Every epic should have its tasks as children (via `--parent`), not just blocking deps:
-
-```bash
-tk children <epic-id>  # Should list all child tasks
-tk epic                # Should show completion progress
-```
-
-If tasks were created without `--parent`, they will be missing from `tk children`. Flag these for re-parenting.
+Every epic should have its tasks as children, not just blocking deps. Verify all child tasks are properly parented and that epic status reflects completion progress. Flag any orphaned tasks for re-parenting.
 
 ---
 
@@ -258,7 +208,7 @@ Emit the consolidation report in pipe format:
 **Sharpening gate:** Each recommendation must pass three tests:
 1. Name the specific bead/area/cluster
 2. State what concretely should change
-3. Make it actionable (a single bd command or skill invocation)
+3. Make it actionable (a single command or skill invocation)
 
 **Before:** "Some clusters might benefit from prioritization review"
 **After:** "Reprioritize tasks abc1, def2, ghi3 in the auth cluster from P3→P2 — they block 4 downstream tasks"
@@ -281,5 +231,6 @@ Emit the consolidation report in pipe format:
 - **Preserve context** — when closing or merging, always explain why in the reason
 - **Don't reprioritize aggressively** — small adjustments only, unless the user directs otherwise
 - **Focus on the target area** if `$ARGUMENTS` was provided — don't let scope creep into unrelated clusters
+- **Tool-agnostic** — use whatever task tracking approach the project has configured; adapt commands to the available tooling
 
 See also: /gather, /filter, /assess, /verify, /rank, /sprint

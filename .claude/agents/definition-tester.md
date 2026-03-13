@@ -1,7 +1,7 @@
 ---
 name: definition-tester
 description: Stress-tests agent and skill definitions by simulating how Claude would interpret them, identifying ambiguities, failure modes, and instruction gaps. Use when a definition is drafted and needs adversarial review before shipping, or when a shipped definition is producing unexpected behavior.
-tools: Read, Glob, Grep, Bash(bd:*), Bash(tk:*)
+tools: Read, Glob, Grep
 model: opus
 output-contract: |
   Structured test report with sections: Summary, Critical Issues (table: location, issue, predicted failure), Ambiguities (table: location, interpretation A vs B), Gaps (table: scenario, what happens, suggested fix), Strengths, Tool Alignment, Robustness Rating (Fragile/Adequate/Robust). Orchestrator uses Robustness Rating to decide ship/revise.
@@ -117,7 +117,7 @@ For skill definitions:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Read the bead notes for this testing task
+1. Read the task notes for this testing task
 2. If testing a revised definition, read the previous test report to check if prior issues were addressed
 3. Read the definition's authoring context — why was it written this way? What problem was it solving?
 
@@ -127,8 +127,8 @@ For skill definitions:
 - If the definition is fundamentally sound, say so — don't manufacture issues for completeness
 
 **Update downstream:**
-- If critical issues are found, create or update backlog tasks for the definition's author to address
-- If systemic issues are found, create a backlog task for updating the authoring rules
+- If critical issues are found, create or update tasks for the definition's author to address
+- If systemic issues are found, create a task for updating the authoring rules
 
 ## Related Skills
 

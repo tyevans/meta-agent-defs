@@ -33,7 +33,7 @@ User: /gather skill quality patterns in skills/
    - source: skills/blossom/SKILL.md:30, skills/gather/SKILL.md:23, skills/distill/SKILL.md:21
    - confidence: CONFIRMED
 
-4. **Bash tool restriction violations** — Several skills use `Bash(bd:*)`, `Bash(tk:*)`, and `Bash(git:*)` prefixes, but consolidate line 11 uses `!bd list --status=open` which violates the restriction format. The `!` prefix is not documented in skill-authoring rules.
+4. **Bash tool restriction violations** — Several skills use `Bash(git:*)` prefixes, but consolidate line 11 uses a task tracker command that violates the restriction format. The command prefix is not documented in skill-authoring rules.
    - source: skills/consolidate/SKILL.md:11, .claude/rules/skill-authoring.md:35
    - confidence: CONFIRMED
 
@@ -86,7 +86,7 @@ User: /assess by compliance with skill-authoring rules
    - source: skills/blossom/SKILL.md:30, skills/gather/SKILL.md:23, skills/distill/SKILL.md:21
    - confidence: CONFIRMED
 
-4. **Bash tool restriction violations** — **CRITICAL** — consolidate/SKILL.md:11 uses `!bd list` which is not a valid Bash(prefix:*) restriction format per skill-authoring.md:35. The `!` prefix is undocumented and may not work.
+4. **Bash tool restriction violations** — **CRITICAL** — consolidate/SKILL.md:11 uses a task tracker command that is not a valid Bash(prefix:*) restriction format per skill-authoring.md:35. The command prefix is undocumented and may not work.
    - source: skills/consolidate/SKILL.md:11, .claude/rules/skill-authoring.md:35
    - confidence: CONFIRMED
 
@@ -139,7 +139,7 @@ User: /filter keep critical and warning only
    - source: .claude/rules/skill-authoring.md:55, skills/gather/SKILL.md (missing), skills/distill/SKILL.md (missing)
    - confidence: CONFIRMED
 
-2. **Bash tool restriction violations** — CRITICAL — consolidate/SKILL.md:11 uses `!bd list` which is not a valid Bash(prefix:*) restriction format per skill-authoring.md:35. The `!` prefix is undocumented and may not work.
+2. **Bash tool restriction violations** — CRITICAL — consolidate/SKILL.md:11 uses a task tracker command that is not a valid Bash(prefix:*) restriction format per skill-authoring.md:35. The command prefix is undocumented and may not work.
    - source: skills/consolidate/SKILL.md:11, .claude/rules/skill-authoring.md:35
    - confidence: CONFIRMED
 
@@ -312,7 +312,7 @@ User: /sketch fixes for critical issues
    1. **Check context** for prior primitive output...
    ```
 
-9. **Fix Bash restriction in consolidate/SKILL.md** — Remove undocumented `!` prefix, replace with comment explaining the intent
+9. **Fix Bash restriction in consolidate/SKILL.md** — Remove undocumented task tracker command prefix, replace with valid Bash restriction format
    - source: skills/consolidate/SKILL.md:11
 
    ```markdown
@@ -322,7 +322,7 @@ User: /sketch fixes for critical issues
    argument-hint: "[area or scope]"
    disable-model-invocation: true
    user-invocable: true
-   allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*)
+   allowed-tools: Read, Grep, Glob, Bash(git:*)
    context: fork
    ---
 
@@ -335,7 +335,7 @@ User: /sketch fixes for critical issues
 
 ### Summary
 
-Nine skeleton fixes address both CRITICAL issues. Items 1-8 add ASCII workflow diagrams to the 8 composable primitive skills that were missing them (gather, distill, filter, assess, rank, verify, decompose, sketch). The diagrams follow the phase structure already present in each skill. Item 9 removes the undocumented `!bd` prefix from consolidate's frontmatter, which violates the Bash(prefix:*) restriction format. Remaining 15 non-primitive skills (blossom, fractal, retro, etc.) would need similar diagram additions but are deferred as they have more complex multi-phase flows requiring deeper design work.
+Nine skeleton fixes address both CRITICAL issues. Items 1-8 add ASCII workflow diagrams to the 8 composable primitive skills that were missing them (gather, distill, filter, assess, rank, verify, decompose, sketch). The diagrams follow the phase structure already present in each skill. Item 9 removes the undocumented task tracker command prefix from consolidate's frontmatter, which violates the Bash(prefix:*) restriction format. Remaining 15 non-primitive skills (blossom, fractal, retro, etc.) would need similar diagram additions but are deferred as they have more complex multi-phase flows requiring deeper design work.
 
 > **Commentary**: Skeletons show structure, not implementation. Each item is a targeted fix with code blocks containing placeholders.
 

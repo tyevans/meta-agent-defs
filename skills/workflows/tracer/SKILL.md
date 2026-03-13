@@ -1,10 +1,10 @@
 ---
 name: tracer
-description: "Build a feature iteratively by implementing the thinnest end-to-end path first, then widening pass by pass. Use when integration risk is high, for features crossing system boundaries, or when you want always-working increments. Keywords: tracer, iterative, incremental, end-to-end, thin slice, vertical slice."
+description: "Use when a feature crosses system boundaries and integration risk is high. Implements the thinnest end-to-end path first, then widens pass by pass — always working. Keywords: tracer, iterative, incremental, end-to-end, thin slice, vertical slice."
 argument-hint: "<feature to implement>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(npm:*), Bash(npx:*), Task
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(git:*), Bash(npm:*), Bash(npx:*), Task
 context: fork
 ---
 
@@ -287,7 +287,7 @@ Produce a final report:
 
 ### 6b. Persist Architectural Insights to Domain Memory
 
-After completing the report, extract architectural findings discovered during implementation and persist them to `memory/project/domain.md`.
+After completing the report, extract architectural findings discovered during implementation and persist them to `.claude/tackline/memory/project/domain.md`.
 
 **What to extract** — look for concepts that emerged during the tracer that are project-specific and would help a future session understand this codebase:
 - Layer names or boundary names specific to this project (e.g., "the service layer means X here, not Y")
@@ -311,7 +311,7 @@ After completing the report, extract architectural findings discovered during im
 ```
 
 **Process**:
-1. Read `memory/project/domain.md` if it exists. If it does not, create it with the header:
+1. Read `.claude/tackline/memory/project/domain.md` if it exists. If it does not, create it with the header:
    ```markdown
    # Project Domain Terminology
 
@@ -324,28 +324,13 @@ After completing the report, extract architectural findings discovered during im
    - Check if a `## <Term>` heading already exists (case-insensitive). If it does, skip — do not duplicate.
    - If new, append the entry below the last entry in the file.
 3. If no architectural insights were found worth persisting, skip this step entirely — do not write an empty or placeholder entry.
-4. After writing, confirm in the report output: "Persisted N domain concepts to `memory/project/domain.md`." (or "No new domain concepts to persist." if none).
+4. After writing, confirm in the report output: "Persisted N domain concepts to `.claude/tackline/memory/project/domain.md`." (or "No new domain concepts to persist." if none).
 
 ### 6c. Create Follow-Up Tasks
 
 If follow-up work was identified:
 
-**If `.tacks/` or `.beads/` exists in the project root**, create tasks:
-
-```bash
-# tacks
-tk create "[follow-up task]"
-# bd equivalent: bd create --title="[follow-up task]" --type=task --priority=[0-4] \
-#   --description="Follow-up from tracer: [feature name]. [Details and context.]"
-```
-
-**If neither `.beads/` nor `.tacks/` exists**, write follow-up tasks to `TODO.md` in the project root:
-
-```markdown
-## Follow-up from tracer: [feature name]
-
-- [ ] [follow-up task] — [details and context]
-```
+Create follow-up tasks using your preferred task tracking approach. Each task should include the title, priority, and context from the tracer work. If no tracker is configured, write follow-up tasks to `TODO.md` in the project root.
 
 ---
 
@@ -385,7 +370,7 @@ Task({
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 6 phases. Write intermediate state to `memory/scratch/tracer-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/tracer-checkpoint.md`.
 2. **Each phase produces a working increment.** Never proceed to the next phase if the current one is broken.
 3. **Commit after every phase.** Commits provide rollback points and document the tracer's progression.
 4. **Hard-coding in Phase 2 is expected.** The point is to prove the path, not build production code immediately.
@@ -395,7 +380,7 @@ Task({
 8. **Stop at any phase.** If the session ends early, you have working code at the last committed phase.
 9. **Widen one concern at a time.** Don't mix error handling and validation in the same pass -- each pass is focused.
 10. **Follow project conventions.** Match existing patterns for error handling, validation, testing, and file organization.
-11. **Create beads for follow-up work.** If scope is cut or limitations are discovered, document them as beads tasks (or in `TODO.md` if a backlog tool is not available).
+11. **Create tasks for follow-up work.** If scope is cut or limitations are discovered, document them in your task tracker (or in `TODO.md` if no tracker is configured).
 
 ## See Also
 

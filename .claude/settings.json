@@ -1,14 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bd:*)",
-      "Bash(tk:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git branch:*)",
-      "Bash(./install.sh:*)",
       "Bash(ls:*)",
       "Bash(tree:*)",
       "Bash(wc:*)"
@@ -21,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BK=''; if [ -d .tacks ]; then BK=tk; elif [ -d .beads ]; then BK=bd; fi; if [ -n \"$BK\" ]; then $BK prime 2>/dev/null || true; else echo 'Backlog context: No task manager found. Install tacks (tk) or beads (bd).'; fi"
+            "command": "echo 'Session started. Check your task tracker for available work.'"
           }
         ]
       }
@@ -32,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -d .beads ]; then bd sync 2>/dev/null || true; fi"
+            "command": "true"
           }
         ]
       }

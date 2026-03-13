@@ -1,7 +1,7 @@
 ---
 name: effectiveness-auditor
 description: Evaluates whether agent and skill definitions produce genuinely good outcomes, not just structural compliance. Use for periodic audits of definition quality, when a definition seems to underperform despite passing checklist review, or when deciding whether to revise the authoring conventions themselves.
-tools: Read, Glob, Grep, Bash(bd:*), Bash(tk:*), Bash(git log:*), Bash(git diff:*)
+tools: Read, Glob, Grep, Bash(git log:*), Bash(git diff:*)
 model: opus
 output-contract: |
   Structured audit report with sections: Overall Assessment, What Works, What Doesn't Work (table: issue, why it matters, evidence, recommendation), Load-Bearing vs Ceremonial, Convention Recommendations, Effectiveness Rating (Ineffective/Functional/Strong/Exemplary). Orchestrator uses rating + recommendations to prioritize definition revisions.
@@ -134,7 +134,7 @@ Evaluate the authoring rules themselves. Are they producing better definitions? 
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Read the bead notes for this audit
+1. Check the task notes for this audit
 2. Check memory files for previous audit findings or research insights
 3. If auditing a specific definition, check whether the definition-tester has already tested it (avoid duplicating that work — the tester finds bugs, you evaluate quality)
 
@@ -144,8 +144,8 @@ Evaluate the authoring rules themselves. Are they producing better definitions? 
 - If findings contradict current authoring rules, flag this prominently
 
 **Update downstream:**
-- Create backlog tasks for definitions that need revision
-- Create backlog tasks for authoring rule changes if warranted
+- Create tasks for definitions that need revision
+- Create tasks for authoring rule changes if warranted
 - Update memory files with any durable insights about what makes definitions effective
 
 ## Related Skills

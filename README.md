@@ -45,46 +45,23 @@ Assembles 2 panelists with genuinely opposed perspectives and a facilitator. You
 
 Each skill's output feeds the next through conversation context. No file passing, no explicit piping -- context is the pipe.
 
-## Prerequisites
-
-Tackline works without extras, but a task manager unlocks backlog-driven workflows (`/blossom`, `/sprint`, `/consolidate`).
-
-**Tacks** (recommended — lightweight, SQLite-based):
-
-```bash
-# From crates.io
-cargo install tacks
-
-# From source
-git clone https://github.com/srmccray/tacks
-cd tacks && cargo install --path .
-```
-
-Or grab a prebuilt binary from the [GitHub releases](https://github.com/srmccray/tacks/releases).
-
-> Rust toolchain not installed? Get it at [rustup.rs](https://rustup.rs).
-
 ## Install
 
 ```bash
-git clone https://github.com/tyevans/tackline
-cd tackline
-./install.sh
-```
+# Install as a Claude Code plugin (skills, agents, hooks, MCP)
+claude plugin install tackline@tacklines
 
-Zero dependencies. The installer symlinks everything into `~/.claude/`. Rerun after pulling updates -- it's idempotent, existing files are backed up.
-
-```bash
-./install.sh /path/to/project    # Project-local install (agents + skills only)
-./install.sh --hardlink           # Hardlinks instead of symlinks
-./install.sh --install-tacks      # Install tacks via cargo during setup
-./install.sh --beads              # Use beads instead of tacks for task management
+# Install global rules (plugin system doesn't support rules yet)
+mkdir -p ~/.claude/rules
+for f in /path/to/tackline/rules/*.md; do ln -sf "$f" ~/.claude/rules/; done
 ```
 
 ### Uninstall
 
 ```bash
-xargs rm -f < ~/.claude/.tackline.manifest
+claude plugin uninstall tackline@tacklines
+# Remove rule symlinks (leaves non-tackline rules intact)
+for f in /path/to/tackline/rules/*.md; do rm -f ~/.claude/rules/"$(basename "$f")"; done
 ```
 
 ## Getting Started
@@ -95,87 +72,25 @@ xargs rm -f < ~/.claude/.tackline.manifest
 
 **New machine:** Clone, install, go. Your entire Claude Code workflow travels with you.
 
-## Skills (46)
+## Skills (48)
 
-### Composable Primitives
+**14 composable primitives** -- stateless skills that chain through conversation context (`/gather`, `/distill`, `/rank`, `/filter`, `/assess`, `/verify`, `/critique`, `/diff-ideas`, `/decompose`, `/plan`, `/expand`, `/transform`, `/sketch`, `/merge`).
 
-Stateless skills that chain through conversation context. Output of any feeds the next.
+**25 workflows** -- orchestrated multi-step workflows with side effects (`/blossom`, `/fractal`, `/meeting`, `/consensus`, `/tracer`, `/review`, `/sprint`, `/spec`, `/premortem`, `/bootstrap`, `/drive`, `/deploy`, `/optimize`, `/test-strategy`, `/evolution`, `/drift`, `/consolidate`, `/bug`, `/domain`, `/active-learn`, `/diagnose-agent`, `/challenge-gen`, `/challenge-run`, `/storm-prep`, `/formalize`).
 
-| Skill | Purpose |
-|-------|---------|
-| `/gather` | Collect findings with sources and confidence levels |
-| `/distill` | Reduce to essentials |
-| `/rank` | Score and order by criteria |
-| `/filter` | Binary keep/drop |
-| `/assess` | Categorize by rubric (critical/warning/ok) |
-| `/verify` | Check claims against evidence |
-| `/critique` | Adversarial review -- what's wrong, missing, risky |
-| `/diff-ideas` | Side-by-side tradeoff analysis |
-| `/decompose` | Break into bounded sub-parts |
-| `/plan` | Dependency-aware execution sequence |
-| `/expand` | Elaborate sparse items into detailed descriptions |
-| `/transform` | Apply a rewrite instruction to every item (map) |
-| `/sketch` | Code skeleton with TODOs |
-| `/merge` | Combine multiple outputs into one |
-
-### Workflows
-
-Orchestrated multi-step workflows with side effects.
-
-| Skill | Purpose |
-|-------|---------|
-| `/blossom` | Spike-driven exploration -- produces epic + prioritized tasks |
-| `/fractal` | Goal-directed recursive exploration with dead-end pruning |
-| `/meeting` | Live multi-agent discussion with opposed perspectives |
-| `/consensus` | Three independent proposals, synthesized |
-| `/tracer` | Iterative implementation -- thinnest working path first |
-| `/review` | Structured code review across 5 dimensions |
-| `/sprint` | Dispatch work to agents with a learning loop |
-| `/spec` | Progressive specification document |
-| `/premortem` | Failure analysis before building |
-| `/bootstrap` | Full project setup: infrastructure + agents |
-| `/active-learn` | Adversarial training loop for agent improvement |
-| `/curate` | Score learnings/rules by relevance x freshness x scope, archive stale entries, detect gaps |
-| `/promote` | Graduate durable cross-agent learnings to project rules |
-| `/tend` | Full learning lifecycle: curate agents, curate rules, promote, demotion, summary |
-| `/test-strategy` | Classify spec type, write tests, enforce red-green gates |
-| `/evolution` | File change history, churn, and stability analysis |
-| `/drift` | Cross-definition convergence/divergence detection |
-| `/consolidate` | Backlog dedup, stale detection, cleanup |
-| `/bug` | File structured bug reports to backlog |
-| `/domain` | Capture or query project-specific terminology |
-| `/diagnose-agent` | Agent struggle profile from learnings + git signals |
-| `/challenge-gen` | Generate targeted training challenges |
-| `/challenge-run` | Execute challenges and evaluate performance |
-
-### Session & Team
-
-| Skill | Purpose |
-|-------|---------|
-| `/status` | Unified dashboard: backlog, activity, team, last session |
-| `/advise` | Proactive recommendations from git state, history, and signals |
-| `/assemble` | Create a persistent learning team |
-| `/standup` | Sync status, surface blockers |
-| `/retro` | Session retrospective with persistent learnings |
-| `/handoff` | Session transition capture |
-| `/session-health` | Context load and drift diagnostic |
-| `/team-meeting` | Goal-oriented planning with persistent team |
-| `/discover` | Recommend skills or pipelines for a described goal |
+**9 session & team skills** -- `/status`, `/advise`, `/assemble`, `/standup`, `/retro`, `/handoff`, `/session-health`, `/team-meeting`, `/discover`.
 
 [Full catalog with decision tree and chain patterns](docs/INDEX.md)
 
 ## Common Chains
 
 ```
-/gather -> /distill -> /rank           Research -> condense -> prioritize
-/decompose -> /rank -> /plan           Break down -> prioritize -> sequence
-/gather -> /critique -> /rank          Research -> stress-test -> prioritize
-/assemble -> /standup -> /sprint       Form team -> sync -> dispatch
-/blossom -> pick tasks -> /tracer      Explore -> build
-/meeting -> /fractal -> /spec          Discuss -> deep-dive -> specify
-/curate -> /promote                    Optimize learnings -> graduate to rules
-/tend                                  Full lifecycle: curate -> promote -> demotion
+/gather -> /distill -> /rank       Research -> condense -> prioritize
+/decompose -> /plan -> /spec       Break down -> sequence -> specify
+/blossom -> /drive                 Explore -> autonomously implement
 ```
+
+[All chain patterns](docs/INDEX.md#primitive-chain-patterns)
 
 ## How It Actually Works
 
@@ -183,13 +98,13 @@ Orchestrated multi-step workflows with side effects.
 
 **Fork-context skills spawn subagents.** `/blossom`, `/consensus`, and `/premortem` each dispatch agents that read source files independently. On large codebases, expect meaningful API usage. Inline skills (primitives, `/meeting`, `/status`) are lightweight.
 
-**Everything works without extras.** No tacks/beads, no MCP servers required. You just get fewer features. Hooks degrade gracefully with `|| true`.
+**Everything works without extras.** No MCP servers required. You just get fewer features. Hooks degrade gracefully with `|| true`.
 
 ## Extending
 
-**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter. Rerun `./install.sh`.
+**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter. Run `claude plugin update tackline@tacklines`.
 
-**Add an agent:** Create `agents/<name>.md` with YAML frontmatter. Rerun `./install.sh`.
+**Add an agent:** Create `agents/<name>.md` with YAML frontmatter. Run `claude plugin update tackline@tacklines`.
 
 ## Learn More
 

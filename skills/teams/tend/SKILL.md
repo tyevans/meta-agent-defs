@@ -1,10 +1,10 @@
 ---
 name: tend
-description: "Run the full learning lifecycle: curate learnings for upcoming work, then promote durable patterns to rules. Orchestrates /curate and /promote in sequence. Use after sprints, before major work phases, or on a regular cadence to keep learnings sharp and rules growing. Keywords: maintain, groom, lifecycle, learnings, rules, optimize, promote."
+description: "Use after sprints, before major work phases, or on regular cadence. Runs /curate then /promote in sequence — keeps learnings sharp and graduates durable patterns to rules. Keywords: maintain, groom, lifecycle, learnings, rules, optimize, promote."
 argument-hint: "[agent-name or 'all']"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Bash(ls:*), Write, Edit, Skill
+allowed-tools: Read, Grep, Glob, Bash(git:*), Bash(ls:*), Write, Edit, Skill
 ---
 
 # Tend: Learning Lifecycle Orchestrator
@@ -43,7 +43,7 @@ Before orchestrating, gather the inputs that both /curate and /promote need.
 Read `.claude/team.yaml`. If it doesn't exist, check for learnings files directly:
 
 ```bash
-ls memory/agents/*/learnings.md 2>/dev/null
+ls .claude/tackline/memory/agents/*/learnings.md 2>/dev/null
 ```
 
 If neither exists, stop: "No team manifest or agent learnings found. Nothing to tend."
@@ -59,12 +59,10 @@ If neither exists, stop: "No team manifest or agent learnings found. Nothing to 
 Capture what work is coming so /curate has the signal it needs:
 
 ```bash
-tk ready 2>/dev/null
-tk list --status=in_progress 2>/dev/null
-ls memory/epics/*/epic.md 2>/dev/null
+ls .claude/tackline/memory/epics/*/epic.md 2>/dev/null
 ```
 
-If no backlog tool is available, note that curate will rely on git signals and conversation context only.
+Check your project's task tracker for ready and in-progress work. If no task tracker is available, note that curate will rely on git signals and conversation context only.
 
 ### 0d. Rules Inventory
 
@@ -84,17 +82,14 @@ Read CLAUDE.md to understand what's already in passive context.
 
 Count the target agents determined in Phase 0b. This determines the dispatch mode for this phase.
 
-- **1-2 agents (default — serial):** invoke `/curate` once per agent using the Skill tool, sequentially
-- **3+ agents (parallel):** dispatch one background Task per agent concurrently, then collect
+- **1 agent:** invoke `/curate` directly using the Skill tool
+- **2+ agents (default — parallel):** dispatch one background Task per agent concurrently, then collect
 
 ### 1b. Invoke /curate
 
-**Serial mode (default, 1-2 agents):** Use the Skill tool to invoke `/curate` for each agent:
+**Single agent:** Use the Skill tool to invoke `/curate <agent-name>` directly.
 
-- If single agent: `/curate <agent-name>`
-- If two agents: invoke `/curate` once per agent, one after the other
-
-**Parallel mode (3+ agents):** Dispatch one background Task per agent concurrently. Each Task receives everything /curate needs self-contained in its prompt:
+**Multiple agents (parallel):** Dispatch one background Task per agent concurrently. Each Task receives everything /curate needs self-contained in its prompt:
 
 ```
 Task({
@@ -104,10 +99,10 @@ Task({
   prompt: "Run /curate for agent <agent-name>.
 
 Agent: <agent-name>
-Learnings file: memory/agents/<agent-name>/learnings.md
+Learnings file: .claude/tackline/memory/agents/<agent-name>/learnings.md
 
 Upcoming work snapshot:
-<paste tk ready / tk list --status=in_progress / tk epic output from Phase 0c>
+<paste task tracker ready / in_progress / epic output from Phase 0c>
 
 Rules inventory:
 <paste ls rules/*.md .claude/rules/*.md output from Phase 0d>
@@ -120,7 +115,7 @@ Launch all agent Tasks in a single batch. Limit to 4 concurrent Tasks to avoid A
 
 ### 1c. Collect Results
 
-After all curate invocations complete (serially or via TaskOutput for parallel), note for each agent:
+After all curate invocations complete (directly or via TaskOutput for parallel), note for each agent:
 - How many learnings were kept, archived, or added
 - Any gaps identified (upcoming work needs knowledge not in learnings)
 - Any items flagged for cross-agent relevance
@@ -132,7 +127,7 @@ After curating all agents, summarize before moving to rules:
 ```markdown
 ### Agent Curate Phase Complete
 
-**Mode**: serial | parallel (N agents)
+**Mode**: direct | parallel (N agents)
 
 | Agent | Kept | Archived | Added | Gaps Found |
 |-------|------|----------|-------|------------|
@@ -307,7 +302,7 @@ Present a unified report of the full lifecycle run:
 - **Learnings optimized**: [total items curated across all agents]
 - **New rules created**: [count]
 - **Rules demoted**: [count]
-- **Knowledge gaps flagged**: [count] (create tasks with /bug or tk create if actionable)
+- **Knowledge gaps flagged**: [count] (create tasks with /bug or your task tracker if actionable)
 
 ### Recommended Next Steps
 - [Any gaps that need investigation tasks]
@@ -319,10 +314,10 @@ Present a unified report of the full lifecycle run:
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 5 phases. Write intermediate state to `memory/scratch/tend-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/tend-checkpoint.md`.
 2. **Run curate before promote.** Curate ensures learnings are clean and relevant. Promote then works with high-quality input.
 3. **Don't force promotions.** If /promote finds no candidates meeting graduation criteria, that's fine. Better no rule than a premature one.
-4. **Flag gaps as actionable items.** If curate reveals knowledge gaps for upcoming work, surface them — they may warrant investigation beads.
+4. **Flag gaps as actionable items.** If curate reveals knowledge gaps for upcoming work, surface them — they may warrant investigation tasks.
 5. **Respect the cadence.** Weekly or bi-weekly is a good rhythm. Running after every sprint is ideal. Running mid-sprint adds overhead without enough new signal.
 6. **Single agent is fine.** If one agent just finished heavy work, tend just that agent — no need to curate everyone every time.
 

@@ -1,10 +1,10 @@
 ---
 name: formalize
-description: "Convert shared jam session artifacts into machine-readable event contracts. Each human's agents generate versioned schemas, mocks, and validation config from agreed boundaries and ownership. Use after a human jam session to formalize agreements into code-level contracts. Keywords: formalize, contracts, event schemas, boundaries, multi-human, event storming."
+description: "Use after a human jam session to turn agreements into code. Converts shared artifacts into versioned event schemas, mocks, and validation config. Keywords: formalize, contracts, event schemas, boundaries, multi-human, event storming."
 argument-hint: "<path to shared jam artifact>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(bd:*), Bash(tk:*), Bash(git:*), Task
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(git:*), Task
 context: inline
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: drift
-description: "Detect skill/agent convergence and divergence patterns across definition files. Find shared patterns to factor out, detect missed cross-pollination, compare section structure. Use after major skill edits, as part of /retro, or when definitions feel inconsistent. Keywords: drift, convergence, divergence, cross-pollination, consistency, compare."
+description: "Use after major skill edits or when definitions feel inconsistent. Detects shared patterns to factor out, missed cross-pollination, and structural divergence. Keywords: drift, convergence, divergence, cross-pollination, consistency, compare."
 argument-hint: "<category or glob pattern>"
 disable-model-invocation: false
 user-invocable: true
@@ -220,7 +220,7 @@ Emit pipe-format output:
 
 ## Guidelines
 
-1. **Compaction resilience**: This skill has 4 phases. Write intermediate state to `memory/scratch/drift-checkpoint.md` at phase boundaries per `rules/compaction-resilience.md`. In parallel mode, write the merged inventory to the checkpoint before proceeding to Phase 2 — agent outputs are not recoverable after context loss.
+1. **Compaction resilience**: Per `rules/memory-layout.md`, checkpoint at phase boundaries to `.claude/tackline/memory/scratch/drift-checkpoint.md`. In parallel mode, write the merged inventory to the checkpoint before proceeding to Phase 2 — agent outputs are not recoverable after context loss.
 2. **Compare apples to apples.** Only compare files in the same category (workflow skills to workflow skills, agents to agents). Don't flag divergence between unrelated file types.
 3. **Fuzzy section matching.** "When to Use" and "When To Use This" are the same section. Match on normalized form (lowercase, first 3 words).
 4. **Threshold for "shared".** A pattern is "shared" if it appears in ≥3 files OR ≥50% of files in the category, whichever is smaller.

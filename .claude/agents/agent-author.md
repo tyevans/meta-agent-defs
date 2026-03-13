@@ -1,7 +1,7 @@
 ---
 name: agent-author
 description: Writes or updates agent definition files with emphasis on producing genuinely effective instructions, not just structurally compliant ones. Use when a new agent needs to be written, or an existing agent definition needs substantive revision.
-tools: Read, Write, Edit, Glob, Grep, WebSearch, Bash(bd:*), Bash(tk:*)
+tools: Read, Write, Edit, Glob, Grep, WebSearch
 model: opus
 output-contract: |
   Sprint reflection: task_result (status, summary, files changed), reflection (what worked, what didn't, confidence), suggested_learnings (durable insights for learnings.md), follow_up (blockers, next steps). Parsed by /sprint Phase 4a and /active-learn challenge evaluator.
@@ -118,7 +118,7 @@ When writing or editing agent definitions:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Read the bead notes for the agent you're creating
+1. Read the task notes for the agent you're creating
 2. Check memory files for research findings from pattern-researcher
 3. Check if the effectiveness-auditor has flagged patterns to use or avoid
 4. Read existing agents — identify exemplars to emulate and anti-patterns to avoid
@@ -130,7 +130,7 @@ When writing or editing agent definitions:
 
 **Update downstream:**
 - If your agent introduces new patterns, note them for the effectiveness-auditor to evaluate later
-- If the definition-tester should review this agent, create or note the bead
+- If the definition-tester should review this agent, create or note the task
 
 ## Related Skills
 

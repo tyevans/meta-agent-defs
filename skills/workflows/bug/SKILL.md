@@ -1,29 +1,29 @@
 ---
 name: bug
-description: "File a structured bug report in the backlog from a description, upstream pipe-format output (/critique, /review), or conversation context. Extracts affected artifact, repro steps, and priority. Keywords: bug, report, issue, defect, file, submit, track, broken."
+description: "Use when you've found a defect and need to file it. Creates a structured bug report with repro steps and priority from a description or prior /critique or /review output. Keywords: bug, report, issue, defect, file, submit, track, broken."
 argument-hint: "<description of the bug>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Grep, Glob, Bash(bd:*), Bash(tk:*)
+allowed-tools: Read, Grep, Glob
 context: inline
 ---
 
 # Bug: File a Structured Bug Report
 
-You are running the **bug** skill — filing a structured bug report in the backlog. Input: **$ARGUMENTS**
+You are running the **bug** skill — filing a structured bug report in your task tracker. Input: **$ARGUMENTS**
 
 ## When to Use
 
 - After discovering a defect during manual testing or code review
 - After /critique or /review surfaces a flaw worth tracking
 - When the user says "file a bug", "this is broken", or "track this issue"
-- To bridge findings from any pipe-format output into actionable backlog issues
+- To bridge findings from any pipe-format output into actionable tracked issues
 
 ## Don't Use When
 
-- The issue is a feature request or enhancement, not a defect — use `tk create "[title]"` directly
+- The issue is a feature request or enhancement, not a defect — create a task directly in your task tracker
 - The problem is not yet reproducible — investigate and confirm the bug exists before creating a task for it
-- A task for this issue was already created upstream (e.g., by /review or another skill) — check `tk list --status=open` to avoid duplicates before filing
+- A task for this issue was already created upstream (e.g., by /review or another skill) — check your task tracker for existing issues to avoid duplicates before filing
 
 ## Overview
 
@@ -31,7 +31,7 @@ You are running the **bug** skill — filing a structured bug report in the back
 Detect input [pipe-format or direct description]
   -> Extract details [artifact, symptom, repro, severity]
     -> Confirm with user [priority, scope]
-      -> File in backlog [tk create -t bug / bd create --type=bug]
+      -> File in task tracker
         -> Report [pipe format]
 ```
 
@@ -39,7 +39,7 @@ Detect input [pipe-format or direct description]
 
 ## Phase 0: Detect Input Source
 
-Search conversation context for prior pipe-format output (the `## ... / **Source**: /...` pattern). Prioritize items tagged as FLAW, RISK, GAP, or with severity HIGH/CRITICAL.
+Detect upstream pipe-format output in context. Prioritize items tagged as FLAW, RISK, GAP, or with severity HIGH/CRITICAL.
 
 - **If pipe-format found**: Extract bug candidates from items. Each FLAW or HIGH-severity item is a candidate.
 - **If no pipe-format found**: Use $ARGUMENTS as the bug description directly.
@@ -87,25 +87,16 @@ If multiple bugs were extracted from pipe-format input, present all of them and 
 
 ---
 
-## Phase 3: File in Beads
+## Phase 3: File in Task Tracker
 
-For each confirmed bug, create a task:
+For each confirmed bug, create a tracked issue with:
 
-```bash
-# tacks
-tk create -t bug "<artifact>: <concise symptom>"
-# bd equivalent: bd create --title="..." --type=bug --priority=<N> --description="..."
-```
+- **Title**: `<affected artifact>: <concise symptom>` (e.g., "/gather: silently drops items past 20 results")
+- **Type**: bug
+- **Priority**: P0-P3 (from Phase 1 severity)
+- **Description**: Full description with symptom, repro steps, and expected behavior
 
-Title format: `<affected artifact>: <what's broken>` (e.g., "/gather: silently drops items past 20 results")
-
-If the bug relates to an existing epic, add it as a child:
-
-```bash
-# tacks
-tk create -t bug --parent <epic-id> "<artifact>: <symptom>"
-# bd equivalent: bd create --title="..." --type=bug --priority=<N> --parent=<epic-id> --description="..."
-```
+If the bug relates to an existing epic or parent task, link it as a child.
 
 ---
 
@@ -122,7 +113,7 @@ Emit the result in pipe format:
 
 ### Items (N)
 
-1. **<bead-id>: <title>** — P<N>, <artifact>
+1. **<task-id>: <title>** — P<N>, <artifact>
    - source: <file path or skill name>
 
 ### Summary
@@ -135,8 +126,8 @@ Emit the result in pipe format:
 ## Guidelines
 
 - **Always confirm before filing.** Never silently create issues from pipe-format input.
-- **One bug per issue.** Do not bundle multiple symptoms into a single bead.
+- **One bug per issue.** Do not bundle multiple symptoms into a single task.
 - **Title starts with the artifact name.** This makes the backlog scannable.
 - **Preserve provenance.** If the bug came from /critique or /review output, include that in the description (e.g., "Discovered via /review on 2026-02-17").
-- **Don't file duplicates.** Before creating, check `tk list --status=open` (or `bd list --status=open`) for existing issues with similar titles. If a match exists, note it to the user instead of filing.
+- **Don't file duplicates.** Before creating, check your task tracker for existing issues with similar titles. If a match exists, note it to the user instead of filing.
 - **Severity defaults to P2** if the user doesn't specify and context is ambiguous.

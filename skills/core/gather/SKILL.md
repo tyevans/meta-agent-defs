@@ -1,6 +1,6 @@
 ---
 name: gather
-description: "Collect information on a topic into structured findings with sources and confidence levels. The universal input primitive — use before distill, rank, or verify. Keywords: research, investigate, collect, find, search, explore."
+description: "Use when you need to research a topic before analyzing it. Produces structured findings with sources. Feed output to distill, rank, or verify. Keywords: research, investigate, collect, find, search, explore."
 argument-hint: "<topic or question>"
 disable-model-invocation: false
 user-invocable: true
@@ -40,58 +40,25 @@ If codebase results are insufficient or the topic requires external context, use
 
 ### 4. Emit Structured Findings
 
-Output in pipe format:
-
-- **Header**: `## [Findings on ...]`
-- **Metadata**: `**Source**: /gather`, `**Input**: [one-line topic]`, `**Pipeline**: (none — working from direct input)` (or append to upstream pipeline if composing with prior primitive)
-- **Items**: Numbered list with title, detail, source (file:line or URL), and confidence (CONFIRMED/LIKELY/POSSIBLE)
-- **Summary**: One paragraph synthesis of all findings
-
-Each finding must have a source. Use confidence levels when claims are uncertain.
+Output in pipe format. Each finding must have a `source:` and `confidence:` per-item metadata.
 
 ## Parallel Collection Mode
 
 **Trigger**: When the topic clearly spans 3 or more distinct source types (codebase files, web/external docs, and config/settings) and the breadth warrants concurrent collection.
 
-**In parallel mode:**
+Dispatch per the fan-out-protocol rule (loaded alongside this skill). Gather-specific details:
 
-1. Dispatch 2-3 background Task agents, each focused on one source type. Launch all at once (`run_in_background: true`):
+**Agents** (dispatch 2-3, one per source type):
 
-   **Codebase agent** — searches implementation files, tests, and inline docs:
-   ```
-   Task({
-     subagent_type: "Explore",
-     run_in_background: true,
-     prompt: "Search the codebase for [topic]. Use Grep, Glob, and Read.
-              Return findings as a numbered list: title, detail, file:line source, confidence (CONFIRMED/LIKELY/POSSIBLE)."
-   })
-   ```
+| Agent | Scope | Prompt focus |
+|-------|-------|-------------|
+| Codebase | Implementation files, tests, inline docs | "Search the codebase for [topic]. Use Grep, Glob, Read." |
+| Web/docs | External documentation, references, changelogs | "Search the web for [topic]. Use WebSearch, WebFetch." |
+| Config | Env vars, deployment config, project settings | "Search for config related to [topic]. Look for .env, YAML/JSON, manifests." |
 
-   **Web/docs agent** — searches external documentation and references:
-   ```
-   Task({
-     subagent_type: "Explore",
-     run_in_background: true,
-     prompt: "Search the web for [topic]. Use WebSearch and WebFetch.
-              Return findings as a numbered list: title, detail, URL source, confidence (CONFIRMED/LIKELY/POSSIBLE)."
-   })
-   ```
+All agent prompts must end with: "Return findings as a numbered list: title, detail, source (file:line or URL), confidence (CONFIRMED/LIKELY/POSSIBLE)."
 
-   **Config/settings agent** — searches environment variables, deployment config, and project-level settings (only when config is a distinct source type for this topic):
-   ```
-   Task({
-     subagent_type: "Explore",
-     run_in_background: true,
-     prompt: "Search for config and settings related to [topic]. Look for .env files, YAML/JSON config, deployment manifests.
-              Return findings as a numbered list: title, detail, file:line source, confidence (CONFIRMED/LIKELY/POSSIBLE)."
-   })
-   ```
-
-2. Collect all agent results as they complete.
-
-3. Merge findings into a single unified numbered list, deduplicating overlapping results and preserving per-item source and confidence metadata. Higher-confidence items from any agent take precedence when deduplicating.
-
-4. Emit the merged set as a single pipe-format output block. Note the mode used: `**Mode**: parallel (N agents)` in the metadata block after the Pipeline line.
+**Merge**: Deduplicate overlapping results, higher-confidence items take precedence. Emit as a single pipe-format block with `**Mode**: parallel (N agents)` after the Pipeline line.
 
 ## Modes
 
@@ -108,8 +75,7 @@ Confidence labeling is embedded by design — separating it would require a `/ga
 ## Guidelines
 
 - Code sources are more reliable than web sources — prioritize codebase over web
-- If composing with a prior primitive (detected via pipe format in context), refine or expand those findings
-- Confidence levels: CONFIRMED (verified in code/docs), LIKELY (strong evidence), POSSIBLE (weak evidence or speculation)
+- If composing with upstream pipe-format output, refine or expand those findings
 - Keep findings concise — the distill primitive can synthesize later
 - If the topic is vague or broad, gather what you can and note scope limits in the summary
 - In parallel mode, cap agent count at 3 to avoid API throttling — merge any additional source types into the closest existing agent

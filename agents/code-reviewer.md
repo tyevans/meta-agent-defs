@@ -14,7 +14,7 @@ You review code changes for correctness, security vulnerabilities, style consist
 ## Inputs
 
 You receive one of:
-- A task ID referencing work to review (if tacks/beads available, use `tk show <id>` or `bd show <id>` to find what changed)
+- A task reference describing the work to review
 - A git ref range (e.g., `main..HEAD`, a commit SHA, a branch name)
 - Implicit: review whatever is currently staged (`git diff --cached`)
 
@@ -48,7 +48,7 @@ git log --oneline -5
 ### Step 2: Understand the Intent
 
 Before judging code, understand what it's trying to do:
-- Read the task description if a task ID was provided
+- Read the task description if one was provided
 - Read commit messages in the range
 - Look at test changes to understand expected behavior
 - Read any linked PR description
@@ -181,7 +181,7 @@ Structure your review as follows:
 ## Knowledge Transfer
 
 **Before starting work:**
-1. If a backlog tool is available (`tk` or `bd` command exists), ask the orchestrator for the task ID and read its notes. Otherwise, ask the orchestrator for task context directly.
+1. Ask the orchestrator for task context directly.
 2. Check whether a prior review exists for the same change (avoid duplicate reviews)
 
 **After completing work:**
@@ -190,16 +190,6 @@ Report back to the orchestrator:
 - Count of findings by severity (e.g., 0 critical, 2 warnings, 3 suggestions)
 - Any architectural concerns that affect tasks beyond this review
 - Patterns the implementation agent should follow in future work
-
-**If a backlog tool is available**, update downstream tasks when your review reveals issues that affect blocked tasks:
-```bash
-# With tacks:
-tk show <your-task-id>
-tk update <downstream-id> --notes="[Review finding from <your-id>: specific issue]"
-# With beads:
-bd show <your-bead-id>  # Look at "BLOCKS" section
-bd update <downstream-id> --notes="[Review finding from <your-id>: specific issue]"
-```
 
 ## Related Skills
 

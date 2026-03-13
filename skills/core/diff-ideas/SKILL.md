@@ -1,6 +1,6 @@
 ---
 name: diff-ideas
-description: "Compare two approaches side-by-side with tradeoff analysis across dimensions. Produces a comparison table with per-dimension winner and overall recommendation. Keywords: compare, versus, vs, tradeoff, decision, choose, pros cons."
+description: "Use when deciding between two approaches and you need a structured tradeoff comparison. Produces a dimension-by-dimension table with a recommendation. Keywords: compare, versus, vs, tradeoff, decision, choose, pros cons."
 argument-hint: "<approach A> vs <approach B>"
 disable-model-invocation: false
 user-invocable: true
@@ -20,7 +20,7 @@ You are running the **diff-ideas** primitive — comparing two approaches side-b
 
 ## Process
 
-Identify the two approaches from $ARGUMENTS or from the top 2 items in prior pipe-format output in context (if upstream detected, read its `**Pipeline**` field to construct provenance). Research each approach using codebase (Grep, Glob, Read) first, then web (WebSearch, WebFetch) if needed.
+Identify the two approaches from $ARGUMENTS or from the top 2 items in upstream pipe-format output. Research each approach using codebase (Grep, Glob, Read) first, then web (WebSearch, WebFetch) if needed.
 
 **Gate**: Both approaches are identified and have at least one concrete characteristic each (a behavioral difference, a tradeoff, or a use-case). If only one approach is understood, ask for clarification rather than comparing against a vague alternative.
 
@@ -28,15 +28,7 @@ Score each approach across 4-6 dimensions.
 
 **Gate**: Every dimension has a score or winner for both approaches. No dimension left with "unclear" on both sides. If evidence was insufficient for a dimension, mark the stronger approach as winner with a note rather than leaving it unresolved.
 
-Emit structured comparison in pipe format with a comparison table between Items and Summary, including `**Pipeline**` in metadata.
-
-## Output Format
-
-- **Header**: `## Comparison: [A] vs [B]`
-- **Metadata**: `**Source**: /diff-ideas`, `**Input**: [one-line comparison request]`, `**Pipeline**: [upstream chain -> /diff-ideas (N items)]` or `(none — working from direct input)`
-- **Items**: Numbered list (1 per approach) with key characteristics
-- **Comparison**: Table with dimensions as rows, approaches as columns, winner per dimension
-- **Summary**: One paragraph recommendation with reasoning
+Emit in pipe format with a `### Comparison` section (table: dimensions as rows, approaches as columns, winner per dimension) between Items and Summary.
 
 ## Decomposition
 

@@ -1,10 +1,10 @@
 ---
 name: team-meeting
-description: "Run a goal-oriented planning session with the persistent team to decompose a goal into sprint-ready tasks with member assignments. Use when you have a goal and want the team to plan it collaboratively rather than exploring (blossom) or refining (meeting). Keywords: plan, team, goal, collaborate, assign, tasks, kickoff, planning session."
+description: "Use when you have a goal and want the team to plan it collaboratively — not explore (blossom) or brainstorm (meeting). Decomposes into sprint-ready tasks with member assignments. Keywords: plan, team, goal, collaborate, assign, tasks, kickoff, planning session."
 argument-hint: "<goal to plan>"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(bd:*), Bash(tk:*), Bash(git:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(git:*), Task, SendMessage, TeamCreate, TeamDelete, AskUserQuestion
 ---
 
 # Team Meeting: Goal-Oriented Planning with Your Team
@@ -39,7 +39,7 @@ Load team manifest + learnings
       -> Facilitator surfaces dependencies and conflicts
         -> Members discuss sequencing and risks
           -> Synthesize into sprint-ready plan
-            -> User approves -> optionally create beads
+            -> User approves -> optionally create tasks
 ```
 
 ---
@@ -68,22 +68,15 @@ Read `.claude/team.yaml` and extract all member names, roles, and ownership patt
 
 ### 1b. Read All Learnings
 
-For each member, read `memory/agents/<name>/learnings.md`. Note relevant learnings that might affect planning for this goal.
+For each member, read `.claude/tackline/memory/agents/<name>/learnings.md`. Note relevant learnings that might affect planning for this goal.
 
 ### 1c. Read Team Decisions
 
-Read `memory/team/decisions.md` for prior decisions that constrain this goal.
+Read `.claude/tackline/memory/team/decisions.md` for prior decisions that constrain this goal.
 
-### 1d. Load Backlog (conditional)
+### 1d. Load Task State (conditional)
 
-If `.tacks/` or `.beads/` exists, run:
-
-```bash
-tk ready
-tk list --status=in_progress
-```
-
-Check for existing work that overlaps with the goal. Flag duplicates or related beads.
+If the project uses a task tracker, check for ready and in-progress work. Flag any existing tasks that overlap with or duplicate the goal.
 
 ### 1e. Prerequisite Confirmation
 
@@ -91,7 +84,7 @@ Do not proceed until:
 - [ ] team.yaml contents are in context
 - [ ] Every member's learnings.md is read
 - [ ] Team decisions are read
-- [ ] Backlog state is known (or confirmed absent)
+- [ ] Task state is known (or confirmed absent)
 
 ---
 
@@ -142,7 +135,7 @@ Task({
 > Your ownership areas: [owns patterns]
 >
 > ## Your Accumulated Learnings
-> [contents of memory/agents/<name>/learnings.md]
+> [contents of .claude/tackline/memory/agents/<name>/learnings.md]
 >
 > ## Relevant Team Decisions
 > [applicable entries from decisions.md]
@@ -297,29 +290,9 @@ After all members confirm, delete the team:
 TeamDelete()
 ```
 
-### 5b. Create Beads (conditional)
+### 5b. Create Tasks (conditional)
 
-If `.tacks/` or `.beads/` exists, offer to create tasks from the approved plan. First create an epic for the goal, then create tasks as children:
-
-```bash
-# tacks (epic auto-tagged when subtasks are created with --parent)
-tk create "EPIC: [goal]"
-# bd equivalent: bd create --title="EPIC: [goal]" --type=epic --priority=2
-```
-
-For each task in the plan:
-
-```bash
-# tacks
-tk create --parent <epic-id> "[task title]"
-# bd equivalent: bd create --title="[task title]" --type=task --priority=[0-4] --parent=<epic-id> --description="..."
-```
-
-Wire cross-task ordering dependencies (task A must finish before task B):
-
-```bash
-tk dep add <downstream-id> <upstream-id>
-```
+If the project uses a task tracker, offer to create tasks from the approved plan. Create an epic for the goal, then create individual tasks as children with assignments, acceptance criteria, and dependency information.
 
 ### 5c. Report
 

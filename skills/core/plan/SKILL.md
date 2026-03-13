@@ -1,6 +1,6 @@
 ---
 name: plan
-description: "Convert items into a dependency-aware execution sequence showing what must come before what. Outputs ordering by dependency, not score. Keywords: plan, sequence, order, dependencies, execution, schedule, critical path, before, after, blocks."
+description: "Use when you have items to execute and need to know the right order. Sequences by dependency (what blocks what), not by score. Keywords: plan, sequence, order, dependencies, execution, schedule, critical path, before, after, blocks."
 argument-hint: "<optional constraint: minimize risk, fastest path, 2-person team>"
 disable-model-invocation: false
 user-invocable: true
@@ -21,18 +21,14 @@ You are running the **plan** primitive — sequencing items into a dependency-aw
 
 ## Process
 
-1. **Find Items**: Search conversation context for structured output from a prior primitive (the `## ... / **Source**: /...` pattern). If found, use those items as input and read the `**Pipeline**` field to construct provenance. If no prior primitive output exists, extract items directly from $ARGUMENTS.
+1. **Find Items**: Detect upstream pipe-format output in context. If none found, extract items directly from $ARGUMENTS.
 2. **Identify Dependencies**: For each item, determine what it depends on. Use Read/Grep/Glob to understand technical dependencies in the codebase when applicable.
 3. **Sequence by Dependency**: Order items so dependencies come before dependents. Apply constraint from $ARGUMENTS if present (e.g., "minimize risk" → de-risk blockers first; "fastest path" → shortest critical path).
 4. **Emit Sequenced Output**: Output in pipe format with execution-order numbering, dependency metadata, ASCII dependency graph, and parallel groups with isolation hints.
 
 ## Output Format
 
-Output in pipe format:
-
-- **Header**: `## Execution Sequence for [topic]`
-- **Metadata**: `**Source**: /plan`, `**Input**: [one-line topic + constraint]`, `**Pipeline**: [upstream chain -> /plan (N items)]` or `(none — working from direct input)`
-- **Items**: Numbered list in EXECUTION ORDER, each with:
+Output in pipe format. Items in EXECUTION ORDER, each with:
   - **Title** — what this step does
   - **depends-on**: [item numbers or "none"]
   - **rationale**: [why this position in the sequence]
@@ -66,7 +62,6 @@ Output in pipe format:
 - If multiple items have no dependencies, constraint determines their relative order
 - Critical path is the longest dependency chain from start to finish
 - Parallel opportunities are items with the same depends-on set (can run concurrently); these form a wave in the Parallel Groups section
-- Preserve original item source attribution and confidence when composing with prior primitives
 - If dependencies are unclear from input, note assumptions in rationale
 - Parallel Groups is the bridge to /sprint: wave items with `worktree` hint → dispatch with `isolation: "worktree"`; wave items with `shared` hint → dispatch normally; waves are sequential, items within a wave are parallel
 - Isolation hint is `worktree` when an item writes to files that sibling items in the same wave also touch, or when it modifies shared infrastructure (migrations, config, public interfaces); otherwise `shared`

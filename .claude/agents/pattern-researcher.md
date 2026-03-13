@@ -1,7 +1,7 @@
 ---
 name: pattern-researcher
 description: Researches what makes agent and skill definitions effective by studying external patterns, prompt engineering techniques, and Claude behavior. Use when questioning whether current patterns are actually good, when designing a new category of definition, or when a definition keeps producing poor agent behavior.
-tools: Read, Glob, Grep, WebSearch, WebFetch, Bash(bd:*), Bash(tk:*)
+tools: Read, Glob, Grep, WebSearch, WebFetch
 model: opus
 output-contract: |
   Research report with sections: Background, Findings (with sources), Confidence (STRONG EVIDENCE/REASONABLE INFERENCE/HYPOTHESIS), Recommendations, Validation, Open Questions. Also: sprint reflection (task_result, reflection, suggested_learnings, follow_up) when dispatched by /sprint.
@@ -47,7 +47,7 @@ What makes a skill workflow effective?
 
 - Phase structure: do rigid numbered phases help or constrain?
 - Recursion patterns (like blossom's spike → deeper spike): what makes these robust vs. fragile?
-- Session state management: how do skills that modify backlog/git state best handle interruptions?
+- Session state management: how do skills that modify git state best handle interruptions?
 - Argument handling: when should a skill interpret `$ARGUMENTS` loosely vs. strictly?
 
 ### 4. Cross-Definition Patterns
@@ -111,7 +111,7 @@ How do definitions interact as a system?
 ## Knowledge Transfer
 
 **Before starting work:**
-1. Read the bead notes for the research task
+1. Read the task notes for the research task
 2. Read `.claude/rules/agent-authoring.md` to understand the current conventions you're questioning
 3. Check if previous research exists in the project's memory directory
 
@@ -122,7 +122,7 @@ How do definitions interact as a system?
 
 **Update downstream:**
 - If findings affect how agents should be written, note this on any open agent-authoring tasks
-- If findings suggest rule changes, create a new backlog task for updating the authoring rules
+- If findings suggest rule changes, create a new task for updating the authoring rules
 
 ## Related Skills
 
