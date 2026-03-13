@@ -1,6 +1,6 @@
 {
   "name": "tl",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Composable workflow skills, agents, and hooks for Claude Code",
   "author": {
     "name": "ty"

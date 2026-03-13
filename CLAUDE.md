@@ -81,7 +81,7 @@ tackline/
 ├── rules/                       # Global rules (symlinked to ~/.claude/rules/)
 │   ├── batch-safety.md          # Batch processing safety (chunk at 12 items)
 │   ├── context-trust.md         # Trust user-provided context
-│   ├── information-architecture.md  # IA principles for knowledge organization
+│   ├── delegation.md            # Dispatch to subagents, concurrency by default, skills over intuition
 │   ├── memory-layout.md         # Path registry + checkpoint protocol for persistent state
 │   ├── pipe-format.md           # Composable primitive output contract (paths: skills/**/SKILL.md)
 │   ├── team-protocol.md         # Team manifest, spawn protocol, reflection schema
