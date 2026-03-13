@@ -1,44 +1,56 @@
 ---
 strength: should
-freshness: 2026-02-21
+freshness: 2026-03-12
 ---
 
-# Information Architecture Principles
+# Information Architecture
 
-How to organize knowledge, configuration, and documentation in Claude Code projects so that context reaches the model at the right time with minimal retrieval cost.
+How to place, find, and organize content in Claude Code projects.
 
-## Principles
+## Context Tiers
 
-### 1. Convention Over Documentation
+Content belongs in exactly one tier based on how often sessions need it:
 
-When structure is predictable, don't document it — enforce it through naming and placement. `skills/<name>/SKILL.md` needs no lookup table because the pattern is the documentation.
+| Tier | Location | Loaded | Use for |
+|------|----------|--------|---------|
+| Always-on | `rules/`, hooks | Automatic, every session | Behavioral constraints, safety, formatting |
+| Orientation | `CLAUDE.md`, `AGENTS.md` | Automatic, every session | Project shape, quick reference, navigation |
+| Discoverable | `docs/`, indexes | On demand via tool call | Deep reference, catalogs, design rationale |
+| Deep | subdirectories, artifacts | On demand via tool call | Full definitions, templates, raw content |
 
-### 2. Progressive Disclosure
+### Do
 
-Put the minimum viable context at the root; link to detail. CLAUDE.md gives orientation. Rules give constraints. Docs give depth. A reader (human or model) should be able to stop at any level and still function.
+- Put behavioral constraints in `rules/`. If every session needs it, it must be passive context.
+- Keep `CLAUDE.md` under 200 lines. It is orientation, not documentation.
+- Keep index files (`AGENTS.md`, `INDEX.md`, `MEMORY.md`) as pointers only — link to content, do not inline it.
+- Put detailed content in the artifact itself (`skills/<name>/SKILL.md`, `agents/<name>.md`), not in a central file.
 
-### 3. Passive Context Over Active Retrieval
+### Do Not
 
-Prefer files that load automatically (CLAUDE.md, rules/, hooks) over files that require a tool call to discover. Every retrieval step costs tokens and risks the model not looking. If something matters for every session, make it passive.
+- Do not duplicate content across tiers. One source of truth, one location.
+- Do not put deep reference material in `CLAUDE.md` or `rules/` — it wastes passive context budget on content most sessions never need.
+- Do not create index files that contain full artifact content. Indexes are maps, not warehouses.
 
-### 4. Centralize What Rots, Distribute What's Stable
+## Naming and Placement
 
-Inventories, counts, and status belong in one place (MEMORY.md, INDEX.md) where staleness is visible and updates are cheap. Stable definitions (skills, agents, rules) live at their point of use where they rarely need cross-referencing.
+Use predictable structure so content can be found by convention instead of lookup.
 
-### 5. Small Root, Distributed Detail
+### Do
 
-Root index files (CLAUDE.md, AGENTS.md, INDEX.md) stay small — orientation only. Full content lives in the artifact itself. This keeps passive-context budgets tight and avoids the "mega-file" anti-pattern.
+- Follow existing directory conventions before creating new locations. `skills/<name>/SKILL.md` needs no registry because the pattern is the documentation.
+- Use the project's controlled vocabulary consistently: "skill" (not "command" or "tool"), "rule" (not "guideline" or "policy"), "agent" (not "worker" or "bot").
+- Place volatile content (inventories, counts, status) in centralized files (`MEMORY.md`, `INDEX.md`) where staleness is visible.
+- Place stable content (definitions, schemas) at point of use where it rarely needs cross-referencing.
 
-### 6. Controlled Vocabulary
+### Do Not
 
-Use the same terms everywhere. A "skill" is always a skill (not a "command" or "tool"). A "rule" is always a rule (not a "guideline" or "policy"). Consistency reduces ambiguity for both humans and models.
+- Do not create new directories when an existing convention covers the use case. A new `utils/` folder is almost always wrong.
+- Do not create a lookup table for something the naming convention already makes discoverable.
+- Do not mix terminology — if the project calls it a "skill," never refer to it as a "command" in the same context.
 
-## Applying the Principles
+## When Creating or Moving Content
 
-**When creating a new artifact:** Pick the right tier — passive (rules/), discoverable (docs/), or on-demand (deep in a subdirectory). Ask: "Does every session need this?" If yes, make it a rule. If most sessions, put it in CLAUDE.md. If some sessions, put it in docs/ and link from an index.
-
-**When reorganizing:** Resist the urge to create new directories. Check if an existing location follows convention. A new `utils/` folder is almost always wrong — put it where the convention says it goes.
-
-**When writing rules:** Keep them actionable and testable. "Prefer X over Y" is better than "Consider using X." Rules that can't be checked are just suggestions.
-
-See also: /assess (categorize artifacts by tier), /gather (audit existing organization).
+1. **Determine the tier.** Ask: "Does every session need this?" → `rules/`. "Do most sessions need a pointer?" → `CLAUDE.md`. "Do some sessions need it?" → `docs/` with a link from an index. "Rarely needed?" → subdirectory.
+2. **Check for an existing home.** Search for where similar content already lives before picking a new location.
+3. **Write actionable content.** "Prefer X over Y" is testable. "Consider using X" is not. Rules that cannot be checked are suggestions — put them in docs, not rules.
+4. **Update exactly one index.** If the content is discoverable or deep, add a pointer in the relevant index file. Do not add pointers in multiple places.
