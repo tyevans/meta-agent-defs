@@ -29,7 +29,8 @@ This repo itself (tackline) is content-only -- direct edits to `.md` and `.json`
 ## Quick Reference
 
 ```bash
-# Install as a Claude Code plugin
+# Add the marketplace (one-time), then install
+claude plugin marketplace add tyevans/tackline
 claude plugin install tackline@tackline
 
 # Install global rules (not supported by plugin system)

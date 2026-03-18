@@ -48,7 +48,8 @@ Each skill's output feeds the next through conversation context. No file passing
 ## Install
 
 ```bash
-# Install as a Claude Code plugin (skills, agents, hooks, MCP)
+# Add the marketplace (one-time), then install
+claude plugin marketplace add tyevans/tackline
 claude plugin install tackline@tackline
 
 # Install global rules (plugin system doesn't support rules yet)
