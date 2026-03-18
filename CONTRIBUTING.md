@@ -22,7 +22,7 @@ Tackline is a **content-only repo** -- Markdown definitions and JSON config, no 
    ---
    ```
 2. Write the skill body with clear phase structure
-3. Run `claude plugin update tackline@tacklines` to pick up changes
+3. Run `claude plugin update tackline@tackline` to pick up changes
 4. Update `docs/INDEX.md` with the new skill entry
 
 ## Adding an Agent
@@ -37,7 +37,7 @@ Tackline is a **content-only repo** -- Markdown definitions and JSON config, no 
    ---
    ```
 2. Include Investigation Protocol, Context Management, and Knowledge Transfer sections
-3. Run `claude plugin update tackline@tacklines` to pick up changes
+3. Run `claude plugin update tackline@tackline` to pick up changes
 
 ## Commit Messages
 
@@ -59,7 +59,7 @@ refactor: simplify sprint dispatch logic
 
 Since this is a content-only repo, "testing" means running your skill or agent in a live Claude Code session:
 
-1. Run `claude plugin update tackline@tacklines` to pick up your changes
+1. Run `claude plugin update tackline@tackline` to pick up your changes
 2. Open a Claude Code session in any project
 3. Invoke your skill (e.g., `/your-skill`) and verify it works
 4. Run `dev/lint.sh` to check frontmatter and JSON validity

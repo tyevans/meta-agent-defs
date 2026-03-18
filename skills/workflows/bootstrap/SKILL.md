@@ -22,7 +22,7 @@ You are running the **Bootstrap** workflow -- a structured orchestration that co
 - `project-bootstrapper` -- must be registered and reachable via the Task tool before running this skill
 - `agent-generator` -- same requirement
 
-If either agent is missing, stop in Phase 0 and tell the user to install tackline (`claude plugin install tackline@tacklines`).
+If either agent is missing, stop in Phase 0 and tell the user to install tackline (`claude plugin install tackline@tackline`).
 
 ## When to Use
 
@@ -85,7 +85,7 @@ ls ~/.claude/agents/agent-generator.md
 
 If either file is missing, stop and report:
 
-> Required agent `<name>` is not installed. Run `claude plugin install tackline@tacklines` to register it, then retry.
+> Required agent `<name>` is not installed. Run `claude plugin install tackline@tackline` to register it, then retry.
 
 ### 0d. Detect Project State
 
