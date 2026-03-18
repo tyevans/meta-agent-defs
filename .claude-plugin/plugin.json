@@ -12,6 +12,5 @@
     "./agents/code-reviewer.md",
     "./agents/project-bootstrapper.md"
   ],
-  "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json"
 }
