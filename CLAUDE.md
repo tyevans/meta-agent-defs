@@ -30,14 +30,16 @@ This repo itself (tackline) is content-only -- direct edits to `.md` and `.json`
 
 ```bash
 # Install as a Claude Code plugin
-claude plugin install tackline@tacklines
+claude plugin install tackline@tackline
 
 # Install global rules (not supported by plugin system)
-mkdir -p ~/.claude/rules
-for f in /path/to/tackline/rules/*.md; do ln -sf "$f" ~/.claude/rules/; done
+# No local checkout needed — fetch directly from GitHub:
+curl -fsSL https://raw.githubusercontent.com/tyevans/tackline/main/dev/install-rules.sh | bash
+# Or, from a local checkout:
+# bash /path/to/tackline/dev/install-rules.sh
 
 # Uninstall
-claude plugin uninstall tackline@tacklines
+claude plugin uninstall tackline@tackline
 for f in /path/to/tackline/rules/*.md; do rm -f ~/.claude/rules/"$(basename "$f")"; done
 ```
 

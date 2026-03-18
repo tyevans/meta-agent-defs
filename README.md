@@ -49,17 +49,19 @@ Each skill's output feeds the next through conversation context. No file passing
 
 ```bash
 # Install as a Claude Code plugin (skills, agents, hooks, MCP)
-claude plugin install tackline@tacklines
+claude plugin install tackline@tackline
 
 # Install global rules (plugin system doesn't support rules yet)
-mkdir -p ~/.claude/rules
-for f in /path/to/tackline/rules/*.md; do ln -sf "$f" ~/.claude/rules/; done
+# No local checkout needed — fetch directly from GitHub:
+curl -fsSL https://raw.githubusercontent.com/tyevans/tackline/main/dev/install-rules.sh | bash
+# Or, from a local checkout:
+# bash /path/to/tackline/dev/install-rules.sh
 ```
 
 ### Uninstall
 
 ```bash
-claude plugin uninstall tackline@tacklines
+claude plugin uninstall tackline@tackline
 # Remove rule symlinks (leaves non-tackline rules intact)
 for f in /path/to/tackline/rules/*.md; do rm -f ~/.claude/rules/"$(basename "$f")"; done
 ```
@@ -102,9 +104,9 @@ for f in /path/to/tackline/rules/*.md; do rm -f ~/.claude/rules/"$(basename "$f"
 
 ## Extending
 
-**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter. Run `claude plugin update tackline@tacklines`.
+**Add a skill:** Create `skills/<name>/SKILL.md` with YAML frontmatter. Run `claude plugin update tackline@tackline`.
 
-**Add an agent:** Create `agents/<name>.md` with YAML frontmatter. Run `claude plugin update tackline@tacklines`.
+**Add an agent:** Create `agents/<name>.md` with YAML frontmatter. Run `claude plugin update tackline@tackline`.
 
 ## Learn More
 

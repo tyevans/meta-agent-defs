@@ -20,7 +20,7 @@ None of these are hard problems. They're just conversations that didn't happen. 
 - Two or more people, each responsible for their own piece
 - A shared git repo everyone can push to
 - A way to talk (Slack, call, whiteboard — whatever works)
-- tackline installed (`claude plugin install tackline@tacklines`)
+- tackline installed (`claude plugin install tackline@tackline`)
 
 ---
 
